@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-cliente}">
+<head>
+    <title>Carrito de Compras</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="container cart-page">
+        <h1 class="page-title" style="margin-bottom: 2rem;">Tu Carrito</h1>
+
+        <div th:if="${#lists.isEmpty(items)}" style="text-align: center; padding: 3rem 0;">
+            <p>Tu carrito está vacío. <a th:href="@{/catalogo}" style="text-decoration: underline; color: var(--primary);">¡Sigue comprando!</a></p>
+        </div>
+
+        <div class="cart-grid" th:if="${not #lists.isEmpty(items)}">
+            <!-- LISTA DE PRODUCTOS -->
+            <div class="cart-items-list">
+                <div th:each="item : ${items}" class="cart-item">
+                    <div class="cart-item-image">
+                        <img th:src="${item.imagenUrl}" alt="Imagen del producto">
+                    </div>
+                    <div class="cart-item-details">
+                        <h2 class="cart-item-title" th:text="${item.nombre}"></h2>
+                        <p class="cart-item-price" th:text="|€${#numbers.formatDecimal(item.precio, 1, 2)} cada uno|"></p>
+                        <div class="cart-item-actions">
+                            <form th:action="@{/carrito/eliminar/{id}(id=${item.productoId})}" method="post">
+                                <button type="submit" style="color:var(--destructive); background:none; border:none; cursor:pointer; text-decoration:underline;">Eliminar</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- NUEVO CONTROL DE CANTIDAD -->
+                    <div class="quantity-adjuster">
+                        <!-- Botón para disminuir -->
+                        <form th:action="@{/carrito/actualizar}" method="post">
+                            <input type="hidden" name="productoId" th:value="${item.productoId}" />
+                            <input type="hidden" name="cantidad" th:value="${item.cantidad - 1}" />
+                            <button type="submit" class="quantity-btn" th:disabled="${item.cantidad == 0}">-</button>
+                        </form>
+                        <!-- Muestra la cantidad actual -->
+                        <span class="quantity-display" th:text="${item.cantidad}">1</span>
+                        <!-- Botón para aumentar -->
+                        <form th:action="@{/carrito/actualizar}" method="post">
+                            <input type="hidden" name="productoId" th:value="${item.productoId}" />
+                            <input type="hidden" name="cantidad" th:value="${item.cantidad + 1}" />
+                            <button type="submit" class="quantity-btn">+</button>
+                        </form>
+                    </div>
+
+                    <div style="text-align: right; min-width: 120px;">
+                        <p class="cart-item-price" style="font-weight: 600;" th:text="|Subtotal: €${#numbers.formatDecimal(item.subtotal, 1, 2)}|"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESUMEN DE LA COMPRA -->
+            <div class="cart-summary">
+                <h2 class="summary-title">Resumen del Pedido</h2>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span th:text="|€${#numbers.formatDecimal(total, 1, 2)}|"></span>
+                </div>
+                <div class="summary-row">
+                    <span>Envío</span>
+                    <span>Gratis</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span th:text="|€${#numbers.formatDecimal(total, 1, 2)}|"></span>
+                </div>
+                <form th:action="@{/pedidos/checkout}" method="post">
+                    <button type="submit" class="checkout-btn">Finalizar Compra</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

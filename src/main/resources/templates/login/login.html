@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - GoldenFeets</title>
+    <link rel="stylesheet" th:href="@{/Global.css}">
+</head>
+<body>
+<div class="login-page-wrapper">
+    <div class="login-card">
+        <div class="login-card-content">
+            <form th:action="@{/login}" method="post" class="login-form">
+                <div class="login-header">
+                    <h1>Bienvenido de vuelta</h1>
+                    <p>Inicia sesión en tu cuenta de GoldenFeets</p>
+                </div>
+
+                <div th:if="${param.error}" class="alert alert-error">
+                    Email o contraseña inválidos. Por favor, inténtalo de nuevo.
+                </div>
+                <div th:if="${param.logout}" class="alert alert-success">
+                    Has cerrado sesión exitosamente.
+                </div>
+
+                <div class="form-group">
+                    <label for="username" class="label">Email</label>
+                    <input id="username" name="username" type="email" placeholder="tu@email.com" required class="input-field" autocomplete="username" />
+                </div>
+
+                <div class="form-group">
+                    <div class="form-row">
+                        <label for="password" class="label">Contraseña</label>
+                        <a th:href="@{/forgot-password}" class="form-link-forgot">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+                    <input id="password" name="password" type="password" required class="input-field" autocomplete="current-password" />
+                </div>
+
+                <button type="submit" class="btn-primary">
+                    Iniciar Sesión
+                </button>
+
+                <div class="signup-link-container">
+                    ¿No tienes una cuenta?
+                    <a th:href="@{/registro}" class="signup-link">
+                        Regístrate
+                    </a>
+                </div>
+            </form>
+
+            <div class="image-panel">
+                <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=1887&auto=format&fit=crop"
+                     alt="Zapatos GoldenFeets"
+                />
+            </div>
+        </div>
+    </div>
+</div>
+<div class="footer-text">
+    Al continuar, aceptas nuestros <a href="#">Términos de Servicio</a> y <a href="#">Política de Privacidad</a>.
+</div>
+</body>
+</html>

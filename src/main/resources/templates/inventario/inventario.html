@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-admin}">
+<head>
+    <title>Gestión de Inventario</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="admin-header flex-between">
+        <h1 class="admin-title">Inventario de Productos</h1>
+        <a th:href="@{/admin/inventario/nuevo}" class="btn btn-primary">Añadir Producto</a>
+    </div>
+
+    <div class="admin-card">
+        <form th:action="@{/admin/inventario}" method="get" class="admin-form" style="margin-bottom: 2rem;">
+            <div class="form-group">
+                <label for="nombre" class="form-label">Buscar por nombre</label>
+                <input type="text" id="nombre" name="nombre" class="form-control" th:value="${param.nombre}">
+            </div>
+            <button type="submit" class="btn btn-secondary">Buscar</button>
+        </form>
+
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="producto : ${productos}">
+                <td th:text="${producto.id}">1</td>
+                <td th:text="${producto.nombre}">Zapatilla X</td>
+                <td th:text="${producto.categoria?.nombre ?: 'Sin categoría'}">Deportivo</td>
+                <td th:text="|€${#numbers.formatDecimal(producto.precio, 1, 2)}|">€99.99</td>
+                <td th:text="${producto.stock}">150</td>
+                <td class="action-links">
+                    <a th:href="@{/admin/inventario/editar/{id}(id=${producto.id})}">Editar</a>
+                    <form th:action="@{/admin/inventario/eliminar/{id}(id=${producto.id})}" method="post" style="display:inline;">
+                        <button type="submit" class="delete" style="background:none;border:none;padding:0;color:var(--admin-accent-red);cursor:pointer;font-weight:500;"
+                                onclick="return confirm('¿Estás seguro de que quieres eliminar este producto?');">
+                            Eliminar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+</body>
+</html>

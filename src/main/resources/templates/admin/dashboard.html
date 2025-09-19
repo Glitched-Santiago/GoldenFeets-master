@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-admin}">
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="admin-header">
+        <h1 class="admin-title">Dashboard de Administración</h1>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <a th:href="@{/admin/inventario}" class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+            </div>
+            <h2 class="dashboard-card-title">Gestionar Inventario</h2>
+            <p class="dashboard-card-description">Añadir, editar y eliminar productos del catálogo.</p>
+        </a>
+
+        <a href="#" class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75c0-.231-.035-.454-.1-.664M6.75 7.5h10.5a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25H6.75a2.25 2.25 0 01-2.25-2.25v-7.5a2.25 2.25 0 012.25-2.25z" /></svg>
+            </div>
+            <h2 class="dashboard-card-title">Ver Pedidos</h2>
+            <p class="dashboard-card-description">Consultar el historial de compras y el estado de los pedidos.</p>
+        </a>
+
+        <a href="#" class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-4.67c.12-.241.25-.487.386-.732z" /></svg>
+            </div>
+            <h2 class="dashboard-card-title">Gestionar Usuarios</h2>
+            <p class="dashboard-card-description">Ver la lista de clientes y administradores registrados.</p>
+        </a>
+
+    </div>
+</section>
+</body>
+</html>

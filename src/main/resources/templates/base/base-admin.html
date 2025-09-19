@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title layout:title-pattern="$CONTENT_TITLE | $LAYOUT_TITLE">Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/admin.css}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <a th:href="@{/admin/dashboard}" class="sidebar-logo">GOLDENFEETS</a>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/admin/dashboard}" th:class="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+            <li><a th:href="@{/admin/inventario}" th:class="${activePage == 'inventario' ? 'active' : ''}">Inventario</a></li>
+            <li><a href="#" th:class="${activePage == 'pedidos' ? 'active' : ''}">Pedidos</a></li>
+            <li><a href="#" th:class="${activePage == 'usuarios' ? 'active' : ''}">Usuarios</a></li>
+        </ul>
+    </aside>
+
+    <main class="admin-main-content" layout:fragment="content">
+    </main>
+</div>
+</body>
+</html>

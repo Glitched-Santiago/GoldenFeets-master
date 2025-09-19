@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-cliente}">
+<head>
+    <title>Nuestro Catálogo</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <main class="container" style="padding-top: 3rem; padding-bottom: 3rem;">
+        <div class="page-header">
+            <h1 class="page-title">Nuestro Catálogo</h1>
+            <a href="#" class="view-all-link">Ver todo &rarr;</a>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-error" role="alert" th:text="${errorMessage}"></div>
+
+        <div class="product-grid">
+            <div th:each="producto : ${productos}" class="product-card">
+                <div class="product-card-image-wrapper"><img th:src="${producto.imagenUrl}" alt="Zapato" class="product-card-image"/></div>
+                <div class="product-card-content">
+                    <h3 th:text="${producto.nombre}" class="product-card-title"></h3>
+                    <div class="product-card-details">
+                        <p class="product-price" th:text="|€${#numbers.formatDecimal(producto.precio, 1, 2)}|"></p>
+                        <span class="product-tag" th:text="${producto.talla}"></span>
+                    </div>
+
+                    <!-- ================== LÓGICA DE BOTONES SIMPLIFICADA Y CORREGIDA ================== -->
+
+                    <!-- Si el usuario SÍ ha iniciado sesión, muestra un formulario POST normal -->
+                    <form th:if="${authentication != null and authentication.isAuthenticated()}"
+                          th:action="@{/carrito/agregar/{id}(id=${producto.id})}" method="post">
+                        <!-- Thymeleaf y Spring Security añadirán el token CSRF automáticamente a este formulario -->
+                        <button type="submit" class="add-to-cart-btn">
+                            Añadir al Carrito
+                        </button>
+                    </form>
+
+                    <!-- Si el usuario NO ha iniciado sesión, muestra un botón que abre el modal -->
+                    <button th:if="${authentication == null or !authentication.isAuthenticated()}"
+                            type="button" class="add-to-cart-btn"
+                            onclick="openLoginModal()">
+                        Añadir al Carrito
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- El Modal y el Script global de la plantilla base se encargarán del resto -->
+
+</section>
+</body>
+</html>
