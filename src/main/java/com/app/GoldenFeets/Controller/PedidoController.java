@@ -19,21 +19,53 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/pedidos")
+@RequestMapping("/pedidos") // Ruta base para todo el controlador
 @RequiredArgsConstructor
 public class PedidoController {
 
     private final PedidoService pedidoService;
     private final UsuarioService usuarioService;
 
-    // Método seguro para obtener el carrito de la sesión del usuario.
+    /**
+     * Método seguro para obtener el carrito de la sesión del usuario.
+     */
     @SuppressWarnings("unchecked")
     private Map<Long, CarritoItem> getCarrito(HttpSession session) {
         return (Map<Long, CarritoItem>) session.getAttribute("CARRITO_SESSION");
     }
 
+    /**
+     * Muestra la página de checkout (formulario de pago) con el resumen del carrito.
+     * Este es el método que te redirige al formulario.
+     */
+    @GetMapping("/checkout")
+    public String showCheckoutPage(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        Map<Long, CarritoItem> carrito = getCarrito(session);
+
+        // Filtramos para asegurar que solo procesamos items con cantidad > 0
+        Map<Long, CarritoItem> carritoValido = (carrito != null) ? carrito.entrySet().stream()
+                .filter(entry -> entry.getValue().getCantidad() > 0)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)) : null;
+
+        // Si el carrito está vacío o no tiene items válidos, redirigimos
+        if (carritoValido == null || carritoValido.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Tu carrito está vacío para poder proceder al pago.");
+            return "redirect:/carrito";
+        }
+
+        double total = carritoValido.values().stream().mapToDouble(CarritoItem::getSubtotal).sum();
+        model.addAttribute("items", carritoValido.values());
+        model.addAttribute("total", total);
+
+        return "compra/checkout"; // Apunta a la vista del formulario de pago
+    }
+
+    /**
+     * Procesa la finalización de la compra desde el formulario de checkout.
+     */
     @PostMapping("/checkout")
     public String finalizarCompra(@AuthenticationPrincipal UserDetails userDetails, HttpSession session, RedirectAttributes redirectAttributes) {
         if (userDetails == null) {
@@ -49,10 +81,10 @@ public class PedidoController {
         try {
             Cliente cliente = usuarioService.findClienteByEmail(userDetails.getUsername());
 
-            // LLAMADA CORREGIDA: Pasamos el carrito y el cliente al servicio.
+            // Pasamos el carrito y el cliente al servicio para crear el pedido.
             Pedido nuevoPedido = pedidoService.crearPedido(carrito, cliente);
 
-            // Limpiamos el carrito de la sesión después de la compra.
+            // Limpiamos el carrito de la sesión después de una compra exitosa.
             session.removeAttribute("CARRITO_SESSION");
 
             return "redirect:/pedidos/confirmacion/" + nuevoPedido.getId();
@@ -63,6 +95,9 @@ public class PedidoController {
         }
     }
 
+    /**
+     * Muestra el historial de compras del usuario autenticado.
+     */
     @GetMapping("/historial")
     public String verHistorialCompras(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         if (userDetails == null) {
@@ -74,9 +109,13 @@ public class PedidoController {
         return "compra/compras";
     }
 
+    /**
+     * Muestra una página de confirmación después de una compra exitosa.
+     */
     @GetMapping("/confirmacion/{pedidoId}")
     public String confirmacionCompra(@PathVariable Long pedidoId, Model model) {
         model.addAttribute("pedidoId", pedidoId);
+        // Necesitas crear esta vista: templates/compra/confirmacion.html
         return "compra/confirmacion";
     }
 }

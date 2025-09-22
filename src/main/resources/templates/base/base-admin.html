@@ -13,7 +13,8 @@
             <li><a th:href="@{/admin/dashboard}" th:class="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
             <li><a th:href="@{/admin/inventario}" th:class="${activePage == 'inventario' ? 'active' : ''}">Inventario</a></li>
             <li><a href="#" th:class="${activePage == 'pedidos' ? 'active' : ''}">Pedidos</a></li>
-            <li><a href="#" th:class="${activePage == 'usuarios' ? 'active' : ''}">Usuarios</a></li>
+            <li><a th:href="@{/admin/usuarios}" th:class="${activePage == 'usuarios' ? 'active' : ''}">Usuarios</a></li>
+        </ul>
         </ul>
     </aside>
 

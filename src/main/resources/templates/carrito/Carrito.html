@@ -30,25 +30,20 @@
                             </form>
                         </div>
                     </div>
-
-                    <!-- NUEVO CONTROL DE CANTIDAD -->
+                    <!-- Control de Cantidad -->
                     <div class="quantity-adjuster">
-                        <!-- Botón para disminuir -->
                         <form th:action="@{/carrito/actualizar}" method="post">
                             <input type="hidden" name="productoId" th:value="${item.productoId}" />
                             <input type="hidden" name="cantidad" th:value="${item.cantidad - 1}" />
                             <button type="submit" class="quantity-btn" th:disabled="${item.cantidad == 0}">-</button>
                         </form>
-                        <!-- Muestra la cantidad actual -->
                         <span class="quantity-display" th:text="${item.cantidad}">1</span>
-                        <!-- Botón para aumentar -->
                         <form th:action="@{/carrito/actualizar}" method="post">
                             <input type="hidden" name="productoId" th:value="${item.productoId}" />
                             <input type="hidden" name="cantidad" th:value="${item.cantidad + 1}" />
                             <button type="submit" class="quantity-btn">+</button>
                         </form>
                     </div>
-
                     <div style="text-align: right; min-width: 120px;">
                         <p class="cart-item-price" style="font-weight: 600;" th:text="|Subtotal: €${#numbers.formatDecimal(item.subtotal, 1, 2)}|"></p>
                     </div>
@@ -70,9 +65,10 @@
                     <span>Total</span>
                     <span th:text="|€${#numbers.formatDecimal(total, 1, 2)}|"></span>
                 </div>
-                <form th:action="@{/pedidos/checkout}" method="post">
-                    <button type="submit" class="checkout-btn">Finalizar Compra</button>
-                </form>
+
+                <!-- CORRECCIÓN: Cambiamos el <form> por un enlace <a> -->
+                <a th:href="@{/pedidos/checkout}" class="checkout-btn">Finalizar Compra</a>
+
             </div>
         </div>
     </div>

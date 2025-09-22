@@ -8,6 +8,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate; // <-- Import necesario para la fecha de nacimiento
+
 /**
  * Componente que se ejecuta al iniciar la aplicación para inicializar datos de prueba.
  * Implementa CommandLineRunner, lo que garantiza que el método run() se ejecute
@@ -25,13 +27,14 @@ public class DataInitializer implements CommandLineRunner {
         System.out.println("Iniciando la inicialización de datos...");
 
         // --- Usuario Administrador de Ejemplo ---
-        // Se comprueba si el usuario ya existe para no crearlo de nuevo en cada reinicio.
         if (usuarioRepository.findByEmail("admin@goldenf.com").isEmpty()) {
             Administrador admin = new Administrador();
             admin.setEmail("admin@goldenf.com");
-            admin.setNombre("Admin General");
-            // IMPORTANTE: La contraseña se encripta antes de guardarla.
+            // CAMPOS ACTUALIZADOS
+            admin.setNombres("Admin");
+            admin.setApellidos("General");
             admin.setPassword(passwordEncoder.encode("admin123"));
+            // Los campos numeroDocumento y fechaNacimiento pueden ser null para el admin
             usuarioRepository.save(admin);
             System.out.println("✅ Usuario Administrador de prueba creado.");
         }
@@ -40,9 +43,13 @@ public class DataInitializer implements CommandLineRunner {
         if (usuarioRepository.findByEmail("cliente@email.com").isEmpty()) {
             Cliente cliente = new Cliente();
             cliente.setEmail("cliente@email.com");
-            cliente.setNombre("Carlos Cliente");
-            // IMPORTANTE: La contraseña se encripta antes de guardarla.
+            // CAMPOS ACTUALIZADOS
+            cliente.setNombres("Carlos");
+            cliente.setApellidos("Cliente");
             cliente.setPassword(passwordEncoder.encode("cliente123"));
+            // NUEVOS CAMPOS AÑADIDOS
+            cliente.setNumeroDocumento("12345678X");
+            cliente.setFechaNacimiento(LocalDate.of(1995, 5, 20)); // Año, Mes, Día
             usuarioRepository.save(cliente);
             System.out.println("✅ Usuario Cliente de prueba creado.");
         }

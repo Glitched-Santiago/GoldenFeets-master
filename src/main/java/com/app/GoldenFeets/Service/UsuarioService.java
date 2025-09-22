@@ -4,59 +4,126 @@ import com.app.GoldenFeets.Entity.Administrador;
 import com.app.GoldenFeets.Entity.Cliente;
 import com.app.GoldenFeets.Entity.Usuario;
 import com.app.GoldenFeets.Repository.UsuarioRepository;
+import com.app.GoldenFeets.spec.UsuarioSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UsuarioService implements UserDetailsService { // <-- IMPLEMENTA LA INTERFAZ
+public class UsuarioService implements UserDetailsService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UsuarioSpecification usuarioSpecification;
 
     /**
-     * Este método es requerido por Spring Security.
-     * Carga un usuario por su email y lo convierte en un objeto UserDetails
-     * que Spring Security puede entender.
+     * Método requerido por Spring Security para cargar un usuario por su email.
      */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("No se encontró usuario con el email: " + email));
 
-        // Obtenemos el rol del usuario para asignarlo como una "autoridad"
-        // Es una convención de Spring Security anteponer "ROLE_" al nombre del rol.
-        String role = "";
-        if (usuario instanceof Administrador) {
-            role = "ADMIN";
-        } else if (usuario instanceof Cliente) {
-            role = "CLIENTE";
-        }
+        String role = (usuario instanceof Administrador) ? "ADMIN" : "CLIENTE";
 
         Collection<? extends GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
 
-        // Creamos y retornamos un objeto UserDetails con los datos del usuario
         return new User(usuario.getEmail(), usuario.getPassword(), authorities);
     }
 
     /**
-     * Busca un usuario por su email y verifica que sea una instancia de Cliente.
+     * Busca un usuario por email y confirma que es un Cliente.
      */
     public Cliente findClienteByEmail(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("No se encontró un usuario con el email: " + email));
-
         if (!(usuario instanceof Cliente)) {
             throw new IllegalStateException("El usuario encontrado no es un cliente.");
         }
         return (Cliente) usuario;
+    }
+
+    // --- MÉTODOS CRUD ---
+
+    /**
+     * Devuelve una lista de todos los usuarios en la base de datos.
+     */
+    public List<Usuario> findAll() {
+        return usuarioRepository.findAll();
+    }
+
+    /**
+     * Busca un usuario por su ID.
+     */
+    public Optional<Usuario> findById(Long id) {
+        return usuarioRepository.findById(id);
+    }
+
+    /**
+     * Busca usuarios por múltiples criterios usando especificaciones.
+     */
+    public List<Usuario> search(String id, String nombres, String apellidos, String numeroDocumento, String email, String rol) {
+        Specification<Usuario> spec = usuarioSpecification.findByCriteria(id, nombres, apellidos, numeroDocumento, email, rol);
+        return usuarioRepository.findAll(spec);
+    }
+
+    /**
+     * Guarda un usuario nuevo o actualiza uno existente.
+     */
+    public void saveOrUpdate(Usuario usuarioDataFromForm, String rol) {
+        // Si el ID no es nulo, es una ACTUALIZACIÓN
+        if (usuarioDataFromForm.getId() != null) {
+            Usuario usuarioExistente = usuarioRepository.findById(usuarioDataFromForm.getId())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado para actualizar"));
+
+            usuarioExistente.setNombres(usuarioDataFromForm.getNombres());
+            usuarioExistente.setApellidos(usuarioDataFromForm.getApellidos());
+            usuarioExistente.setEmail(usuarioDataFromForm.getEmail());
+            usuarioExistente.setNumeroDocumento(usuarioDataFromForm.getNumeroDocumento());
+            usuarioExistente.setFechaNacimiento(usuarioDataFromForm.getFechaNacimiento());
+
+            // Solo actualizamos la contraseña si se proporcionó una nueva en el formulario
+            if (usuarioDataFromForm.getPassword() != null && !usuarioDataFromForm.getPassword().isEmpty()) {
+                usuarioExistente.setPassword(passwordEncoder.encode(usuarioDataFromForm.getPassword()));
+            }
+
+            usuarioRepository.save(usuarioExistente);
+        } else { // Si el ID es nulo, es una CREACIÓN
+            Usuario nuevoUsuario;
+            if ("ADMIN".equals(rol)) {
+                nuevoUsuario = new Administrador();
+            } else {
+                nuevoUsuario = new Cliente();
+            }
+
+            nuevoUsuario.setNombres(usuarioDataFromForm.getNombres());
+            nuevoUsuario.setApellidos(usuarioDataFromForm.getApellidos());
+            nuevoUsuario.setEmail(usuarioDataFromForm.getEmail());
+            nuevoUsuario.setNumeroDocumento(usuarioDataFromForm.getNumeroDocumento());
+            nuevoUsuario.setFechaNacimiento(usuarioDataFromForm.getFechaNacimiento());
+            nuevoUsuario.setPassword(passwordEncoder.encode(usuarioDataFromForm.getPassword()));
+
+            usuarioRepository.save(nuevoUsuario);
+        }
+    }
+
+    /**
+     * Elimina un usuario por su ID.
+     */
+    public void deleteById(Long id) {
+        usuarioRepository.deleteById(id);
     }
 }

@@ -880,3 +880,79 @@ header {
     min-width: 30px;
     text-align: center;
 }
+.checkout-page {
+    padding: 4rem 0;
+    min-height: 70vh;
+}
+
+.checkout-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem; /* Espacio entre el formulario y el resumen */
+}
+
+/* Para pantallas más grandes, usamos dos columnas */
+@media (min-width: 1024px) {
+    .checkout-grid {
+        grid-template-columns: 1.5fr 1fr; /* La columna del formulario es más ancha */
+    }
+}
+
+.checkout-form .form-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-title {
+    font-size: 1.5rem; /* 24px */
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--foreground);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.order-summary {
+    background-color: var(--card);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    position: sticky;
+    top: 6rem; /* Para que se mantenga visible al hacer scroll */
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+}
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-item-image img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 0.375rem;
+}
+
+.summary-item-details {
+    flex-grow: 1;
+}
+
+.summary-item-title {
+    font-weight: 600;
+}
+
+.summary-item-price {
+    font-weight: 600;
+    margin-left: auto; /* Empuja el precio a la derecha */
+}

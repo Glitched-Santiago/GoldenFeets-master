@@ -16,16 +16,30 @@ public class InventarioController {
     private final ProductoService productoService;
     private final CategoriaRepository categoriaRepository;
 
-    // READ - Listar productos (con búsqueda)
     @GetMapping
-    public String listarProductos(@RequestParam(required = false) String nombre, Model model) {
-        if (nombre != null && !nombre.isEmpty()) {
-            model.addAttribute("productos", productoService.buscarPorNombre(nombre));
+    public String listarProductos(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoriaId,
+            @RequestParam(required = false) Double precioMin,
+            @RequestParam(required = false) Double precioMax,
+            Model model) {
+
+        boolean isFilterActive = (keyword != null && !keyword.isEmpty()) || categoriaId != null || precioMin != null || precioMax != null;
+
+        if (isFilterActive) {
+            model.addAttribute("productos", productoService.search(keyword, categoriaId, precioMin, precioMax));
         } else {
             model.addAttribute("productos", productoService.obtenerTodos());
         }
-        // AÑADIDO: Indica a la plantilla qué página está activa.
+
+        model.addAttribute("categorias", categoriaRepository.findAll());
         model.addAttribute("activePage", "inventario");
+        // Devolvemos los parámetros para que el formulario los recuerde
+        model.addAttribute("keywordParam", keyword);
+        model.addAttribute("categoriaIdParam", categoriaId);
+        model.addAttribute("precioMinParam", precioMin);
+        model.addAttribute("precioMaxParam", precioMax);
+
         return "inventario/inventario";
     }
 

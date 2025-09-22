@@ -1,10 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-admin}">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Gestión de Clientes</title>
 </head>
 <body>
+<section layout:fragment="content">
+    <div class="admin-header">
+        <h1 class="admin-title">Clientes</h1>
+        <a th:href="@{/admin/usuarios/nuevo}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+            Crear Nuevo Cliente
+        </a>
+    </div>
 
+    <div class="admin-card">
+        <!-- FORMULARIO DE BÚSQUEDA -->
+        <form th:action="@{/admin/usuarios}" method="get" class="search-form">
+            <div class="form-group">
+                <input type="text" name="numeroDocumento" placeholder="Buscar por documento" class="search-input" th:value="${numeroDocumentoParam}">
+            </div>
+            <div class="form-group">
+                <input type="text" name="nombres" placeholder="Buscar por nombre" class="search-input" th:value="${nombresParam}">
+            </div>
+            <div class="form-group">
+                <input type="text" name="apellidos" placeholder="Buscar por apellido" class="search-input" th:value="${apellidosParam}">
+            </div>
+            <div class="form-group">
+                <input type="text" name="email" placeholder="Buscar por email" class="search-input" th:value="${emailParam}">
+            </div>
+            <div class="form-group">
+                <select name="rol" class="search-input">
+                    <option value="" th:selected="${rolParam == null or rolParam.isEmpty()}">Filtrar por Rol</option>
+                    <option value="CLIENTE" th:selected="${rolParam == 'CLIENTE'}">Cliente</option>
+                    <option value="ADMIN" th:selected="${rolParam == 'ADMIN'}">Administrador</option>
+                </select>
+            </div>
+            <div class="search-form-actions">
+                <button type="submit" class="btn btn-primary">Buscar</button>
+                <a th:href="@{/admin/usuarios}" class="btn btn-secondary">Limpiar</a>
+            </div>
+        </form>
+
+        <!-- TABLA DE USUARIOS ACTUALIZADA -->
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Documento</th>
+                <th>Nombres</th>
+                <th>Apellidos</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>F. Nacimiento</th> <!-- COLUMNA AÑADIDA -->
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="usuario : ${usuarios}">
+                <td th:text="${usuario.id}"></td>
+                <td th:text="${usuario.numeroDocumento ?: 'N/A'}"></td>
+                <td th:text="${usuario.nombres}"></td>
+                <td th:text="${usuario.apellidos}"></td>
+                <td th:text="${usuario.email}"></td>
+                <td>
+                    <span th:if="${#strings.contains(usuario.class.name, 'Administrador')}" class="role-admin">ADMIN</span>
+                    <span th:if="${#strings.contains(usuario.class.name, 'Cliente')}" class="role-client">CLIENTE</span>
+                </td>
+                <!-- CELDA AÑADIDA PARA MOSTRAR LA FECHA DE NACIMIENTO -->
+                <td th:text="${usuario.fechaNacimiento != null ? #temporals.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : 'N/A'}"></td>
+                <td>
+                    <div class="actions-cell">
+                        <a th:href="@{/admin/usuarios/editar/{id}(id=${usuario.id})}" class="action-btn action-btn-edit" title="Editar">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                        </a>
+                        <form th:action="@{/admin/usuarios/eliminar/{id}(id=${usuario.id})}" method="post">
+                            <button type="submit" class="action-btn action-btn-delete" title="Eliminar"
+                                    onclick="return confirm('¿Estás seguro de que quieres eliminar este usuario?');">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.033-2.134H8.716c-1.12-0-2.033.954-2.033 2.134v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
 </body>
 </html>

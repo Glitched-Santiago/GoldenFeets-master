@@ -1,10 +1,9 @@
 package com.app.GoldenFeets.Entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @DiscriminatorValue("CLIENTE")
@@ -12,6 +11,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class Cliente extends Usuario {
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Pedido> pedidos = new ArrayList<>();
+    // El cuerpo de esta clase ahora está vacío, ya que todos los campos
+    // necesarios se heredan de la clase padre Usuario.
+    // Si en el futuro un Cliente necesita un campo que un Admin no tiene, se añadiría aquí.
+
 }

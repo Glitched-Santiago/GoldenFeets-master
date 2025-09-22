@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -17,18 +16,14 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final UsuarioService usuarioService;
-    // Ya no inyectamos el AuthenticationSuccessHandler
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    private final PasswordEncoder passwordEncoder;
+    // HEMOS ELIMINADO la inyección de 'customAuthenticationSuccessHandler' de aquí.
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(usuarioService);
-        authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
 
@@ -43,17 +38,14 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        // ================== LÓGICA DE REDIRECCIÓN AÑADIDA AQUÍ ==================
+                        // La lógica de redirección ya está aquí, no necesitamos el handler externo.
                         .successHandler((request, response, authentication) -> {
-                            // Revisa las "autoridades" (roles) del usuario autenticado
                             boolean isAdmin = authentication.getAuthorities().stream()
                                     .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
 
                             if (isAdmin) {
-                                // Si es admin, redirige al dashboard
                                 response.sendRedirect("/admin/dashboard");
                             } else {
-                                // Si no es admin (es cliente), redirige al catálogo
                                 response.sendRedirect("/catalogo");
                             }
                         })
