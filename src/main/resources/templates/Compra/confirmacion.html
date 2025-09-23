@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-cliente}">
+<head>
+    <title>¡Compra Realizada!</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="container confirmation-page">
+        <h1 class="page-title" style="color: var(--primary);">¡Gracias por tu compra!</h1>
+        <p class="confirmation-subtitle">
+            Tu pedido ha sido procesado con éxito.
+        </p>
+        <p class="confirmation-text">
+            El número de tu pedido es: <b th:text="${pedidoId}">#00000</b>.
+        </p>
+        <div class="confirmation-actions">
+            <a th:href="@{/pedidos/historial}" class="checkout-btn">Ver mis pedidos</a>
+            <a th:href="@{/catalogo}" class="secondary-btn">Seguir comprando</a>
+        </div>
+    </div>
+</section>
+</body>
+</html>
