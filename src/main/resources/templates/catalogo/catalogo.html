@@ -48,11 +48,16 @@
                     </a>
 
                     <div style="margin-top: 1rem;">
-                        <form th:if="${authentication != null and authentication.isAuthenticated()}"
-                              th:action="@{/carrito/agregar/{id}(id=${producto.id})}" method="post">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                            <button type="submit" class="add-to-cart-btn">Añadir al Carrito</button>
-                        </form>
+                        <a th:href="@{/catalogo/{id}(id=${producto.id})}" class="product-link">
+                            <div class="product-card-content">
+                                <h3 class="product-card-title" th:text="${producto.nombre}"></h3>
+                                <div class="product-card-details">
+                                    <p class="product-price" th:text="|$${#numbers.formatDecimal(producto.precio, 1, 2)}|"></p>
+                                    <span class="product-tag" th:text="${producto.categoria.nombre}"></span>
+                                </div>
+                                <button type="submit" class="add-to-cart-btn">Ver Detalles</button>
+                            </div>
+                        </a>
 
                         <button th:if="${authentication == null or !authentication.isAuthenticated()}"
                                 type="button" class="add-to-cart-btn" onclick="openLoginModal()">
