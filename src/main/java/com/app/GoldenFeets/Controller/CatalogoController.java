@@ -45,6 +45,6 @@ public class CatalogoController {
         model.addAttribute("precioMin", precioMin);
         model.addAttribute("precioMax", precioMax);
 
-        return "catalogo"; // Asumiendo que tu vista se llama catalogo.html
+        return "catalogo/catalogo"; // Asumiendo que tu vista se llama catalogo.html
     }
 }

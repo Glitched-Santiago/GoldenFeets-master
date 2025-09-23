@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-cliente}">
+<head>
+    <title th:text="${producto.nombre}"></title>
+    <style>
+        .product-detail-page { padding: 4rem 0; }
+        .product-detail-grid { display: grid; grid-template-columns: 1fr; gap: 3rem; }
+        @media (min-width: 768px) { .product-detail-grid { grid-template-columns: 1fr 1fr; } }
+        .product-image-gallery img { width: 100%; border-radius: var(--radius); border: 1px solid var(--border); }
+        .product-info .product-title { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
+        .product-info .product-price { font-size: 2rem; color: var(--primary); margin-bottom: 1.5rem; }
+        .product-info .product-stock { font-size: 0.9rem; color: var(--muted-foreground); margin-bottom: 1.5rem; }
+        .product-info .product-description { line-height: 1.6; color: var(--foreground); }
+        .add-to-cart-form { display: flex; gap: 1rem; margin-top: 2rem; }
+        .quantity-input { width: 80px; text-align: center; background-color: var(--input); border: 1px solid var(--border); border-radius: var(--radius); color: var(--foreground); padding: 0.75rem; }
+    </style>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="container product-detail-page">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <div class="product-detail-grid" th:object="${producto}">
+            <div class="product-image-gallery">
+                <img th:src="*{imagenUrl}" th:alt="*{nombre}">
+            </div>
+
+            <div class="product-info">
+                <h1 class="product-title" th:text="*{nombre}"></h1>
+                <p class="product-price" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
+                <p class="product-stock" th:if="*{stock > 0}" th:text="*{stock} + ' unidades disponibles'"></p>
+                <p class="product-stock" th:if="*{stock <= 0}" style="color: var(--destructive);">Agotado</p>
+                <p class="product-description" th:text="*{descripcion}"></p>
+
+                <form th:action="@{/carrito/agregar/{id}(id=*{id})}" method="post" class="add-to-cart-form" th:if="*{stock > 0}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                    <input type="number" name="cantidad" value="1" min="1" th:max="*{stock}" class="quantity-input" required>
+
+                    <button type="submit" class="cta-button" style="flex-grow: 1;">Añadir al Carrito</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

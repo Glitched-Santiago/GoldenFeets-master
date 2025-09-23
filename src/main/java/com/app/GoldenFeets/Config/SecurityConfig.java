@@ -17,7 +17,6 @@ public class SecurityConfig {
 
     private final UsuarioService usuarioService;
     private final PasswordEncoder passwordEncoder;
-    // HEMOS ELIMINADO la inyección de 'customAuthenticationSuccessHandler' de aquí.
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -31,13 +30,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        // 1. Rutas de Administrador (requieren rol ADMIN)
                         .requestMatchers("/admin/**", "/inventario/**", "/usuarios/**").hasRole("ADMIN")
 
-                        // --- CORRECCIÓN AQUÍ ---
-                        // Cambiamos "/checkout" por "/pedidos/**"
-                        .requestMatchers("/carrito/**", "/pedidos/**", "/compras/**").hasRole("CLIENTE")
+                        // 2. Rutas de Cliente (requieren rol CLIENTE - solo el carrito y la compra)
+                        .requestMatchers("/carrito/**", "/pedidos/**").hasRole("CLIENTE")
 
+                        // 3. Rutas Públicas (accesibles para todos, incluyendo el catálogo y sus detalles)
                         .requestMatchers("/", "/catalogo/**", "/login", "/registro", "/Global.css", "/js/**", "/images/**").permitAll()
+
+                        // 4. El resto de peticiones (cualquier otra URL no definida) requieren autenticación
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -49,6 +51,7 @@ public class SecurityConfig {
                             if (isAdmin) {
                                 response.sendRedirect("/admin/dashboard");
                             } else {
+                                // Redirige al catálogo después de que un cliente inicie sesión
                                 response.sendRedirect("/catalogo");
                             }
                         })

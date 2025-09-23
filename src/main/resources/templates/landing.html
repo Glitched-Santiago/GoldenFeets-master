@@ -7,6 +7,7 @@
 </head>
 <body>
 <section layout:fragment="content">
+
     <div class="hero-section">
         <div class="hero-overlay"></div>
         <div class="hero-content">
@@ -19,13 +20,13 @@
     <div class="featured-section">
         <h2 class="section-title">Nuestros Favoritos</h2>
         <div class="featured-grid" th:if="${not #lists.isEmpty(productosDestacados)}">
-            <div class="featured-card" th:each="producto : ${productosDestacados}">
-                <img th:src="${producto.imagenUrl}" alt="Imagen del producto" class="featured-card-img">
-                <h3 class="featured-card-title" th:text="${producto.nombre}">Nombre del Producto</h3>
-                <p class="featured-card-price" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
-                <a th:href="@{/catalogo/{id}(id=${producto.id})}" class="featured-card-button">Ver Detalles</a>
-            </div>
+            <a th:each="producto : ${productosDestacados}" th:href="@{/catalogo/{id}(id=${producto.id})}" class="featured-card product-link">
+                <img th:src="${producto.imagenUrl}" alt="Imagen del producto">
+                <h3 th:text="${producto.nombre}"></h3>
+                <p class="product-price" style="margin: 0 1.5rem 1.5rem;" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
+            </a>
         </div>
+
         <div th:if="${#lists.isEmpty(productosDestacados)}" style="text-align: center; color: var(--muted-foreground); padding: 3rem;">
             <p>No hay productos destacados disponibles en este momento.</p>
         </div>

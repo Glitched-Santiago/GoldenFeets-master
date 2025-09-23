@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-cliente}">
+<head>
+    <title>Error del Servidor</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <div style="text-align: center; padding: 6rem 0;">
+        <h1 class="page-title" style="font-size: 5rem; color: var(--destructive);">500</h1>
+        <p style="font-size: 1.5rem; margin-top: 1rem;">Error Interno del Servidor</p>
+        <p style="color: var(--muted-foreground);">Nuestro equipo ha sido notificado. Por favor, inténtalo de nuevo más tarde.</p>
+        <a th:href="@{/}" class="cta-button" style="margin-top: 2rem;">Volver al Inicio</a>
+    </div>
+</section>
+</body>
+</html>

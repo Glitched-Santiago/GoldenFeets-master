@@ -1,111 +1,48 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title layout:title-pattern="$CONTENT_TITLE | $LAYOUT_TITLE">GoldenFeets</title>
+    <title layout:title-pattern="$CONTENT_TITLE | GoldenFeets">GoldenFeets</title>
     <link rel="stylesheet" th:href="@{/Global.css}">
 </head>
 <body>
 
-<!-- ================== NUEVO HEADER MINIMALISTA ADAPTADO ================== -->
 <header class="site-header">
     <div class="site-header-container">
-        <!-- Izquierda: Logo -->
-        <a th:href="@{/}" class="site-header-logo">
-            GOLDENFEETS
-        </a>
-
-        <!-- Centro: Navegación Principal -->
-        <nav class="site-header-nav">
-            <a th:href="@{/}">Inicio</a>
-            <a th:href="@{/catalogo}">Catálogo</a>
+        <a th:href="@{/}" class="site-header-logo">GOLDENFEETS</a>
+        <nav>
+            <ul class="site-header-nav">
+                <li><a th:href="@{/}">Inicio</a></li>
+                <li><a th:href="@{/catalogo}">Catálogo</a></li>
+            </ul>
         </nav>
-
-        <!-- Derecha: Acciones y Autenticación -->
         <div class="site-header-actions">
-            <!-- Icono de Carrito -->
-            <a th:href="@{/carrito}" class="header-action-link" aria-label="Ver carrito">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 1.5rem; height: 1.5rem;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.658-.463 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z" />
-                </svg>
+            <a th:href="@{/carrito}" class="header-action-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                <span>Carrito</span>
             </a>
-
-            <!-- Lógica de Iniciar/Cerrar Sesión -->
-            <div class="header-auth">
-                <th:block th:if="${authentication == null or !authentication.isAuthenticated()}">
-                    <a th:href="@{/login}" class="header-auth-btn">Iniciar Sesión</a>
-                </th:block>
-                <th:block th:if="${authentication != null and authentication.isAuthenticated()}">
-                    <form th:action="@{/logout}" method="post">
-                        <button type="submit" class="header-auth-btn">Cerrar Sesión</button>
-                    </form>
-                </th:block>
+            <span style="width: 1px; height: 24px; background-color: var(--border);"></span>
+            <div sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="header-auth-btn">Cerrar Sesión</button>
+                </form>
+            </div>
+            <div sec:authorize="isAnonymous()">
+                <a th:href="@{/login}" class="header-auth-btn">Iniciar Sesión</a>
             </div>
         </div>
     </div>
 </header>
 
-<!-- ================== CONTENIDO PRINCIPAL ================== -->
 <main layout:fragment="content">
-    <!-- El contenido de las otras páginas (landing, catalogo, etc.) se insertará aquí. -->
 </main>
 
-<!-- ================== FOOTER ================== -->
 <footer class="footer">
     <p>&copy; 2025 GoldenFeets. Todos los derechos reservados.</p>
 </footer>
 
-<!-- ================== ELEMENTOS GLOBALES (MODAL Y TOAST) ================== -->
-<!-- Estos elementos se colocan al final del body para un funcionamiento correcto -->
-
-<!-- MODAL DE INICIO DE SESIÓN -->
-<div id="loginModal" class="modal-overlay">
-    <div class="modal-content">
-        <h2 class="modal-title">¡Un momento!</h2>
-        <p class="modal-description">Necesitas iniciar sesión para poder añadir productos a tu carrito.</p>
-        <div class="modal-actions">
-            <button type="button" class="modal-btn secondary" onclick="closeLoginModal()">Cancelar</button>
-            <a th:href="@{/login}" class="modal-btn primary">Iniciar Sesión</a>
-        </div>
-    </div>
-</div>
-
-<!-- NOTIFICACIÓN TOAST -->
-<div id="notificationToast" class="notification-toast">
-    <div class="toast-icon success">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-    </div>
-    <span id="toastMessage" class="toast-message"></span>
-</div>
-
-<!-- SCRIPT GLOBAL PARA MODAL Y TOAST -->
-<script>
-    const modal = document.getElementById('loginModal');
-    const toast = document.getElementById('notificationToast');
-    const toastMessage = document.getElementById('toastMessage');
-
-    function openLoginModal() {
-        if (modal) modal.classList.add('is-visible');
-    }
-    function closeLoginModal() {
-        if (modal) modal.classList.remove('is-visible');
-    }
-    function showToast(message) {
-        if (toast && toastMessage) {
-            toastMessage.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000); // El toast desaparece después de 3 segundos
-        }
-    }
-
-    if (modal) {
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) closeLoginModal();
-        });
-    }
-</script>
 </body>
 </html>

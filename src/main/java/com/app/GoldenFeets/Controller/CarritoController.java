@@ -28,19 +28,28 @@ public class CarritoController {
     }
 
     @PostMapping("/agregar/{productoId}")
-    public String agregarAlCarrito(@PathVariable Long productoId, RedirectAttributes redirectAttributes) {
+    public String agregarAlCarrito(
+            @PathVariable Long productoId,
+            // 1. Aceptamos la cantidad desde el formulario
+            @RequestParam(name = "cantidad", defaultValue = "1") int cantidad,
+            RedirectAttributes redirectAttributes) {
+
         Optional<Producto> productoOpt = productoService.obtenerPorId(productoId);
         if (productoOpt.isPresent()) {
-            if (productoOpt.get().getStock() > 0) {
-                carritoService.agregarProducto(productoOpt.get(), 1);
+            Producto producto = productoOpt.get();
+            // 2. Verificamos que haya suficiente stock para la cantidad solicitada
+            if (producto.getStock() >= cantidad) {
+                // 3. Pasamos la cantidad al servicio
+                carritoService.agregarProducto(producto, cantidad);
                 redirectAttributes.addFlashAttribute("successMessage", "¡Producto añadido al carrito!");
             } else {
-                redirectAttributes.addFlashAttribute("errorMessage", "Producto sin stock.");
+                redirectAttributes.addFlashAttribute("errorMessage", "No hay stock suficiente para la cantidad solicitada.");
             }
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Producto no encontrado.");
         }
-        return "redirect:/catalogo";
+        // Redirige de vuelta a la página del producto desde donde se añadió
+        return "redirect:/catalogo/" + productoId;
     }
 
     @PostMapping("/eliminar/{id}")

@@ -52,7 +52,7 @@ public class EmailService {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            helper.setFrom("tu-correo@gmail.com");
+            helper.setFrom("santiagosossa0629@gmail.com");
             helper.setTo(destinatario);
             helper.setSubject(asunto);
             helper.setText(contenidoHtml, true); // true indica que el contenido es HTML
