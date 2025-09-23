@@ -23,7 +23,7 @@
                     </div>
                     <div class="cart-item-details">
                         <h2 class="cart-item-title" th:text="${item.nombre}"></h2>
-                        <p class="cart-item-price" th:text="|€${#numbers.formatDecimal(item.precio, 1, 2)} cada uno|"></p>
+                        <p class="cart-item-price" th:text="|$${#numbers.formatDecimal(item.precio, 1, 2)} cada uno|"></p>
                         <div class="cart-item-actions">
                             <form th:action="@{/carrito/eliminar/{id}(id=${item.productoId})}" method="post">
                                 <button type="submit" style="color:var(--destructive); background:none; border:none; cursor:pointer; text-decoration:underline;">Eliminar</button>
@@ -45,7 +45,7 @@
                         </form>
                     </div>
                     <div style="text-align: right; min-width: 120px;">
-                        <p class="cart-item-price" style="font-weight: 600;" th:text="|Subtotal: €${#numbers.formatDecimal(item.subtotal, 1, 2)}|"></p>
+                        <p class="cart-item-price" style="font-weight: 600;" th:text="|Subtotal:$${#numbers.formatDecimal(item.subtotal, 1, 2)}|"></p>
                     </div>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                 <h2 class="summary-title">Resumen del Pedido</h2>
                 <div class="summary-row">
                     <span>Subtotal</span>
-                    <span th:text="|€${#numbers.formatDecimal(total, 1, 2)}|"></span>
+                    <span th:text="|$${#numbers.formatDecimal(total, 1, 2)}|"></span>
                 </div>
                 <div class="summary-row">
                     <span>Envío</span>
@@ -63,7 +63,7 @@
                 </div>
                 <div class="summary-row summary-total">
                     <span>Total</span>
-                    <span th:text="|€${#numbers.formatDecimal(total, 1, 2)}|"></span>
+                    <span th:text="|$${#numbers.formatDecimal(total, 1, 2)}|"></span>
                 </div>
 
                 <!-- CORRECCIÓN: Cambiamos el <form> por un enlace <a> -->

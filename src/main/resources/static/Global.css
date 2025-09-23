@@ -956,3 +956,220 @@ header {
     font-weight: 600;
     margin-left: auto; /* Empuja el precio a la derecha */
 }
+/*
+================================================================================
+ 11. ESTILOS PARA HISTORIAL DE COMPRAS Y CONFIRMACIÓN
+================================================================================
+*/
+
+/* --- Página de Historial de Compras --- */
+.orders-page {
+    padding: 4rem 0;
+    min-height: 70vh;
+}
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.order-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: var(--muted);
+    border-bottom: 1px solid var(--border);
+}
+
+.order-id {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+}
+.order-id b {
+    color: var(--foreground);
+}
+.order-date {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    margin-left: 1rem;
+}
+.order-status {
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: var(--primary);
+    background-color: oklch(from var(--primary) l c h / 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+}
+
+.order-body {
+    padding: 1rem 1.5rem;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+.order-item:not(:last-child) {
+    border-bottom: 1px dashed var(--border);
+}
+
+.order-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: var(--muted);
+    border-top: 1px solid var(--border);
+    font-weight: 700;
+}
+.order-total {
+    font-size: 1.25rem;
+    color: var(--accent);
+}
+
+/* --- Página de Confirmación --- */
+.confirmation-page {
+    text-align: center;
+    padding: 6rem 0;
+    min-height: 60vh;
+}
+.confirmation-subtitle {
+    font-size: 1.25rem;
+    margin-top: 1rem;
+    color: var(--muted-foreground);
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.confirmation-text {
+    margin-top: 0.5rem;
+}
+.confirmation-actions {
+    margin-top: 2.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+.secondary-btn {
+    display: inline-block;
+    background-color: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    padding: 0.75rem 1.5rem;
+    text-align: center;
+    font-weight: 600;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.secondary-btn:hover {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    text-decoration: none;
+}
+/* ... Tus otras variables y estilos ... */
+
+/*
+================================================================================
+ 4. SECCIONES DESTACADAS Y TARJETAS DE PRODUCTO (HOME, CATÁLOGO)
+================================================================================
+*/
+
+.featured-section {
+    padding: 4rem 0;
+    text-align: center;
+    background-color: var(--background); /* Asegúrate de usar una variable de fondo */
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 3rem;
+    color: var(--foreground); /* Color del título */
+}
+
+.featured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 3 columnas en desktop, se ajusta a pantallas más pequeñas */
+    gap: 2rem;
+    max-width: 1200px; /* Ancho máximo para la cuadrícula */
+    margin: 0 auto; /* Centrar la cuadrícula */
+}
+
+.featured-card {
+    background-color: var(--card); /* Fondo para la tarjeta */
+    border: 1px solid var(--border); /* Borde sutil */
+    border-radius: var(--radius); /* Bordes redondeados */
+    overflow: hidden; /* Asegura que la imagen no se desborde */
+    text-align: left;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    display: flex; /* Para organizar el contenido verticalmente */
+    flex-direction: column;
+}
+
+.featured-card:hover {
+    transform: translateY(-5px); /* Efecto al pasar el ratón */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Sombra al pasar el ratón */
+}
+
+.featured-card-img {
+    width: 100%;
+    height: 250px; /* Altura fija para las imágenes */
+    object-fit: cover; /* Ajusta la imagen sin distorsionarla */
+    border-bottom: 1px solid var(--border);
+}
+
+.featured-card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 1.5rem 1.5rem 0.5rem 1.5rem;
+}
+
+.featured-card-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent); /* Color para el precio */
+    margin: 0 1.5rem 1rem 1.5rem;
+}
+
+.featured-card-description {
+    font-size: 0.9rem;
+    color: var(--muted-foreground);
+    margin: 0 1.5rem 1.5rem 1.5rem;
+    flex-grow: 1; /* Para que la descripción ocupe el espacio restante */
+}
+
+.featured-card-button {
+    display: block; /* Ocupa todo el ancho */
+    width: calc(100% - 3rem); /* Ancho completo menos padding */
+    margin: 0 1.5rem 1.5rem 1.5rem; /* Margen para centrar y separar */
+    padding: 0.75rem 1rem;
+    background-color: var(--primary); /* Tu color principal (neón) */
+    color: var(--primary-foreground); /* Color del texto del botón */
+    text-align: center;
+    text-decoration: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.featured-card-button:hover {
+    background-color: oklch(from var(--primary) l c h / 0.8); /* Un poco más oscuro al pasar el ratón */
+    text-decoration: none;
+}

@@ -224,3 +224,73 @@ body.admin-body {
     color: var(--admin-text-secondary);
     line-height: 1.5;
 }
+/* --- COMPONENTES ADICIONALES PARA LA TABLA DE PEDIDOS --- */
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-completed {
+    background-color: rgba(59, 130, 246, 0.1); /* azul */
+    color: var(--admin-accent-blue);
+}
+
+.status-pending {
+    background-color: rgba(251, 191, 36, 0.1); /* amarillo */
+    color: var(--admin-accent-yellow);
+}
+
+.product-list-in-table {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--admin-text-secondary);
+}
+
+.product-list-in-table li:not(:last-child) {
+    margin-bottom: 0.5rem;
+}
+/* --- Estilos para el Layout del Header --- */
+
+.admin-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: hidden;
+}
+
+.admin-main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background-color: var(--admin-sidebar-bg);
+    border-bottom: 1px solid var(--admin-border);
+    flex-shrink: 0; /* Evita que el header se encoja */
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.admin-main-content {
+    padding: 2rem;
+    overflow-y: auto; /* Permite scroll solo en el área de contenido */
+}
+
+.logout-form button.btn-secondary {
+    background-color: var(--admin-border);
+    color: var(--admin-text-secondary);
+    border: none;
+}
+.logout-form button.btn-secondary:hover {
+    background-color: var(--admin-accent-red);
+    color: var(--admin-text-primary);
+}

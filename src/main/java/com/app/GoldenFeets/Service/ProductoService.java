@@ -3,30 +3,29 @@ package com.app.GoldenFeets.Service;
 import com.app.GoldenFeets.Entity.Producto;
 import com.app.GoldenFeets.Repository.ProductoRepository;
 import com.app.GoldenFeets.spec.ProductoSpecification;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors; // Necesitarás este import
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ProductoService {
 
-    @Autowired
-    private ProductoRepository productoRepository;
+    private final ProductoRepository productoRepository;
     private final ProductoSpecification productoSpecification;
 
-    public ProductoService(ProductoSpecification productoSpecification) {
-        this.productoSpecification = productoSpecification;
-    }
-
-    public List<Producto> obtenerTodos() {
+    public List<Producto> findAll() {
         return productoRepository.findAll();
     }
 
-    // NUEVO MÉTODO
+    // --- MÉTODO AÑADIDO ---
+    /**
+     * Devuelve una lista de productos que tienen stock disponible (stock > 0).
+     */
     public List<Producto> obtenerProductosDisponibles() {
         return productoRepository.findAll()
                 .stream()
@@ -46,11 +45,12 @@ public class ProductoService {
         productoRepository.deleteById(id);
     }
 
+    public List<Producto> encontrarProductosAleatorios(int limite) {
+        return productoRepository.findRandomProductos(limite);
+    }
 
-    // Dentro de la clase ProductoService
     public List<Producto> search(String keyword, Long categoriaId, Double precioMin, Double precioMax) {
         Specification<Producto> spec = productoSpecification.findByCriteria(keyword, categoriaId, precioMin, precioMax);
         return productoRepository.findAll(spec);
     }
-
 }

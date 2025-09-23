@@ -7,40 +7,29 @@
 </head>
 <body>
 <section layout:fragment="content">
-
     <div class="hero-section">
         <div class="hero-overlay"></div>
         <div class="hero-content">
             <h1 class="hero-title">Estilo y Confort en Cada Paso</h1>
             <p class="hero-subtitle">Descubre nuestra colección exclusiva de calzado premium.</p>
-            <a th:href="@{/catalogo}" class="cta-button">
-                IR AL CATÁLOGO
-            </a>
+            <a th:href="@{/catalogo}" class="cta-button">IR AL CATÁLOGO</a>
         </div>
     </div>
 
     <div class="featured-section">
         <h2 class="section-title">Nuestros Favoritos</h2>
-        <div class="featured-grid">
-            <div class="featured-card">
-                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ab?q=80&w=2070&auto=format&fit=crop" alt="Zapato Deportivo">
-                <h3>Zapatillas Runner Pro</h3>
-                <p>Ideales para corredores que buscan rendimiento y estilo.</p>
-            </div>
-            <div class="featured-card">
-                <img src="https://images.unsplash.com/photo-1560343090-f0409e92791a?q=80&w=1964&auto=format&fit=crop" alt="Zapato Formal">
-                <h3>Mocasines de Cuero</h3>
-                <p>La elegancia y la comodidad que necesitas para tu día a día.</p>
-            </div>
-            <div class="featured-card">
-                <img src="https://images.unsplash.com/photo-1605348532760-6753d2c43329?q=80&w=1887&auto=format&fit=crop" alt="Bota Casual">
-                <h3>Botas Urban Explorer</h3>
-                <p>Robustas y versátiles, listas para cualquier aventura urbana.</p>
+        <div class="featured-grid" th:if="${not #lists.isEmpty(productosDestacados)}">
+            <div class="featured-card" th:each="producto : ${productosDestacados}">
+                <img th:src="${producto.imagenUrl}" alt="Imagen del producto" class="featured-card-img">
+                <h3 class="featured-card-title" th:text="${producto.nombre}">Nombre del Producto</h3>
+                <p class="featured-card-price" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
+                <a th:href="@{/catalogo/{id}(id=${producto.id})}" class="featured-card-button">Ver Detalles</a>
             </div>
         </div>
+        <div th:if="${#lists.isEmpty(productosDestacados)}" style="text-align: center; color: var(--muted-foreground); padding: 3rem;">
+            <p>No hay productos destacados disponibles en este momento.</p>
+        </div>
     </div>
-
 </section>
-
 </body>
 </html>

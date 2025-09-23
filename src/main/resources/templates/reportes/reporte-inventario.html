@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reporte de Inventario</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        h1 { text-align: center; color: #333; }
+        .report-date { text-align: right; font-size: 10px; color: #777;}
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        thead { background-color: #f2f2f2; color: #333; }
+    </style>
+</head>
+<body>
+<h1>Reporte de Inventario</h1>
+<p class="report-date">Generado el: <span th:text="${#temporals.format(fechaReporte, 'dd/MM/yyyy')}"></span></p>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Producto</th>
+        <th>Categoría</th>
+        <th>Precio</th>
+        <th>Stock</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="producto : ${productos}">
+        <td th:text="${producto.id}"></td>
+        <td th:text="${producto.nombre}"></td>
+        <td th:text="${producto.categoria.nombre}"></td>
+        <td th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></td>
+        <td th:text="${producto.stock}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

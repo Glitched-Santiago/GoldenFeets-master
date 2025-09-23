@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-admin}"> <head>
+    <title>Historial de Compras</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <<div class="admin-header">
+    <h1 class="admin-title">Historial General de Compras</h1>
+
+    <a th:href="@{/admin/pedidos/exportar-pdf(clienteNombre=${clienteNombre}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
+       class="btn btn-secondary">
+        Exportar a PDF
+    </a>
+</div>
+    <form th:action="@{/admin/pedidos}" method="get" class="search-form">
+        <div class="form-group">
+            <label for="clienteNombre" class="admin-form .form-label">Buscar por Cliente</label>
+            <input type="text" id="clienteNombre" name="clienteNombre" class="search-input" th:value="${clienteNombre}" placeholder="Nombre o apellido...">
+        </div>
+        <div class="form-group">
+            <label for="fechaDesde" class="admin-form .form-label">Desde</label>
+            <input type="date" id="fechaDesde" name="fechaDesde" class="search-input" th:value="${fechaDesde}">
+        </div>
+        <div class="form-group">
+            <label for="fechaHasta" class="admin-form .form-label">Hasta</label>
+            <input type="date" id="fechaHasta" name="fechaHasta" class="search-input" th:value="${fechaHasta}">
+        </div>
+        <div class="search-form-actions">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+            <a th:href="@{/admin/pedidos}" class="btn btn-secondary">Limpiar</a>
+        </div>
+    </form>
+
+    <div class="admin-card">
+        <div class="table-responsive" th:if="${not #lists.isEmpty(pedidos)}">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>ID Pedido</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Email</th>
+                    <th>Productos</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="pedido : ${pedidos}">
+                    <td th:text="${pedido.id}">1</td>
+                    <td th:text="${#temporals.format(pedido.fechaCreacion, 'dd/MM/yyyy')}"></td>
+                    <td th:text="${pedido.cliente.nombres + ' ' + pedido.cliente.apellidos}"></td>
+                    <td th:text="${pedido.cliente.email}"></td>
+                    <td>
+                        <ul class="product-list-in-table">
+                            <li th:each="detalle : ${pedido.detalles}">
+                                <span th:text="${detalle.producto.nombre}"></span> - <strong th:text="|x${detalle.cantidad}|"></strong>
+                            </li>
+                        </ul>
+                    </td>
+                    <td th:text="|$${#numbers.formatDecimal(pedido.total, 1, 2)}|"></td>
+                    <td>
+                            <span class="status-badge"
+                                  th:classappend="${pedido.estado.toString() == 'COMPLETADO' ? 'status-completed' : 'status-pending'}"
+                                  th:text="${pedido.estado}"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:if="${#lists.isEmpty(pedidos)}">
+            <p>No se encontraron pedidos con los criterios seleccionados.</p>
+        </div>
+    </div>
+</section>
+</body>
+</html>

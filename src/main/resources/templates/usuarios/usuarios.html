@@ -3,16 +3,28 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{base/base-admin}">
 <head>
-    <title>Gestión de Clientes</title>
+    <title>Gestión de Usuarios</title>
 </head>
 <body>
 <section layout:fragment="content">
     <div class="admin-header">
-        <h1 class="admin-title">Clientes</h1>
-        <a th:href="@{/admin/usuarios/nuevo}" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-            Crear Nuevo Cliente
-        </a>
+        <h1 class="admin-title">Gestión de Usuarios</h1>
+        <div class="header-actions" style="display: flex; gap: 1rem;">
+            <form th:action="@{/admin/usuarios/enviar-promocion}" method="post" style="margin: 0;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" class="btn btn-special">
+                    📧 Enviar Correo a Clientes
+                </button>
+            </form>
+
+            <a th:href="@{/admin/usuarios/exportar-pdf(id=${idParam}, nombres=${nombresParam}, apellidos=${apellidosParam}, numeroDocumento=${numeroDocumentoParam}, email=${emailParam}, rol=${rolParam})}"
+               class="btn btn-secondary">
+                Exportar a PDF
+            </a>
+            <a th:href="@{/admin/usuarios/nuevo}" class="btn btn-primary">
+                Crear Nuevo Usuario
+            </a>
+        </div>
     </div>
 
     <div class="admin-card">

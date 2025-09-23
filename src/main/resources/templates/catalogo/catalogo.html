@@ -10,7 +10,6 @@
     <main class="container" style="padding-top: 3rem; padding-bottom: 3rem;">
         <div class="page-header">
             <h1 class="page-title">Nuestro Catálogo</h1>
-            <a href="#" class="view-all-link">Ver todo &rarr;</a>
         </div>
 
         <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
@@ -22,7 +21,7 @@
                 <div class="product-card-content">
                     <h3 th:text="${producto.nombre}" class="product-card-title"></h3>
                     <div class="product-card-details">
-                        <p class="product-price" th:text="|€${#numbers.formatDecimal(producto.precio, 1, 2)}|"></p>
+                        <p class="product-price" th:text="|$${#numbers.formatDecimal(producto.precio, 1, 2)}|"></p>
                         <span class="product-tag" th:text="${producto.talla}"></span>
                     </div>
 

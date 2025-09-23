@@ -11,57 +11,56 @@
         <h1 class="page-title">Finalizar Compra</h1>
 
         <div class="checkout-grid">
-            <!-- COLUMNA IZQUIERDA: FORMULARIO -->
             <form th:action="@{/pedidos/checkout}" method="post" class="checkout-form">
 
-                <!-- Sección de Envío -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
                 <div class="form-section">
                     <h2 class="section-title">Información de Envío</h2>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="nombres" class="form-label">Nombres</label>
-                            <input type="text" id="nombres" name="nombres" class="form-control" required>
+                            <label for="nombres" class="label">Nombres</label>
+                            <input type="text" id="nombres" name="nombres" class="input-field" required>
                         </div>
                         <div class="form-group">
-                            <label for="apellidos" class="form-label">Apellidos</label>
-                            <input type="text" id="apellidos" name="apellidos" class="form-control" required>
+                            <label for="apellidos" class="label">Apellidos</label>
+                            <input type="text" id="apellidos" name="apellidos" class="input-field" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="direccion" class="form-label">Dirección</label>
-                        <input type="text" id="direccion" name="direccion" class="form-control" placeholder="Calle, número, apartamento" required>
+                        <label for="direccion" class="label">Dirección</label>
+                        <input type="text" id="direccion" name="direccion" class="input-field" placeholder="Calle, número, apartamento" required>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="ciudad" class="form-label">Ciudad</label>
-                            <input type="text" id="ciudad" name="ciudad" class="form-control" required>
+                            <label for="ciudad" class="label">Ciudad</label>
+                            <input type="text" id="ciudad" name="ciudad" class="input-field" required>
                         </div>
                         <div class="form-group">
-                            <label for="codigoPostal" class="form-label">Código Postal</label>
-                            <input type="text" id="codigoPostal" name="codigoPostal" class="form-control" required>
+                            <label for="codigoPostal" class="label">Código Postal</label>
+                            <input type="text" id="codigoPostal" name="codigoPostal" class="input-field" required>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sección de Pago -->
                 <div class="form-section">
                     <h2 class="section-title">Detalles del Pago</h2>
                     <div class="form-group">
-                        <label for="nombreTarjeta" class="form-label">Nombre en la Tarjeta</label>
-                        <input type="text" id="nombreTarjeta" name="nombreTarjeta" class="form-control" required>
+                        <label for="nombreTarjeta" class="label">Nombre en la Tarjeta</label>
+                        <input type="text" id="nombreTarjeta" name="nombreTarjeta" class="input-field" required>
                     </div>
                     <div class="form-group">
-                        <label for="numeroTarjeta" class="form-label">Número de la Tarjeta</label>
-                        <input type="text" id="numeroTarjeta" name="numeroTarjeta" class="form-control" placeholder="0000 0000 0000 0000" required>
+                        <label for="numeroTarjeta" class="label">Número de la Tarjeta</label>
+                        <input type="text" id="numeroTarjeta" name="numeroTarjeta" class="input-field" placeholder="0000 0000 0000 0000" required>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="fechaVencimiento" class="form-label">Fecha de Vencimiento</label>
-                            <input type="text" id="fechaVencimiento" name="fechaVencimiento" class="form-control" placeholder="MM/AA" required>
+                            <label for="fechaVencimiento" class="label">Fecha de Vencimiento</label>
+                            <input type="text" id="fechaVencimiento" name="fechaVencimiento" class="input-field" placeholder="MM/AA" required>
                         </div>
                         <div class="form-group">
-                            <label for="cvc" class="form-label">CVC</label>
-                            <input type="text" id="cvc" name="cvc" class="form-control" placeholder="123" required>
+                            <label for="cvc" class="label">CVC</label>
+                            <input type="text" id="cvc" name="cvc" class="input-field" placeholder="123" required>
                         </div>
                     </div>
                 </div>
@@ -69,10 +68,8 @@
                 <button type="submit" class="checkout-btn">Pagar Ahora</button>
             </form>
 
-            <!-- COLUMNA DERECHA: RESUMEN DEL PEDIDO -->
             <div class="order-summary">
                 <h2 class="summary-title">Resumen de tu Pedido</h2>
-                <!-- Lista de productos -->
                 <div th:each="item : ${items}" class="summary-item">
                     <div class="summary-item-image">
                         <img th:src="${item.imagenUrl}" alt="Imagen del producto">
@@ -81,12 +78,11 @@
                         <span class="summary-item-title" th:text="${item.nombre}"></span><br>
                         <span style="font-size: 0.8rem; color: var(--muted-foreground);" th:text="|Cantidad: ${item.cantidad}|"></span>
                     </div>
-                    <span class="summary-item-price" th:text="|€${#numbers.formatDecimal(item.subtotal, 1, 2)}|"></span>
+                    <span class="summary-item-price" th:text="|$${#numbers.formatDecimal(item.subtotal, 1, 2)}|"></span>
                 </div>
-                <!-- Total -->
                 <div class="summary-row summary-total" style="margin-top: 1.5rem;">
                     <span>Total</span>
-                    <span th:text="|€${#numbers.formatDecimal(total, 1, 2)}|"></span>
+                    <span th:text="|$${#numbers.formatDecimal(total, 1, 2)}|"></span>
                 </div>
             </div>
         </div>

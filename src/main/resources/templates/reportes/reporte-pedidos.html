@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reporte de Pedidos</title>
+    <style>
+        /* Estilos básicos para el reporte en PDF */
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .report-date {
+            text-align: right;
+            font-size: 10px;
+            color: #777;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        thead {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        .total-column {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<h1>Reporte General de Compras</h1>
+<p class="report-date">Generado el: <span th:text="${#temporals.format(fechaReporte, 'dd/MM/yyyy HH:mm')}"></span></p>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID Pedido</th>
+        <th>Fecha</th>
+        <th>Cliente</th>
+        <th>Email</th>
+        <th>Productos</th>
+        <th>Total</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="pedido : ${pedidos}">
+        <td th:text="${pedido.id}"></td>
+        <td th:text="${#temporals.format(pedido.fechaCreacion, 'dd/MM/yyyy')}"></td>
+        <td th:text="${pedido.cliente.nombres + ' ' + pedido.cliente.apellidos}"></td>
+        <td th:text="${pedido.cliente.email}"></td>
+        <td>
+            <div th:each="detalle : ${pedido.detalles}">
+                <span th:text="${detalle.producto.nombre} + ' (x' + ${detalle.cantidad} + ')'"></span><br/>
+            </div>
+        </td>
+        <td class="total-column" th:text="'$' + ${#numbers.formatDecimal(pedido.total, 1, 2)}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

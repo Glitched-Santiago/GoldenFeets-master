@@ -32,13 +32,16 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/**", "/inventario/**", "/usuarios/**").hasRole("ADMIN")
-                        .requestMatchers("/carrito/**", "/checkout", "/compras/**").hasRole("CLIENTE")
+
+                        // --- CORRECCIÓN AQUÍ ---
+                        // Cambiamos "/checkout" por "/pedidos/**"
+                        .requestMatchers("/carrito/**", "/pedidos/**", "/compras/**").hasRole("CLIENTE")
+
                         .requestMatchers("/", "/catalogo/**", "/login", "/registro", "/Global.css", "/js/**", "/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        // La lógica de redirección ya está aquí, no necesitamos el handler externo.
                         .successHandler((request, response, authentication) -> {
                             boolean isAdmin = authentication.getAuthorities().stream()
                                     .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));

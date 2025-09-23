@@ -2,7 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
     <meta charset="UTF-8">
-    <title layout:title-pattern="$CONTENT_TITLE | $LAYOUT_TITLE">Admin Dashboard</title>
+    <title layout:title-pattern="$CONTENT_TITLE | GoldenFeets Admin">Admin</title>
     <link rel="stylesheet" th:href="@{/admin.css}">
 </head>
 <body class="admin-body">
@@ -10,16 +10,27 @@
     <aside class="admin-sidebar">
         <a th:href="@{/admin/dashboard}" class="sidebar-logo">GOLDENFEETS</a>
         <ul class="sidebar-nav">
-            <li><a th:href="@{/admin/dashboard}" th:class="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
-            <li><a th:href="@{/admin/inventario}" th:class="${activePage == 'inventario' ? 'active' : ''}">Inventario</a></li>
-            <li><a href="#" th:class="${activePage == 'pedidos' ? 'active' : ''}">Pedidos</a></li>
-            <li><a th:href="@{/admin/usuarios}" th:class="${activePage == 'usuarios' ? 'active' : ''}">Usuarios</a></li>
-        </ul>
+            <li><a th:href="@{/admin/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+            <li><a th:href="@{/admin/inventario}" th:classappend="${activePage == 'inventario' ? 'active' : ''}">Inventario</a></li>
+            <li><a th:href="@{/admin/pedidos}" th:classappend="${activePage == 'pedidos' ? 'active' : ''}">Pedidos</a></li>
+            <li><a th:href="@{/admin/usuarios}" th:classappend="${activePage == 'usuarios' ? 'active' : ''}">Usuarios</a></li>
         </ul>
     </aside>
 
-    <main class="admin-main-content" layout:fragment="content">
-    </main>
+    <div class="admin-content-wrapper">
+
+        <header class="admin-main-header">
+            <h1 class="header-title" layout:fragment="header-title">Dashboard</h1>
+
+            <form th:action="@{/logout}" method="post" class="logout-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" class="btn btn-secondary">Cerrar Sesión</button>
+            </form>
+        </header>
+
+        <main class="admin-main-content" layout:fragment="content">
+        </main>
+    </div>
 </div>
 </body>
 </html>

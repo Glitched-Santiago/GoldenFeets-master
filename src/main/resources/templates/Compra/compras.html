@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-cliente}">
+<head>
+    <title>Mi Historial de Compras</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="container orders-page">
+        <h1 class="page-title">Mi Historial de Compras</h1>
+        <div th:if="${#lists.isEmpty(pedidos)}" style="text-align: center; padding: 3rem 0;">
+            <p>Aún no has realizado ninguna compra.</p>
+            <a th:href="@{/catalogo}" style="text-decoration: underline; color: var(--primary);">¡Ver catálogo de productos!</a>
+        </div>
+        <div class="orders-list" th:if="${not #lists.isEmpty(pedidos)}">
+            <div th:each="pedido : ${pedidos}" class="order-card">
+                <div class="order-header">
+                    <div>
+                        <span class="order-id">PEDIDO N° <b th:text="${pedido.id}"></b></span>
+                        <span class="order-date" th:text="|Realizado el: ${#temporals.format(pedido.fechaCreacion, 'dd/MM/yyyy HH:mm')}|"></span>
+                    </div>
+                    <div class="order-status" th:text="${pedido.estado}">COMPLETADO</div>
+                </div>
+                <div class="order-body">
+                    <div th:each="detalle : ${pedido.detalles}" class="order-item">
+                        <span th:text="|${detalle.producto.nombre} (x${detalle.cantidad})|"></span>
+                        <span th:text="|$${#numbers.formatDecimal(detalle.precioUnitario * detalle.cantidad, 1, 2)}|"></span>
+                    </div>
+                </div>
+                <div class="order-footer">
+                    <span>TOTAL DEL PEDIDO</span>
+                    <span class="order-total" th:text="|$${#numbers.formatDecimal(pedido.total, 1, 2)}|"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

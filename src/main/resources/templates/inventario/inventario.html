@@ -8,11 +8,16 @@
 <body>
 <section layout:fragment="content">
     <div class="admin-header">
-        <h1 class="admin-title">Inventario de Productos</h1>
-        <a th:href="@{/admin/inventario/nuevo}" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-            Añadir Producto
-        </a>
+        <h1 class="admin-title">Gestión de Inventario</h1>
+        <div>
+            <a th:href="@{/admin/inventario/exportar-pdf(keyword=${keywordParam}, categoriaId=${categoriaIdParam}, precioMin=${precioMinParam}, precioMax=${precioMaxParam})}"
+               class="btn btn-secondary">
+                Exportar a PDF
+            </a>z
+            <a th:href="@{/admin/inventario/nuevo}" class="btn btn-primary">
+                Añadir Producto
+            </a>
+        </div>
     </div>
 
     <div class="admin-card">
@@ -59,7 +64,7 @@
                 <td th:text="${producto.id}"></td>
                 <td th:text="${producto.nombre}"></td>
                 <td th:text="${producto.categoria?.nombre ?: 'Sin categoría'}"></td>
-                <td th:text="|€${#numbers.formatDecimal(producto.precio, 1, 2)}|"></td>
+                <td th:text="|$${#numbers.formatDecimal(producto.precio, 1, 2)}|"></td>
                 <td th:text="${producto.stock}"></td>
                 <td>
                     <div class="actions-cell">

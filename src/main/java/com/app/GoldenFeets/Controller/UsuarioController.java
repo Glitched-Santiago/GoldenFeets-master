@@ -3,14 +3,18 @@ package com.app.GoldenFeets.Controller;
 import com.app.GoldenFeets.Entity.Administrador;
 import com.app.GoldenFeets.Entity.Cliente;
 import com.app.GoldenFeets.Entity.Usuario;
+import com.app.GoldenFeets.Service.EmailService;
+import com.app.GoldenFeets.Service.PdfService;
 import com.app.GoldenFeets.Service.UsuarioService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
+import org.thymeleaf.context.Context;
 import java.time.LocalDate;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin/usuarios")
@@ -18,6 +22,40 @@ import java.time.LocalDate;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final EmailService emailService;
+    private final PdfService pdfService;
+
+
+
+    @GetMapping("/exportar-pdf")
+    public void exportarPdf(@RequestParam(required = false) String id,
+                            @RequestParam(required = false) String nombres,
+                            @RequestParam(required = false) String apellidos,
+                            @RequestParam(required = false) String numeroDocumento,
+                            @RequestParam(required = false) String email,
+                            @RequestParam(required = false) String rol,
+                            HttpServletResponse response) {
+
+        // 1. Buscamos los usuarios con los mismos filtros de la página
+        List<Usuario> usuarios = usuarioService.search(id, nombres, apellidos, numeroDocumento, email, rol);
+
+        // 2. Preparamos el contexto para la plantilla Thymeleaf
+        Context context = new Context();
+        context.setVariable("usuarios", usuarios);
+        context.setVariable("fechaReporte", LocalDate.now());
+
+        // 3. Configuramos la respuesta HTTP para que sea un PDF
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"reporte_usuarios.pdf\"");
+
+        // 4. Generamos y enviamos el PDF
+        try {
+            byte[] pdfBytes = pdfService.generarPdf("reportes/reporte-usuarios", context);
+            response.getOutputStream().write(pdfBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     // ... (método listarUsuarios no cambia) ...
     @GetMapping
@@ -113,6 +151,13 @@ public class UsuarioController {
     public String eliminarUsuario(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         usuarioService.deleteById(id);
         redirectAttributes.addFlashAttribute("successMessage", "Usuario eliminado.");
+        return "redirect:/admin/usuarios";
+    }
+    @PostMapping("/enviar-promocion") // Esto se combina para formar /admin/usuarios/enviar-promocion
+    public String enviarPromocion(RedirectAttributes redirectAttributes) {
+        emailService.enviarCorreoMasivo("¡Nuevas Ofertas en GoldenFeets!", "plantilla-promocion");
+
+        redirectAttributes.addFlashAttribute("successMessage", "El envío de correos masivos ha comenzado en segundo plano.");
         return "redirect:/admin/usuarios";
     }
 }
