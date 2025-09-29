@@ -120,7 +120,7 @@ public class InventarioController {
         model.addAttribute("entradaDto", new InventarioEntradaDTO());
         model.addAttribute("productos", productoService.findAll());
         model.addAttribute("activePage", "inventario");
-        return "inventario/inventory_entry";
+        return "inventario/inventario-entrada";
     }
 
     @PostMapping("/entrada")
