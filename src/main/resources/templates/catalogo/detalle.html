@@ -11,6 +11,12 @@
         .product-image-gallery img { width: 100%; border-radius: var(--radius); border: 1px solid var(--border); }
         .product-info .product-title { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
         .product-info .product-price { font-size: 2rem; color: var(--primary); margin-bottom: 1.5rem; }
+
+        /* --- ESTILOS AÑADIDOS --- */
+        .product-attributes { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--muted-foreground); align-items: center;}
+        .attribute-item strong { color: var(--foreground); }
+        /* --- FIN ESTILOS AÑADIDOS --- */
+
         .product-info .product-stock { font-size: 0.9rem; color: var(--muted-foreground); margin-bottom: 1.5rem; }
         .product-info .product-description { line-height: 1.6; color: var(--foreground); }
         .add-to-cart-form { display: flex; gap: 1rem; margin-top: 2rem; }
@@ -25,21 +31,33 @@
 
         <div class="product-detail-grid" th:object="${producto}">
             <div class="product-image-gallery">
-                <img th:src="*{imagenUrl}" th:alt="*{nombre}">
+                <img th:src="*{imagenUrl}" th:alt="*{nombre}"
+                     onerror="this.onerror=null; this.src='https://placehold.co/600x400/1F2937/FFFFFF?text=Imagen+no+disponible';"/>
             </div>
 
             <div class="product-info">
                 <h1 class="product-title" th:text="*{nombre}"></h1>
                 <p class="product-price" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
+
+                <!-- SECCIÓN DE ATRIBUTOS AÑADIDA -->
+                <div class="product-attributes">
+                    <div th:if="*{talla != null and !talla.isEmpty()}" class="attribute-item">
+                        <strong>Talla:</strong>
+                        <span th:text="*{talla}"></span>
+                    </div>
+                    <div th:if="*{color != null and !color.isEmpty()}" class="attribute-item">
+                        <strong>Color:</strong>
+                        <span th:text="*{color}"></span>
+                    </div>
+                </div>
+
                 <p class="product-stock" th:if="*{stock > 0}" th:text="*{stock} + ' unidades disponibles'"></p>
                 <p class="product-stock" th:if="*{stock <= 0}" style="color: var(--destructive);">Agotado</p>
                 <p class="product-description" th:text="*{descripcion}"></p>
 
-                <form th:action="@{/carrito/agregar/{id}(id=*{id})}" method="post" class="add-to-cart-form" th:if="*{stock > 0}">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
+                <form th:action="@{/carrito/agregar}" method="post" class="add-to-cart-form" th:if="*{stock > 0}">
+                    <input type="hidden" name="productoId" th:value="*{id}" />
                     <input type="number" name="cantidad" value="1" min="1" th:max="*{stock}" class="quantity-input" required>
-
                     <button type="submit" class="cta-button" style="flex-grow: 1;">Añadir al Carrito</button>
                 </form>
             </div>

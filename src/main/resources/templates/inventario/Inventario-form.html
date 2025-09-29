@@ -15,6 +15,13 @@
         .full-width {
             grid-column: 1 / -1;
         }
+        /* --- ESTILO AÑADIDO --- */
+        /* Estilo para que el campo de solo lectura se vea deshabilitado */
+        input:read-only {
+            background-color: var(--admin-border);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -51,18 +58,25 @@
                     <input type="number" th:field="*{precio}" id="precio" class="form-control" step="0.01" required>
                 </div>
 
+                <!-- CAMPO STOCK MODIFICADO -->
                 <div class="form-group">
-                    <label for="stock" class="form-label">Stock</label>
-                    <input type="number" th:field="*{stock}" id="stock" class="form-control" required>
+                    <label for="stock" class="form-label">
+                        Stock
+                        <!-- Mensaje que aparece solo en modo edición -->
+                        <span th:if="${producto.id != null}" style="font-size: 0.75rem; color: var(--admin-text-secondary); font-weight: 400; margin-left: 0.5rem;">
+                            (se modifica desde "Registrar Entrada")
+                        </span>
+                    </label>
+                    <!-- El campo se vuelve 'readonly' si el producto ya existe (tiene ID) -->
+                    <input type="number" th:field="*{stock}" id="stock" class="form-control" required
+                           th:readonly="${producto.id != null}">
                 </div>
 
-                <!-- CAMPO TALLA AÑADIDO -->
                 <div class="form-group">
                     <label for="talla" class="form-label">Talla</label>
                     <input type="text" th:field="*{talla}" id="talla" class="form-control">
                 </div>
 
-                <!-- CAMPO COLOR AÑADIDO -->
                 <div class="form-group">
                     <label for="color" class="form-label">Color</label>
                     <input type="text" th:field="*{color}" id="color" class="form-control">
@@ -83,3 +97,4 @@
 </section>
 </body>
 </html>
+
