@@ -29,12 +29,12 @@ public class Producto {
     @Column(nullable = false)
     private Integer stock;
 
-    // Se eliminan los campos 'talla' y 'color'
-    // @Column(length = 20)
-    // private String talla;
+    // --- CAMPOS REACTIVADOS ---
+    @Column(length = 20)
+    private String talla;
 
-    // @Column(length = 50)
-    // private String color;
+    @Column(length = 50)
+    private String color;
 
     @Column(name = "imagen_url", length = 255)
     private String imagenUrl;

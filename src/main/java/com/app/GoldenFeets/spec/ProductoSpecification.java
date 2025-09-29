@@ -3,17 +3,23 @@ package com.app.GoldenFeets.spec;
 import com.app.GoldenFeets.Entity.Categoria;
 import com.app.GoldenFeets.Entity.Producto;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Component;
+import java.util.ArrayList;
+import java.util.List;
 
-@Component
+// No necesita la anotación @Component
 public class ProductoSpecification {
 
+    /**
+     * Crea una Specification para buscar productos con múltiples criterios.
+     * Este método es estático para ser llamado directamente desde el servicio.
+     */
     public static Specification<Producto> findByCriteria(
-            String keyword, Long categoriaId, Double precioMin, Double precioMax) {
+            String keyword, Long categoriaId, Double precioMin, Double precioMax, String talla, String color) {
 
         return (root, query, cb) -> {
-            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+            List<Predicate> predicates = new ArrayList<>();
 
             // Filtro por palabra clave (busca en nombre y descripción)
             if (keyword != null && !keyword.trim().isEmpty()) {
@@ -40,7 +46,18 @@ public class ProductoSpecification {
                 predicates.add(cb.lessThanOrEqualTo(root.get("precio"), precioMax));
             }
 
-            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+            // Filtro por talla
+            if (talla != null && !talla.trim().isEmpty()) {
+                predicates.add(cb.equal(cb.lower(root.get("talla")), talla.toLowerCase()));
+            }
+
+            // Filtro por color
+            if (color != null && !color.trim().isEmpty()) {
+                predicates.add(cb.equal(cb.lower(root.get("color")), color.toLowerCase()));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
 }
+

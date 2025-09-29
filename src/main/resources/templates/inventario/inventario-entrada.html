@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-admin}">
+<head>
+    <title>Registrar Entrada de Inventario</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="admin-header">
+        <h1 class="admin-title">Registrar Entrada de Inventario</h1>
+    </div>
+
+    <div class="admin-card">
+        <!-- Mensaje de éxito adaptado al tema oscuro -->
+        <div th:if="${param.exito}" class="alert alert-success mb-4" role="alert">
+            ¡Éxito! La entrada de inventario se ha registrado correctamente.
+        </div>
+
+        <form th:action="@{/admin/inventario/entrada}" th:object="${entradaDTO}" method="post" class="admin-form">
+
+            <!-- Selector de Producto -->
+            <div class="form-group">
+                <label for="productoId" class="form-label">Producto</label>
+                <select id="productoId" th:field="*{productoId}" class="form-control" required>
+                    <option value="">-- Selecciona un producto --</option>
+                    <option th:each="producto : ${productos}"
+                            th:value="${producto.id}"
+                            th:text="${producto.nombre + ' (Stock actual: ' + producto.stock + ')'}"></option>
+                </select>
+            </div>
+
+            <!-- Campo Distribuidor -->
+            <div class="form-group">
+                <label for="distribuidor" class="form-label">Distribuidor</label>
+                <input type="text" id="distribuidor" th:field="*{distribuidor}" class="form-control" placeholder="Ej: Proveedor Zapatillas S.A." required>
+            </div>
+
+            <!-- Grid para Cantidad y Color -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-group">
+                    <label for="cantidad" class="form-label">Cantidad</label>
+                    <input type="number" id="cantidad" th:field="*{cantidad}" min="1" class="form-control" placeholder="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="color" class="form-label">Color</label>
+                    <input type="text" id="color" th:field="*{color}" class="form-control" placeholder="Ej: Rojo/Blanco" required>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="form-actions flex items-center space-x-2">
+                <button type="submit" class="btn btn-primary">
+                    Registrar Entrada
+                </button>
+                <a th:href="@{/admin/inventario}" class="btn btn-secondary">
+                    Volver
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Estilo para el mensaje de éxito (puedes moverlo a tu CSS principal) -->
+    <style>
+        .alert {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            border-width: 1px;
+            border-style: solid;
+        }
+        .alert-success {
+            background-color: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.5);
+            color: #22c55e;
+        }
+        .mb-4 {
+            margin-bottom: 1.5rem;
+        }
+        /* Clases de grid simples para no depender de Tailwind */
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .gap-6 { gap: 1.5rem; }
+        @media (min-width: 768px) {
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+            margin-left: 0.5rem;
+        }
+    </style>
+</section>
+</body>
+</html>
+

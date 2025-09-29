@@ -4,6 +4,18 @@
       layout:decorate="~{base/base-admin}">
 <head>
     <title th:text="${producto.id == null ? 'Añadir Producto' : 'Editar Producto'}">Formulario de Producto</title>
+    <style>
+        /* Estilos para el grid de dos columnas */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        /* Ajuste para que un campo ocupe todo el ancho si es necesario */
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
 </head>
 <body>
 <section layout:fragment="content">
@@ -15,42 +27,56 @@
         <form th:action="@{/admin/inventario/guardar}" th:object="${producto}" method="post" class="admin-form">
             <input type="hidden" th:field="*{id}" />
 
-            <div class="form-group">
-                <label for="nombre" class="form-label">Nombre</label>
+            <div class="form-group full-width">
+                <label for="nombre" class="form-label">Nombre del Producto</label>
                 <input type="text" th:field="*{nombre}" id="nombre" class="form-control" required>
             </div>
 
-            <div class="form-group">
+            <div class="form-group full-width">
                 <label for="descripcion" class="form-label">Descripción</label>
                 <textarea th:field="*{descripcion}" id="descripcion" class="form-control" rows="4"></textarea>
             </div>
 
-            <div class="form-group">
-                <label for="categoria" class="form-label">Categoría</label>
-                <select th:field="*{categoria}" id="categoria" class="form-control">
-                    <option value="">Selecciona una categoría</option>
-                    <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
-                </select>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="categoria" class="form-label">Categoría</label>
+                    <select th:field="*{categoria}" id="categoria" class="form-control">
+                        <option value="">Selecciona una categoría</option>
+                        <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="precio" class="form-label">Precio</label>
+                    <input type="number" th:field="*{precio}" id="precio" class="form-control" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="stock" class="form-label">Stock</label>
+                    <input type="number" th:field="*{stock}" id="stock" class="form-control" required>
+                </div>
+
+                <!-- CAMPO TALLA AÑADIDO -->
+                <div class="form-group">
+                    <label for="talla" class="form-label">Talla</label>
+                    <input type="text" th:field="*{talla}" id="talla" class="form-control">
+                </div>
+
+                <!-- CAMPO COLOR AÑADIDO -->
+                <div class="form-group">
+                    <label for="color" class="form-label">Color</label>
+                    <input type="text" th:field="*{color}" id="color" class="form-control">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="precio" class="form-label">Precio</label>
-                <input type="number" th:field="*{precio}" id="precio" class="form-control" step="0.01" required>
-            </div>
-
-            <div class="form-group">
-                <label for="stock" class="form-label">Stock</label>
-                <input type="number" th:field="*{stock}" id="stock" class="form-control" required>
-            </div>
-
-            <div class="form-group">
+            <div class="form-group full-width">
                 <label for="imagenUrl" class="form-label">URL de la Imagen</label>
                 <input type="text" th:field="*{imagenUrl}" id="imagenUrl" class="form-control">
             </div>
 
-            <div>
+            <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Guardar Producto</button>
-                <a th:href="@{/admin/inventario}" class="btn btn-secondary" style="margin-left: 1rem;">Cancelar</a>
+                <a th:href="@{/admin/inventario}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>

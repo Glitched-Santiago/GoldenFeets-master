@@ -1,8 +1,9 @@
 package com.app.GoldenFeets.Controller;
 
-import com.app.GoldenFeets.Entity.Categoria; // Necesario para el formulario
+import com.app.GoldenFeets.DTO.InventarioEntradaDTO;
 import com.app.GoldenFeets.Entity.Producto;
 import com.app.GoldenFeets.Repository.CategoriaRepository;
+import com.app.GoldenFeets.Service.InventarioService;
 import com.app.GoldenFeets.Service.PdfService;
 import com.app.GoldenFeets.Service.ProductoService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,35 +24,33 @@ public class InventarioController {
     private final ProductoService productoService;
     private final PdfService pdfService;
     private final CategoriaRepository categoriaRepository;
+    private final InventarioService inventarioService;
 
+    // --- MÉTODO LISTAR CORREGIDO ---
     @GetMapping
     public String listarInventario(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long categoriaId,
             @RequestParam(required = false) Double precioMin,
             @RequestParam(required = false) Double precioMax,
+            @RequestParam(required = false) String talla, // <-- Parámetro añadido
+            @RequestParam(required = false) String color, // <-- Parámetro añadido
             Model model) {
 
-        boolean isFilterActive = (keyword != null && !keyword.isEmpty()) || categoriaId != null || precioMin != null || precioMax != null;
-
-        List<Producto> productos;
-        if (isFilterActive) {
-            // Llamada correcta al método de búsqueda multicriterio
-            productos = productoService.search(keyword, categoriaId, precioMin, precioMax);
-        } else {
-            // Llamada correcta para obtener todos los productos
-            productos = productoService.findAll();
-        }
+        // Llamada correcta al método de búsqueda con TODOS los parámetros
+        List<Producto> productos = productoService.search(keyword, categoriaId, precioMin, precioMax, talla, color);
 
         model.addAttribute("productos", productos);
         model.addAttribute("categorias", categoriaRepository.findAll());
         model.addAttribute("activePage", "inventario");
 
-        // Devolvemos los parámetros para mantenerlos en los campos de búsqueda
+        // Devolvemos TODOS los parámetros para mantenerlos en los campos de búsqueda
         model.addAttribute("keywordParam", keyword);
         model.addAttribute("categoriaIdParam", categoriaId);
         model.addAttribute("precioMinParam", precioMin);
         model.addAttribute("precioMaxParam", precioMax);
+        model.addAttribute("tallaParam", talla); // <-- Parámetro añadido al modelo
+        model.addAttribute("colorParam", color); // <-- Parámetro añadido al modelo
 
         return "inventario/inventario";
     }
@@ -63,10 +62,12 @@ public class InventarioController {
             @RequestParam(required = false) Long categoriaId,
             @RequestParam(required = false) Double precioMin,
             @RequestParam(required = false) Double precioMax,
+            @RequestParam(required = false) String talla, // <-- Parámetro añadido
+            @RequestParam(required = false) String color, // <-- Parámetro añadido
             HttpServletResponse response) {
 
-        // AHORA USAMOS EL MISMO MÉTODO DE BÚSQUEDA QUE LA PÁGINA
-        List<Producto> productos = productoService.search(keyword, categoriaId, precioMin, precioMax);
+        // Llamada correcta al método de búsqueda con TODOS los parámetros
+        List<Producto> productos = productoService.search(keyword, categoriaId, precioMin, precioMax, talla, color);
 
         Context context = new Context();
         context.setVariable("productos", productos);
@@ -79,11 +80,12 @@ public class InventarioController {
             byte[] pdfBytes = pdfService.generarPdf("reportes/reporte-inventario", context);
             response.getOutputStream().write(pdfBytes);
         } catch (Exception e) {
+            // Considera un manejo de errores más robusto aquí
             e.printStackTrace();
         }
     }
 
-    // --- MÉTODOS CRUD (sin cambios) ---
+    // --- MÉTODOS CRUD DE PRODUCTOS (SIN CAMBIOS) ---
     @GetMapping("/nuevo")
     public String mostrarFormularioNuevo(Model model) {
         model.addAttribute("producto", new Producto());
@@ -111,4 +113,25 @@ public class InventarioController {
         productoService.eliminar(id);
         return "redirect:/admin/inventario";
     }
+
+    // --- MÉTODOS PARA ENTRADA DE INVENTARIO (SIN CAMBIOS) ---
+    @GetMapping("/entrada")
+    public String mostrarFormularioEntrada(Model model) {
+        model.addAttribute("entradaDto", new InventarioEntradaDTO());
+        model.addAttribute("productos", productoService.findAll());
+        model.addAttribute("activePage", "inventario");
+        return "inventario/inventory_entry";
+    }
+
+    @PostMapping("/entrada")
+    public String registrarEntrada(@ModelAttribute("entradaDto") InventarioEntradaDTO entradaDto) {
+        try {
+            inventarioService.registrarEntrada(entradaDto);
+        } catch (Exception e) {
+            // Aquí deberías manejar el error, por ejemplo, con un mensaje de error en la vista
+            return "redirect:/admin/inventario/entrada?error=true";
+        }
+        return "redirect:/admin/inventario";
+    }
 }
+

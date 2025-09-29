@@ -2,7 +2,7 @@ package com.app.GoldenFeets.Service;
 
 import com.app.GoldenFeets.Entity.Producto;
 import com.app.GoldenFeets.Repository.ProductoRepository;
-import com.app.GoldenFeets.spec.ProductoSpecification;
+import com.app.GoldenFeets.spec.ProductoSpecification; // Importante mantener el import
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -16,16 +16,12 @@ import java.util.stream.Collectors;
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
-    private final ProductoSpecification productoSpecification;
+    // --- Se elimina la dependencia de ProductoSpecification ---
 
     public List<Producto> findAll() {
         return productoRepository.findAll();
     }
 
-    // --- MÉTODO AÑADIDO ---
-    /**
-     * Devuelve una lista de productos que tienen stock disponible (stock > 0).
-     */
     public List<Producto> obtenerProductosDisponibles() {
         return productoRepository.findAll()
                 .stream()
@@ -49,8 +45,11 @@ public class ProductoService {
         return productoRepository.findRandomProductos(limite);
     }
 
-    public List<Producto> search(String keyword, Long categoriaId, Double precioMin, Double precioMax) {
-        Specification<Producto> spec = productoSpecification.findByCriteria(keyword, categoriaId, precioMin, precioMax);
+    // --- MÉTODO DE BÚSQUEDA CORREGIDO ---
+    public List<Producto> search(String keyword, Long categoriaId, Double precioMin, Double precioMax, String talla, String color) {
+        // --- Llamada estática directa a la clase Specification ---
+        Specification<Producto> spec = ProductoSpecification.findByCriteria(keyword, categoriaId, precioMin, precioMax, talla, color);
         return productoRepository.findAll(spec);
     }
 }
+
