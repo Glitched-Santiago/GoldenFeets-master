@@ -15,7 +15,6 @@
         <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
         <div th:if="${errorMessage}" class="alert alert-error" role="alert" th:text="${errorMessage}"></div>
 
-        <!-- Formulario de filtros actualizado -->
         <form method="get" th:action="@{/catalogo}" class="catalogo-filtro-form">
             <input type="text" name="keyword" th:value="${keyword}" placeholder="Buscar por nombre" class="input-estetico">
             <select name="categoriaId" class="input-estetico">
@@ -28,7 +27,6 @@
             </select>
             <input type="number" name="precioMin" th:value="${precioMin}" placeholder="Precio Mínimo" class="input-estetico">
             <input type="number" name="precioMax" th:value="${precioMax}" placeholder="Precio Máximo" class="input-estetico">
-            <!-- CAMPOS DE BÚSQUEDA AÑADIDOS -->
             <input type="text" name="talla" th:value="${talla}" placeholder="Talla" class="input-estetico">
             <input type="text" name="color" th:value="${color}" placeholder="Color" class="input-estetico">
             <button type="submit" class="btn-filtrar">Filtrar</button>
@@ -49,10 +47,11 @@
                             <p class="product-price" th:text="|$${#numbers.formatDecimal(producto.precio, 1, 2)}|"></p>
                             <span class="product-tag" th:text="${producto.categoria?.nombre}"></span>
                         </div>
-                        <!-- ATRIBUTOS TALLA Y COLOR AÑADIDOS -->
                         <div class="product-card-attributes" style="margin-top: 0.5rem; font-size: 0.8rem; color: #9CA3AF;">
                             <span th:if="${producto.talla}" th:text="|Talla: ${producto.talla}|"></span>
-                            <span th:if="${producto.talla and producto.color}"> &middot; </span>
+
+                            <span th:if="${!#strings.isEmpty(producto.talla) and !#strings.isEmpty(producto.color)}"> &middot; </span>
+
                             <span th:if="${producto.color}" th:text="|Color: ${producto.color}|"></span>
                         </div>
                     </a>
@@ -60,7 +59,6 @@
                     <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
                         <a th:href="@{/catalogo/{id}(id=${producto.id})}" class="add-to-cart-btn">Ver Detalles</a>
 
-                        <!-- Lógica para añadir al carrito (requiere autenticación) -->
                         <form th:if="${authentication != null and authentication.isAuthenticated()}" th:action="@{/carrito/agregar}" method="post">
                             <input type="hidden" name="productoId" th:value="${producto.id}" />
                             <input type="hidden" name="cantidad" value="1" />
