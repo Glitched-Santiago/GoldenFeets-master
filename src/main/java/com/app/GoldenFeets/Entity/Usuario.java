@@ -38,6 +38,9 @@ public abstract class Usuario {
     @Column(name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
 
+    @Column(name = "foto_url", length = 255)
+    private String fotoUrl;
+
     @PrePersist
     protected void onCreate() {
         fechaCreacion = LocalDate.now();

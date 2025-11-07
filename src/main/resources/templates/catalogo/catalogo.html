@@ -59,8 +59,7 @@
                     <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
                         <a th:href="@{/catalogo/{id}(id=${producto.id})}" class="add-to-cart-btn">Ver Detalles</a>
 
-                        <form th:if="${authentication != null and authentication.isAuthenticated()}" th:action="@{/carrito/agregar}" method="post">
-                            <input type="hidden" name="productoId" th:value="${producto.id}" />
+                        <form th:action="@{/carrito/agregar/{id}(id=${producto.id})}" method="post">
                             <input type="hidden" name="cantidad" value="1" />
                             <button type="submit" class="add-to-cart-btn">Añadir al Carrito</button>
                         </form>

@@ -294,3 +294,42 @@ body.admin-body {
     background-color: var(--admin-accent-red);
     color: var(--admin-text-primary);
 }
+.sidebar-profile {
+    padding: 1.25rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 1rem;
+    display: flex; /* Hacemos que la imagen y el texto estén en línea */
+    align-items: center; /* Centramos verticalmente */
+    gap: 0.75rem; /* Espacio entre imagen y texto */
+}
+
+/* Estilo para la imagen de perfil */
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover; /* Evita que la imagen se deforme */
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.profile-info {
+    line-height: 1.2;
+}
+
+.profile-name {
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+/* Enlace "Mi Perfil" */
+.profile-link {
+    font-size: 0.8rem;
+    color: #a0aec0; /* Color tenue */
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.profile-link:hover {
+    color: #fff;
+    text-decoration: underline;
+}

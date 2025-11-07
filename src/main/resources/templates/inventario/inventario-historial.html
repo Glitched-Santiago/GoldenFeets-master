@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-admin}">
+<head>
+    <title>Historial de Inventario</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="admin-header">
+        <h1 class="admin-title">Historial de Movimientos</h1>
+        <a th:href="@{/admin/inventario}" class="btn btn-secondary">
+            Volver a Inventario
+        </a>
+    </div>
+
+    <div class="admin-card">
+        <div class="overflow-x-auto">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Fecha y Hora</th>
+                    <th>Producto</th>
+                    <th>Tipo</th>
+                    <th>Cantidad</th>
+                    <th>Descripción / Motivo</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${historial}"
+                    th:class="${item.tipo == 'Entrada' ? 'bg-green-50' : 'bg-red-50'}">
+
+                    <td th:text="${#temporals.format(item.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${item.productoNombre}"></td>
+
+                    <td>
+                        <span th:if="${item.tipo == 'Entrada'}"
+                              class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full">
+                            Entrada
+                        </span>
+                        <span th:if="${item.tipo == 'Salida'}"
+                              class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full">
+                            Salida
+                        </span>
+                    </td>
+
+                    <td th:text="${item.tipo == 'Entrada' ? '+' + item.cantidad : '-' + item.cantidad}"
+                        th:class="${item.tipo == 'Entrada' ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}">
+                    </td>
+
+                    <td th:text="${item.descripcion}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(historial)}">
+                    <td colspan="5" class="text-center py-8">
+                        No se encontraron movimientos en el historial.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

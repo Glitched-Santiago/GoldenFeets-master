@@ -1,6 +1,7 @@
 package com.app.GoldenFeets.Controller;
 
 import com.app.GoldenFeets.DTO.InventarioEntradaDTO;
+import com.app.GoldenFeets.DTO.InventarioSalidaDTO;
 import com.app.GoldenFeets.Entity.Producto;
 import com.app.GoldenFeets.Repository.CategoriaRepository;
 import com.app.GoldenFeets.Service.InventarioService;
@@ -132,6 +133,35 @@ public class InventarioController {
             return "redirect:/admin/inventario/entrada?error=true";
         }
         return "redirect:/admin/inventario";
+    }
+    @GetMapping("/salida")
+    public String mostrarFormularioSalida(Model model) {
+        model.addAttribute("salidaDto", new InventarioSalidaDTO());
+        model.addAttribute("productos", productoService.findAll()); // Para el <select>
+        model.addAttribute("activePage", "inventario");
+        return "inventario/inventario-salida"; // <-- Nueva vista
+    }
+
+    @PostMapping("/salida")
+    public String registrarSalida(@ModelAttribute("salidaDto") InventarioSalidaDTO salidaDto) {
+        try {
+            inventarioService.registrarSalidaManual(salidaDto);
+        } catch (Exception e) {
+            // Manejar error (ej. stock insuficiente)
+            return "redirect:/admin/inventario/salida?error=" + e.getMessage();
+        }
+        return "redirect:/admin/inventario";
+    }
+    @GetMapping("/historial") // <-- 2. Esta es la parte que llama el botón
+    public String mostrarHistorial(Model model) {
+
+        // 3. Llama al servicio para obtener los datos
+        model.addAttribute("historial", inventarioService.getHistorialUnificado());
+
+        model.addAttribute("activePage", "inventario");
+
+        // 4. Muestra esta vista HTML
+        return "inventario/inventario-historial";
     }
 }
 

@@ -27,6 +27,9 @@ public class PedidoService {
     private final ProductoRepository productoRepository;
     private final PedidoSpecification pedidoSpecification;
 
+    // --- INYECTAMOS EL SERVICIO DE INVENTARIO ---
+    private final InventarioService inventarioService;
+
     /**
      * Procesa la creación de un nuevo pedido a partir del carrito de un cliente.
      * Este método es transaccional, lo que significa que si algo falla (ej. falta de stock),
@@ -46,14 +49,12 @@ public class PedidoService {
             Producto producto = productoRepository.findById(item.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + item.getProductoId()));
 
+            // 1. Verificación de stock (falla rápido si no hay)
             if (producto.getStock() < item.getCantidad()) {
                 throw new StockInsuficienteException("No hay stock suficiente para el producto: " + producto.getNombre());
             }
 
-            // Descontamos el stock del producto
-            producto.setStock(producto.getStock() - item.getCantidad());
-
-            // Creamos el detalle del pedido
+            // 2. Creamos el detalle del pedido
             PedidoDetalle detalle = new PedidoDetalle();
             detalle.setProducto(producto);
             detalle.setCantidad(item.getCantidad());
@@ -61,12 +62,25 @@ public class PedidoService {
             detalle.setPedido(pedido);
 
             pedido.getDetalles().add(detalle);
+
+            // 3. --- LÓGICA DE STOCK ACTUALIZADA ---
+            // Ya no descontamos el stock manualmente.
+            // Llamamos al InventarioService para que él se encargue de
+            // descontar el stock Y registrar la salida en el historial.
+            try {
+                inventarioService.registrarSalidaPorVenta(detalle);
+            } catch (Exception e) {
+                // Si el InventarioService falla (ej. doble chequeo de stock),
+                // la transacción entera se revierte.
+                throw new RuntimeException("Error al registrar la salida de inventario: " + e.getMessage());
+            }
         }
 
         // Calculamos el total del pedido
         double total = carrito.values().stream().mapToDouble(CarritoItem::getSubtotal).sum();
         pedido.setTotal(total);
 
+        // Guardamos el pedido (y sus detalles en cascada)
         return pedidoRepository.save(pedido);
     }
 

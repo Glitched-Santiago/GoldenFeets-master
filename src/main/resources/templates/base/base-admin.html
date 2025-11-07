@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
     <meta charset="UTF-8">
     <title layout:title-pattern="$CONTENT_TITLE | GoldenFeets Admin">Admin</title>
@@ -7,21 +9,37 @@
 </head>
 <body class="admin-body">
 <div class="admin-layout">
+
     <aside class="admin-sidebar">
-        <a th:href="@{/admin/dashboard}" class="sidebar-logo">GOLDENFEETS</a>
-        <ul class="sidebar-nav">
-            <li><a th:href="@{/admin/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
-            <li><a th:href="@{/admin/inventario}" th:classappend="${activePage == 'inventario' ? 'active' : ''}">Inventario</a></li>
-            <li><a th:href="@{/admin/pedidos}" th:classappend="${activePage == 'pedidos' ? 'active' : ''}">Pedidos</a></li>
-            <li><a th:href="@{/admin/usuarios}" th:classappend="${activePage == 'usuarios' ? 'active' : ''}">Usuarios</a></li>
-        </ul>
+
+        <div class="sidebar-content">
+            <a th:href="@{/admin/dashboard}" class="sidebar-logo">GOLDENFEETS</a>
+            <ul class="sidebar-nav">
+                <li><a th:href="@{/admin/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                <li><a th:href="@{/admin/inventario}" th:classappend="${activePage == 'inventario' ? 'active' : ''}">Inventario</a></li>
+                <li><a th:href="@{/admin/pedidos}" th:classappend="${activePage == 'pedidos' ? 'active' : ''}">Pedidos</a></li>
+                <li><a th:href="@{/admin/usuarios}" th:classappend="${activePage == 'usuarios' ? 'active' : ''}">Usuarios</a></li>
+            </ul>
+        </div>
+
+        <div class="sidebar-profile" th:if="${globalUsuario != null}">
+
+            <img th:src="${globalUsuario.fotoUrl != null ? globalUsuario.fotoUrl : '/images/default-avatar.png'}"
+                 alt="Foto de perfil" class="profile-pic">
+
+            <div class="profile-info">
+                <div class="profile-name" th:text="${globalUsuario.nombres}">
+                </div>
+                <a th:href="@{/admin/perfil}" class="profile-link">
+                    Mi Perfil
+                </a>
+            </div>
+        </div>
     </aside>
 
     <div class="admin-content-wrapper">
-
         <header class="admin-main-header">
             <h1 class="header-title" layout:fragment="header-title">Dashboard</h1>
-
             <form th:action="@{/logout}" method="post" class="logout-form">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <button type="submit" class="btn btn-secondary">Cerrar Sesión</button>

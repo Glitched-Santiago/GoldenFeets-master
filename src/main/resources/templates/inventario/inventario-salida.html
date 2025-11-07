@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-admin}">
+<head>
+    <title>Registrar Salida de Inventario</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <h1 class="admin-title">Registrar Salida de Inventario</h1>
+
+    <div class="admin-card max-w-lg mx-auto">
+        <div th:if="${param.error}" class="alert alert-danger" role="alert"
+             th:text="${param.error}">
+        </div>
+
+        <form th:action="@{/admin/inventario/salida}" th:object="${salidaDto}" method="post" class="space-y-4">
+            <div class="form-group">
+                <label for="productoId">Producto:</label>
+                <select id="productoId" th:field="*{productoId}" class="search-input" required>
+                    <option value="">Seleccione un producto...</option>
+                    <option th:each="prod : ${productos}"
+                            th:value="${prod.id}"
+                            th:text="|${prod.nombre} (Stock: ${prod.stock})|"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cantidad">Cantidad a retirar:</label>
+                <input type="number" id="cantidad" th:field="*{cantidad}" class="search-input" min="1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="motivo">Motivo de la salida:</label>
+                <input type="text" id="motivo" th:field="*{motivo}" class="search-input"
+                       placeholder="Ej: Ajuste por pérdida, Producto dañado..." required>
+            </div>
+
+            <div class="flex justify-end space-x-2">
+                <a th:href="@{/admin/inventario}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-danger">Confirmar Salida</button>
+            </div>
+        </form>
+    </div>
+</section>
+</body>
+</html>
