@@ -8,5 +8,5 @@ public class InventarioEntradaDTO {
     private String distribuidor;
     private Integer cantidad;
     private String color;
+    private Double precioCostoUnitario; // <-- NUEVO CAMPO
 }
-

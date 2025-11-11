@@ -43,7 +43,12 @@ public class PedidoService {
 
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
-        pedido.setEstado(EstadoPedido.COMPLETADO); // O el estado inicial que prefieras
+
+        // --- CAMBIO REQUERIDO ---
+        // Aquí establecemos el estado como PAGADO (asumiendo que tu Enum se llama 'PAGADO')
+        // Si tu Enum usa otro nombre para "pagado", ajústalo aquí.
+        pedido.setEstado(EstadoPedido.PAGADO);
+        // --- FIN DEL CAMBIO ---
 
         for (CarritoItem item : carrito.values()) {
             Producto producto = productoRepository.findById(item.getProductoId())
@@ -64,14 +69,9 @@ public class PedidoService {
             pedido.getDetalles().add(detalle);
 
             // 3. --- LÓGICA DE STOCK ACTUALIZADA ---
-            // Ya no descontamos el stock manualmente.
-            // Llamamos al InventarioService para que él se encargue de
-            // descontar el stock Y registrar la salida en el historial.
             try {
                 inventarioService.registrarSalidaPorVenta(detalle);
             } catch (Exception e) {
-                // Si el InventarioService falla (ej. doble chequeo de stock),
-                // la transacción entera se revierte.
                 throw new RuntimeException("Error al registrar la salida de inventario: " + e.getMessage());
             }
         }

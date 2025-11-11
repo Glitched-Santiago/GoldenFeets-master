@@ -4,14 +4,75 @@
       layout:decorate="~{base/base-admin}">
 <head>
     <title>Historial de Inventario</title>
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background-color: var(--admin-card-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+        .stat-card-title {
+            font-size: 0.875rem;
+            color: var(--admin-text-secondary);
+            text-transform: uppercase;
+        }
+        .stat-card-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+        }
+        .stat-card-value.gastado { color: var(--admin-accent-red); }
+        /* Asegúrate de tener esta variable en tu admin.css */
+        .stat-card-value.ingresado { color: var(--admin-accent-green, #10B981); }
+        .stat-card-value.neto { color: var(--admin-accent-blue); }
+
+        /* Estilos para los tipos de historial */
+        .tipo-entrada {
+            color: var(--admin-accent-green, #10B981);
+            font-weight: 700;
+        }
+        .tipo-salida {
+            color: var(--admin-accent-red);
+            font-weight: 700;
+        }
+    </style>
 </head>
 <body>
 <section layout:fragment="content">
     <div class="admin-header">
-        <h1 class="admin-title">Historial de Movimientos</h1>
+        <h1 class="admin-title">Historial y Estadísticas</h1>
         <a th:href="@{/admin/inventario}" class="btn btn-secondary">
             Volver a Inventario
         </a>
+    </div>
+
+    <div class="stats-grid" th:object="${estadisticas}">
+        <div class="stat-card">
+            <div class="stat-card-title">Total Gastado (Costos)</div>
+            <div class="stat-card-value gastado"
+                 th:text="|-$${#numbers.formatDecimal(estadisticas.totalGastado, 1, 'COMMA', 2, 'POINT')}|">
+                -$0.00
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-title">Total Ingresado (Ventas)</div>
+            <div class="stat-card-value ingresado"
+                 th:text="|+$${#numbers.formatDecimal(estadisticas.totalIngresado, 1, 'COMMA', 2, 'POINT')}|">
+                +$0.00
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-title">Balance (Ingresos - Costos)</div>
+            <div class="stat-card-value neto"
+                 th:text="|$${#numbers.formatDecimal(estadisticas.totalIngresado - estadisticas.totalGastado, 1, 'COMMA', 2, 'POINT')}|">
+                $0.00
+            </div>
+        </div>
     </div>
 
     <div class="admin-card">
@@ -27,31 +88,29 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="item : ${historial}"
-                    th:class="${item.tipo == 'Entrada' ? 'bg-green-50' : 'bg-red-50'}">
+                <tr th:each="item : ${historial}">
 
                     <td th:text="${#temporals.format(item.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+
                     <td th:text="${item.productoNombre}"></td>
 
                     <td>
-                        <span th:if="${item.tipo == 'Entrada'}"
-                              class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full">
-                            Entrada
-                        </span>
-                        <span th:if="${item.tipo == 'Salida'}"
-                              class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full">
-                            Salida
-                        </span>
+                        <span th:if="${item.tipo == 'Entrada'}" class="tipo-entrada">Entrada</span>
+                        <span th:if="${item.tipo == 'Salida'}" class="tipo-salida">Salida</span>
                     </td>
 
-                    <td th:text="${item.tipo == 'Entrada' ? '+' + item.cantidad : '-' + item.cantidad}"
-                        th:class="${item.tipo == 'Entrada' ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}">
+                    <td>
+                            <span th:if="${item.tipo == 'Entrada'}" class="tipo-entrada"
+                                  th:text="|+${item.cantidad}|"></span>
+                        <span th:if="${item.tipo == 'Salida'}" class="tipo-salida"
+                              th:text="'-' + ${item.cantidad}"></span>
                     </td>
 
                     <td th:text="${item.descripcion}"></td>
                 </tr>
+
                 <tr th:if="${#lists.isEmpty(historial)}">
-                    <td colspan="5" class="text-center py-8">
+                    <td colspan="5" style="text-align: center; padding: 2rem;">
                         No se encontraron movimientos en el historial.
                     </td>
                 </tr>

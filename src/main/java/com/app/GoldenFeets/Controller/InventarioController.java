@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -118,8 +119,19 @@ public class InventarioController {
     // --- MÉTODOS PARA ENTRADA DE INVENTARIO (SIN CAMBIOS) ---
     @GetMapping("/entrada")
     public String mostrarFormularioEntrada(Model model) {
+        // --- NUEVO: Lista de Distribuidores ---
+        // (¡Reemplaza esto con tu lista real o cárgala desde la BBDD!)
+        List<String> distribuidores = Arrays.asList(
+                "Nike Proveedores S.A.S",
+                "Adidas Colombia Ltda.",
+                "Puma Distribuidores",
+                "Calzado Nacional S.A."
+        );
+        // --- FIN ---
+
         model.addAttribute("entradaDto", new InventarioEntradaDTO());
         model.addAttribute("productos", productoService.findAll());
+        model.addAttribute("distribuidores", distribuidores); // <-- Añadido al modelo
         model.addAttribute("activePage", "inventario");
         return "inventario/inventario-entrada";
     }
@@ -136,10 +148,21 @@ public class InventarioController {
     }
     @GetMapping("/salida")
     public String mostrarFormularioSalida(Model model) {
+        // --- NUEVO: Lista de Motivos ---
+        List<String> motivos = Arrays.asList(
+                "Ajuste por pérdida",
+                "Producto dañado",
+                "Devolución a proveedor",
+                "Uso interno"
+        );
+        // "Venta" NO se incluye aquí, ya que se registra automáticamente.
+        // --- FIN ---
+
         model.addAttribute("salidaDto", new InventarioSalidaDTO());
-        model.addAttribute("productos", productoService.findAll()); // Para el <select>
+        model.addAttribute("productos", productoService.findAll());
+        model.addAttribute("motivos", motivos); // <-- Añadido al modelo
         model.addAttribute("activePage", "inventario");
-        return "inventario/inventario-salida"; // <-- Nueva vista
+        return "inventario/inventario-salida";
     }
 
     @PostMapping("/salida")
@@ -152,15 +175,17 @@ public class InventarioController {
         }
         return "redirect:/admin/inventario";
     }
-    @GetMapping("/historial") // <-- 2. Esta es la parte que llama el botón
+    @GetMapping("/historial")
     public String mostrarHistorial(Model model) {
 
-        // 3. Llama al servicio para obtener los datos
+        // ESTA LÍNEA ES CRUCIAL:
+        model.addAttribute("estadisticas", inventarioService.getEstadisticasInventario());
+
+        // Y ESTA LÍNEA TAMBIÉN:
+        // Asegúrate de que el nombre "historial" esté correcto.
         model.addAttribute("historial", inventarioService.getHistorialUnificado());
 
         model.addAttribute("activePage", "inventario");
-
-        // 4. Muestra esta vista HTML
         return "inventario/inventario-historial";
     }
 }

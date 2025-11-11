@@ -5,6 +5,7 @@ package com.app.GoldenFeets.Entity;
  */
 public enum EstadoPedido {
     PENDIENTE,
+    PAGADO,
     COMPLETADO,
     CANCELADO
 }

@@ -20,46 +20,70 @@
             }
         }
 
-        /* Estilo para los subtítulos dentro de las tarjetas */
+        /* Estilo para los subtítulos (usando variables) */
         .admin-subtitle {
-            font-size: 1.25rem; /* Un poco más grande que el texto normal */
+            font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 1.5rem; /* Espacio debajo del subtítulo */
-            border-bottom: 1px solid #e5e7eb; /* Una línea sutil (color gris claro) */
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--admin-border); /* USA VARIABLE */
             padding-bottom: 0.75rem;
+            color: var(--admin-text-primary); /* USA VARIABLE */
         }
 
-        /* Estilo para el campo de solo lectura (como en inventario-form.html) */
+        /* Estilo para el campo de solo lectura (usando variables) */
         input:read-only,
         input[readonly] {
-            background-color: #f3f4f6; /* Color de fondo gris claro */
+            background-color: var(--admin-bg); /* USA VARIABLE */
             cursor: not-allowed;
             opacity: 0.7;
         }
 
-        /* --- Estilos para las Alertas --- */
+        /* --- Estilos para las Alertas (usando variables) --- */
 
-        /* Base para todas las alertas */
         .alert {
             padding: 1rem;
             margin-bottom: 1.5rem;
-            border-radius: 0.375rem; /* Bordes redondeados */
+            border-radius: 0.375rem;
             font-weight: 500;
             border: 1px solid transparent;
         }
 
-        /* Alerta de Éxito (Verde) */
+        /* Alerta de Éxito (Verde de admin) */
         .alert-success {
-            color: #155724; /* Texto verde oscuro */
-            background-color: #d4edda; /* Fondo verde pálido */
-            border-color: #c3e6cb; /* Borde verde */
+            color: oklch(from var(--admin-accent-green) l c h / 0.8);
+            background-color: oklch(from var(--admin-accent-green) l c h / 0.1);
+            border-color: oklch(from var(--admin-accent-green) l c h / 0.3);
         }
 
-        /* Alerta de Error (Rojo) */
+        /* Alerta de Error (Rojo de admin) */
         .alert-danger {
-            color: #721c24; /* Texto rojo oscuro */
-            background-color: #f8d7da; /* Fondo rosa pálido */
-            border-color: #f5c6cb; /* Borde rojo */
+            color: oklch(from var(--admin-accent-red) l c h / 0.9);
+            background-color: oklch(from var(--admin-accent-red) l c h / 0.1);
+            border-color: oklch(from var(--admin-accent-red) l c h / 0.3);
+        }
+
+        /* --- Estilos para la Foto de Perfil (amigable) --- */
+        .profile-header-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--admin-border);
+        }
+        .profile-header-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--admin-accent-blue); /* Borde con el color primario */
+            margin-bottom: 1rem;
+        }
+        .profile-header-card .profile-role-display {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--admin-text-secondary); /* Texto gris sutil */
+            text-transform: capitalize;
         }
     </style>
 </head>
@@ -75,29 +99,33 @@
             <div th:if="${successInfo}" class="alert alert-success" th:text="${successInfo}"></div>
             <div th:if="${errorInfo}" class="alert alert-danger" th:text="${errorInfo}"></div>
 
-            <form th:action="@{/admin/perfil/info}" th:object="${infoDTO}" method="post">
+            <form th:action="@{/admin/perfil/info}" th:object="${infoDTO}" method="post" class="admin-form">
+
+                <div class="profile-header-card">
+                    <img th:src="${usuario.fotoUrl != null ? usuario.fotoUrl : '/images/default-avatar.png'}"
+                         alt="Foto de Perfil" class="profile-pic">
+                    <div class="profile-role-display"
+                         th:with="rol = (${usuario instanceof T(com.app.GoldenFeets.Entity.Administrador)}) ? 'Administrador' : 'Cliente'">
+                        Rol: <span th:text="${rol}"></span>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label for="nombres">Nombres:</label>
+                    <label for="nombres" class="form-label">Nombres:</label>
                     <input type="text" id="nombres" th:field="*{nombres}" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label for="apellidos">Apellidos:</label>
+                    <label for="apellidos" class="form-label">Apellidos:</label>
                     <input type="text" id="apellidos" th:field="*{apellidos}" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label for="email">Email (Login):</label>
+                    <label for="email" class="form-label">Email (Login):</label>
                     <input type="email" id="email" th:field="*{email}" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label for="fotoUrl">URL de la Foto de Perfil:</label>
+                    <label for="fotoUrl" class="form-label">URL de la Foto de Perfil:</label>
                     <input type="text" id="fotoUrl" th:field="*{fotoUrl}" class="form-control">
                 </div>
-
-                <div class="form-group" th:with="rol = (${usuario instanceof T(com.app.GoldenFeets.Entity.Administrador)}) ? 'ADMIN' : 'CLIENTE'">
-                    <label>Rol (No editable):</label>
-                    <input type="text" th:value="${rol}" class="form-control" readonly
-                           style="text-transform: capitalize;"> </div>
-
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Guardar Cambios</button>
@@ -109,19 +137,19 @@
             <h3 class="admin-subtitle">Cambiar Contraseña</h3>
 
             <div th:if="${successPassword}" class="alert alert-success" th:text="${successPassword}"></div>
-            <div th:if="${errorPassword}" class="alert alert-danger" th:text="${errorPassword}"></div>
+            <div th:if="${errorPassword}" class_ ="alert alert-danger" th:text="${errorPassword}"></div>
 
-            <form th:action="@{/admin/perfil/password}" th:object="${passwordDTO}" method="post">
+            <form th:action="@{/admin/perfil/password}" th:object="${passwordDTO}" method="post" class="admin-form">
                 <div class="form-group">
-                    <label for="pass-actual">Contraseña Actual:</label>
+                    <label for="pass-actual" class="form-label">Contraseña Actual:</label>
                     <input type="password" id="pass-actual" th:field="*{passwordActual}" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="pass-nueva">Nueva Contraseña:</label>
+                    <label for="pass-nueva" class="form-label">Nueva Contraseña:</label>
                     <input type="password" id="pass-nueva" th:field="*{nuevaPassword}" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="pass-confirmar">Confirmar Nueva Contraseña:</label>
+                    <label for="pass-confirmar" class="form-label">Confirmar Nueva Contraseña:</label>
                     <input type="password" id="pass-confirmar" th:field="*{confirmarPassword}" class="form-control" required>
                 </div>
                 <div class="form-actions">

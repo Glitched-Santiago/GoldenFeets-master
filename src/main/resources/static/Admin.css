@@ -1,20 +1,24 @@
 /*
 ================================================================================
- Estilos para el Dashboard de Administración (Versión Definitiva)
+ Estilos para el Dashboard de Administración (Versión Clara y Formal)
 ================================================================================
 */
 
 :root {
-    --admin-bg: #111827;
-    --admin-sidebar-bg: #1F2937;
-    --admin-card-bg: #1F2937;
-    --admin-border: #374151;
-    --admin-text-primary: #F9FAFB;
-    --admin-text-secondary: #9CA3AF;
-    --admin-accent-blue: #3B82F6;
-    --admin-accent-violet: #8B5CF6; /* Violeta para acentos */
-    --admin-accent-yellow: #FBBF24;
-    --admin-accent-red: #EF4444;
+    /* Paleta Clara y Profesional */
+    --admin-bg: #F3F4F6;                 /* Gris muy claro (Fondo principal) */
+    --admin-sidebar-bg: #FFFFFF;         /* Blanco (Barra lateral) */
+    --admin-card-bg: #FFFFFF;            /* Blanco (Tarjetas) */
+    --admin-border: #E5E7EB;             /* Borde gris */
+    --admin-text-primary: #1F2937;       /* Negro suave (Texto principal) */
+    --admin-text-secondary: #6B7280;     /* Gris (Texto secundario) */
+
+    /* Acentos (Mantenemos los colores de marca) */
+    --admin-accent-blue: #007BFF;         /* Azul primario (del tema claro) */
+    --admin-accent-violet: #8B5CF6;       /* Violeta (para badges) */
+    --admin-accent-yellow: #F59E0B;       /* Amarillo/Ámbar */
+    --admin-accent-red: #EF4444;          /* Rojo */
+    --admin-accent-green: #10B981;        /* Verde */
 }
 
 body.admin-body {
@@ -29,13 +33,65 @@ body.admin-body {
     min-height: 100vh;
 }
 
-/* ... (Estilos de sidebar no cambian) ... */
-.admin-sidebar { background-color: var(--admin-sidebar-bg); padding: 1.5rem; border-right: 1px solid var(--admin-border); }
-.sidebar-logo { color: var(--admin-text-primary); font-size: 1.5rem; font-weight: 700; text-decoration: none; margin-bottom: 2rem; display: block; }
+/* --- Barra Lateral --- */
+.admin-sidebar {
+    background-color: var(--admin-sidebar-bg);
+    padding: 1.5rem;
+    border-right: 1px solid var(--admin-border);
+}
+.sidebar-logo {
+    color: var(--admin-accent-blue); /* Logo en color primario */
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-decoration: none;
+    margin-bottom: 2rem;
+    display: block;
+}
 .sidebar-nav { list-style: none; padding: 0; margin: 0; }
-.sidebar-nav a { display: block; padding: 0.75rem 1rem; color: var(--admin-text-secondary); text-decoration: none; border-radius: 0.375rem; transition: all 0.2s ease; }
-.sidebar-nav a:hover, .sidebar-nav a.active { background-color: var(--admin-accent-blue); color: var(--admin-text-primary); }
+.sidebar-nav a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: var(--admin-text-secondary);
+    text-decoration: none;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+.sidebar-nav a:hover {
+    background-color: oklch(from var(--admin-accent-blue) l c h / 0.1); /* Fondo azul muy claro */
+    color: var(--admin-accent-blue);
+}
+.sidebar-nav a.active {
+    background-color: var(--admin-accent-blue);
+    color: #FFFFFF; /* Texto blanco en el activo */
+}
 
+
+/* --- Contenedor Principal --- */
+.admin-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: hidden;
+    background-color: var(--admin-bg); /* Fondo del área de contenido */
+}
+
+.admin-main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background-color: var(--admin-card-bg); /* Blanco */
+    border-bottom: 1px solid var(--admin-border);
+    flex-shrink: 0;
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--admin-text-primary);
+}
 
 .admin-main-content {
     padding: 2rem;
@@ -43,7 +99,6 @@ body.admin-body {
 }
 
 /* --- ESTILOS GENERALES DEL CONTENIDO --- */
-
 .admin-header {
     display: flex;
     justify-content: space-between;
@@ -54,6 +109,7 @@ body.admin-body {
 .admin-title {
     font-size: 2.25rem;
     font-weight: 700;
+    color: var(--admin-text-primary);
 }
 
 .admin-card {
@@ -61,20 +117,19 @@ body.admin-body {
     border: 1px solid var(--admin-border);
     border-radius: 0.5rem;
     padding: 2rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05); /* Sombra muy sutil */
 }
 
 /* --- ESTILOS PARA FORMULARIOS --- */
-
-/* Formulario de Búsqueda (CORREGIDO) */
 .search-form {
     display: flex;
-    flex-wrap: wrap; /* Permite que los elementos se ajusten en varias líneas si es necesario */
-    gap: 1rem; /* Espacio entre todos los campos y botones */
-    align-items: flex-end; /* Alinea los elementos en la parte inferior */
-    margin-bottom: 2.5rem; /* Aumentamos el espacio antes de la tabla */
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+    margin-bottom: 2.5rem;
 }
 .search-form .form-group {
-    flex: 1 1 180px; /* Permite que los campos crezcan pero con una base de 180px */
+    flex: 1 1 180px;
     margin-bottom: 0;
 }
 .search-form-actions {
@@ -82,7 +137,6 @@ body.admin-body {
     gap: 0.5rem;
 }
 
-/* Formulario de Creación/Edición */
 .admin-form .form-group {
     margin-bottom: 1.75rem;
 }
@@ -95,7 +149,7 @@ body.admin-body {
 }
 .admin-form .form-control, .search-input {
     width: 100%;
-    background-color: var(--admin-bg);
+    background-color: var(--admin-bg); /* Fondo gris claro */
     border: 1px solid var(--admin-border);
     color: var(--admin-text-primary);
     padding: 0.75rem;
@@ -108,7 +162,7 @@ body.admin-body {
 .admin-form .form-control:focus, .search-input:focus {
     outline: none;
     border-color: var(--admin-accent-blue);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 0 0 3px oklch(from var(--admin-accent-blue) l c h / 0.4);
 }
 .form-actions {
     margin-top: 2rem;
@@ -117,7 +171,6 @@ body.admin-body {
 }
 
 /* --- ESTILOS PARA LA TABLA --- */
-
 .admin-table {
     width: 100%;
     border-collapse: collapse;
@@ -128,12 +181,16 @@ body.admin-body {
     color: var(--admin-text-secondary);
     text-transform: uppercase;
     font-size: 0.75rem;
-    border-bottom: 2px solid var(--admin-accent-violet); /* Línea violeta */
+    border-bottom: 2px solid var(--admin-accent-blue); /* Línea azul */
 }
 .admin-table td {
     padding: 1rem;
     text-align: left;
     border-bottom: 1px solid var(--admin-border);
+    color: var(--admin-text-primary);
+}
+.admin-table tbody tr:hover {
+    background-color: oklch(from var(--admin-bg) l c h / 0.5); /* Fondo sutil al pasar el mouse */
 }
 .admin-table tbody tr:last-child td {
     border-bottom: none;
@@ -154,7 +211,7 @@ body.admin-body {
     transition: opacity 0.2s ease;
 }
 .action-btn:hover { opacity: 0.8; }
-.action-btn svg { width: 16px; height: 16px; color: var(--admin-bg); }
+.action-btn svg { width: 16px; height: 16px; color: #FFFFFF; } /* Iconos blancos */
 .action-btn-edit { background-color: var(--admin-accent-yellow); }
 .action-btn-delete { background-color: var(--admin-accent-red); }
 
@@ -172,20 +229,24 @@ body.admin-body {
 }
 .btn-primary {
     background-color: var(--admin-accent-blue);
-    color: var(--admin-text-primary);
+    color: #FFFFFF;
 }
 .btn-secondary {
     background-color: var(--admin-border);
     color: var(--admin-text-secondary);
 }
+.btn-secondary:hover {
+    background-color: #D1D5DB; /* Un gris un poco más oscuro */
+    color: var(--admin-text-primary);
+}
 .btn svg { width: 16px; height: 16px; }
+
 /* --- Estilos para el Dashboard --- */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
 }
-
 .dashboard-card {
     display: block;
     background-color: var(--admin-card-bg);
@@ -194,38 +255,34 @@ body.admin-body {
     padding: 1.5rem;
     text-decoration: none;
     transition: all 0.2s ease-in-out;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
 }
-
 .dashboard-card:hover {
     transform: translateY(-5px);
     border-color: var(--admin-accent-blue);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -2px rgb(0 0 0 / 0.05);
 }
-
 .dashboard-card-icon {
     margin-bottom: 1rem;
 }
-
 .dashboard-card-icon svg {
     width: 2.5rem;
     height: 2.5rem;
     color: var(--admin-accent-blue);
 }
-
 .dashboard-card-title {
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--admin-text-primary);
     margin-bottom: 0.5rem;
 }
-
 .dashboard-card-description {
     font-size: 0.875rem;
     color: var(--admin-text-secondary);
     line-height: 1.5;
 }
-/* --- COMPONENTES ADICIONALES PARA LA TABLA DE PEDIDOS --- */
 
+/* --- COMPONENTES ADICIONALES PARA LA TABLA DE PEDIDOS --- */
 .status-badge {
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
@@ -233,15 +290,17 @@ body.admin-body {
     font-weight: 600;
     text-transform: uppercase;
 }
-
 .status-completed {
-    background-color: rgba(59, 130, 246, 0.1); /* azul */
-    color: var(--admin-accent-blue);
+    background-color: oklch(from var(--admin-accent-green) l c h / 0.1);
+    color: var(--admin-accent-green);
 }
-
 .status-pending {
-    background-color: rgba(251, 191, 36, 0.1); /* amarillo */
+    background-color: oklch(from var(--admin-accent-yellow) l c h / 0.1);
     color: var(--admin-accent-yellow);
+}
+.status-cancelled {
+    background-color: oklch(from var(--admin-accent-red) l c h / 0.1);
+    color: var(--admin-accent-red);
 }
 
 .product-list-in-table {
@@ -251,85 +310,53 @@ body.admin-body {
     font-size: 0.8rem;
     color: var(--admin-text-secondary);
 }
-
 .product-list-in-table li:not(:last-child) {
     margin-bottom: 0.5rem;
 }
-/* --- Estilos para el Layout del Header --- */
 
-.admin-content-wrapper {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow-y: hidden;
-}
-
-.admin-main-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem 2rem;
-    background-color: var(--admin-sidebar-bg);
-    border-bottom: 1px solid var(--admin-border);
-    flex-shrink: 0; /* Evita que el header se encoja */
-}
-
-.header-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0;
-}
-
-.admin-main-content {
-    padding: 2rem;
-    overflow-y: auto; /* Permite scroll solo en el área de contenido */
-}
-
+/* --- Botón de Logout --- */
 .logout-form button.btn-secondary {
-    background-color: var(--admin-border);
+    background-color: transparent;
     color: var(--admin-text-secondary);
-    border: none;
+    border: 1px solid var(--admin-border);
 }
 .logout-form button.btn-secondary:hover {
-    background-color: var(--admin-accent-red);
-    color: var(--admin-text-primary);
-}
-.sidebar-profile {
-    padding: 1.25rem 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: 1rem;
-    display: flex; /* Hacemos que la imagen y el texto estén en línea */
-    align-items: center; /* Centramos verticalmente */
-    gap: 0.75rem; /* Espacio entre imagen y texto */
+    background-color: oklch(from var(--admin-accent-red) l c h / 0.1);
+    color: var(--admin-accent-red);
+    border-color: var(--admin-accent-red);
 }
 
-/* Estilo para la imagen de perfil */
+/* --- Perfil en Sidebar --- */
+.sidebar-profile {
+    padding: 1.25rem 1rem;
+    border-top: 1px solid var(--admin-border);
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
 .profile-pic {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    object-fit: cover; /* Evita que la imagen se deforme */
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    object-fit: cover;
+    border: 2px solid var(--admin-border);
 }
-
 .profile-info {
     line-height: 1.2;
 }
-
 .profile-name {
     font-weight: 600;
-    color: #fff;
+    color: var(--admin-text-primary); /* Texto oscuro */
     font-size: 0.9rem;
 }
-
-/* Enlace "Mi Perfil" */
 .profile-link {
     font-size: 0.8rem;
-    color: #a0aec0; /* Color tenue */
+    color: var(--admin-text-secondary); /* Texto gris */
     text-decoration: none;
     transition: color 0.2s;
 }
 .profile-link:hover {
-    color: #fff;
+    color: var(--admin-accent-blue);
     text-decoration: underline;
 }

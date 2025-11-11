@@ -9,7 +9,7 @@ import java.util.List;
 @Entity
 @Table(name = "pedidos")
 @Data
-public class Pedido {
+public class        Pedido {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +33,6 @@ public class Pedido {
     @PrePersist
     public void onPrePersist() {
         fechaCreacion = LocalDateTime.now();
-        estado = EstadoPedido.PENDIENTE; // Estado inicial
+        estado = EstadoPedido.PAGADO; // Estado inicial
     }
 }

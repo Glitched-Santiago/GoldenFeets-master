@@ -22,28 +22,28 @@
     </div>
 
     <div class="admin-card">
-        <!-- El objeto del formulario debe ser el DTO -->
         <form th:action="@{/admin/inventario/entrada}" th:object="${entradaDto}" method="post" class="admin-form">
 
             <div class="form-group full-width">
                 <label for="producto" class="form-label">Producto</label>
-                <!--
-                  CORRECCIÓN:
-                  th:field se vincula a "productoId", que es un Long, el mismo tipo que th:value en las opciones.
-                  Esto evita el error de ClassCastException durante el procesamiento de la plantilla.
-                -->
                 <select th:field="*{productoId}" id="producto" class="form-control" required>
                     <option value="">-- Selecciona un producto --</option>
                     <option th:each="prod : ${productos}"
                             th:value="${prod.id}"
-                            th:text="|${prod.nombre} (Talla: ${prod.talla != null ? prod.talla : 'N/A'}, Color: ${prod.color != null ? prod.color : 'N/A'})|"></option>
+                            th:text="|${prod.nombre} (Stock actual: ${prod.stock})|"></option>
                 </select>
             </div>
 
             <div class="form-grid">
+
                 <div class="form-group">
                     <label for="distribuidor" class="form-label">Distribuidor</label>
-                    <input type="text" th:field="*{distribuidor}" id="distribuidor" class="form-control" required>
+                    <select th:field="*{distribuidor}" id="distribuidor" class="form-control" required>
+                        <option value="">-- Selecciona un distribuidor --</option>
+                        <option th:each="dist : ${distribuidores}"
+                                th:value="${dist}"
+                                th:text="${dist}"></option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -52,9 +52,19 @@
                 </div>
             </div>
 
-            <div class="form-group full-width">
-                <label for="color" class="form-label">Color (si es una nueva variante)</label>
-                <input type="text" th:field="*{color}" id="color" placeholder="Ej: Azul Marino (opcional)" class="form-control">
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="precioCostoUnitario" class="form-label">Precio de Costo (Por unidad)</label>
+                    <input type="number" th:field="*{precioCostoUnitario}" id="precioCostoUnitario"
+                           class="form-control" step="0.01" min="0" required
+                           placeholder="Ej: 80000">
+                </div>
+
+                <div class="form-group">
+                    <label for="color" class="form-label">Color (del lote)</label>
+                    <input type="text" th:field="*{color}" id="color" placeholder="Ej: Azul Marino" class="form-control" required>
+                </div>
             </div>
 
             <div class="form-actions">

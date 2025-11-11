@@ -6,9 +6,56 @@
 
 /* 1. VARIABLES DEL TEMA DE COLORES */
 
-/* TEMA CLARO (Estilo de la imagen de referencia) - AHORA ES EL PREDETERMINADO */
-/* 1. VARIABLES DEL TEMA DE COLORES - NEÓN URBANO */
+/* TEMA CLARO (NUEVO PREDETERMINADO) - Limpio y Formal */
 :root {
+  --background: #F8F9FA;         /* Gris muy claro (Fondo de página) */
+  --foreground: #212529;         /* Negro suave (Texto principal) */
+  --card: #FFFFFF;               /* Blanco (Fondo de tarjetas, inputs) */
+  --card-foreground: #212529;    /* Texto en tarjetas (igual al principal) */
+
+  /* Colores Corporativos (Adaptados a formal) */
+  --primary: #007BFF;             /* Azul principal (del Cian) - Formal y legible */
+  --primary-foreground: #FFFFFF; /* Texto en botón primario */
+
+  --secondary: #6C757D;           /* Gris secundario (neutral) */
+  --secondary-foreground: #FFFFFF;/* Texto en botón secundario */
+
+  /* Colores de Acento y Estado */
+  --muted: #F8F9FA;               /* Fondo sutil (igual al de página) */
+  --muted-foreground: #6C757D;   /* Gris (Texto sutil, placeholders) */
+  --accent: #D63384;              /* Rosa/Magenta (para precios, del Magenta) */
+  --success: #198754;             /* Verde formal para éxito */
+  --destructive: #DC3545;         /* Rojo (Botones de eliminar) */
+  --destructive-foreground: #FFFFFF;
+
+  /* Bordes e Inputs */
+  --border: #DEE2E6;             /* Borde gris claro */
+  --input: #FFFFFF;              /* Fondo de input (blanco) */
+  --ring: #007BFF;                /* Anillo de enfoque (Azul) */
+
+  --radius: 0.375rem;             /* 6px */
+}
+
+/* TEMA OSCURO "GOLDEN" (Opcional) */
+.dark-theme {
+  --background: oklch(0.18 0.01 277);
+  --foreground: oklch(0.96 0.01 277);
+  --card: oklch(0.22 0.01 277);
+  --card-foreground: oklch(0.96 0.01 277);
+  --primary: oklch(0.85 0.22 85); /* Dorado */
+  --primary-foreground: oklch(0.18 0.01 277);
+  --muted: oklch(0.26 0.01 277);
+  --muted-foreground: oklch(0.65 0.01 277);
+  --border: oklch(0.26 0.01 277);
+  --input: oklch(0.26 0.01 277);
+  --ring: oklch(0.85 0.22 85);
+  --accent: oklch(0.85 0.22 85); /* Dorado también para acento */
+  --success: #28a745;
+  --destructive: #E52B50;
+}
+
+/* TEMA NEÓN URBANO (Opcional - El tema oscuro original) */
+.neon-theme {
   --background: #1A1A2E; /* Azul Medianoche (Fondo) */
   --foreground: #E0E0E0; /* Gris Claro (Texto) */
   --card: #16213E;       /* Azul más claro para tarjetas */
@@ -25,22 +72,9 @@
   --border: #2D3A6C;
   --input: #16213E;
   --ring: #00FFFF;      /* Anillo de enfoque en Cian */
-  --radius: 0.5rem;
+  --success: #28a745;
 }
-/* TEMA OSCURO "GOLDEN" (Se puede activar añadiendo la clase "dark-theme" al body) */
-.dark-theme {
-  --background: oklch(0.18 0.01 277);
-  --foreground: oklch(0.96 0.01 277);
-  --card: oklch(0.22 0.01 277);
-  --card-foreground: oklch(0.96 0.01 277);
-  --primary: oklch(0.85 0.22 85); /* Dorado */
-  --primary-foreground: oklch(0.18 0.01 277);
-  --muted: oklch(0.26 0.01 277);
-  --muted-foreground: oklch(0.65 0.01 277);
-  --border: oklch(0.26 0.01 277);
-  --input: oklch(0.26 0.01 277);
-  --ring: oklch(0.85 0.22 85);
-}
+
 
 /* 2. ESTILOS BASE Y RESET */
 *, *::before, *::after { box-sizing: border-box; }
@@ -78,11 +112,9 @@ a:hover {
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--border);
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.05); /* Sombra más sutil */
 }
 .login-card-content { display: grid; }
-
-/* ... (el resto de las clases de componentes no necesitan cambios) ... */
 
 .login-form { padding: 3rem; display: flex; flex-direction: column; gap: 1.5rem; }
 .login-header { text-align: center; }
@@ -90,7 +122,7 @@ a:hover {
 .login-header p { color: var(--muted-foreground); }
 .input-field { width: 100%; background-color: var(--input); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: var(--foreground); }
 .input-field::placeholder { color: var(--muted-foreground); }
-.input-field:focus { outline: none; box-shadow: 0 0 0 2px var(--ring); }
+.input-field:focus { outline: none; box-shadow: 0 0 0 3px oklch(from var(--ring) l c h / 0.4); border-color: var(--ring); }
 .label { display: block; font-size: 0.875rem; font-weight: 500; color: var(--muted-foreground); margin-bottom: 0.5rem; }
 .btn-primary { width: 100%; background-color: var(--primary); color: var(--primary-foreground); font-weight: 700; padding: 0.75rem 1rem; border: none; border-radius: 0.375rem; cursor: pointer; transition: opacity 0.2s ease; }
 .btn-primary:hover { opacity: 0.8; }
@@ -104,15 +136,24 @@ a:hover {
 .signup-link { font-weight: 600; color: var(--primary); text-decoration: underline; text-underline-offset: 4px; }
 .footer-text { text-align: center; font-size: 0.75rem; color: var(--muted-foreground); margin-top: 1rem; }
 .footer-text a { text-decoration: underline; color: var(--muted-foreground); }
+
+/* --- Alertas (Actualizadas para usar variables de éxito y error) --- */
 .alert { font-size: 0.875rem; padding: 0.75rem; border-radius: 0.375rem; border: 1px solid; }
 .alert-error { background-color: oklch(from var(--destructive) l c h / 0.1); border-color: var(--destructive); color: var(--destructive); }
-.alert-success { background-color: oklch(from var(--accent) l c h / 0.2); border-color: var(--accent); color: oklch(from var(--accent-foreground) l c h / 0.8); }
+.alert-success { background-color: oklch(from var(--success) l c h / 0.1); border-color: var(--success); color: var(--success); }
+
 
 /* MEDIA QUERIES PARA RESPONSIVIDAD */
 @media (min-width: 768px) {
   .login-card-content { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .image-panel { display: block; }
 }
+
+/*
+================================================================================
+ HEADER Y LANDING PAGE
+================================================================================
+*/
 header {
   background-color: var(--card);
   border-bottom: 1px solid var(--border);
@@ -121,7 +162,7 @@ header {
   top: 0;
   z-index: 50;
   backdrop-filter: blur(8px);
-  background-color: oklch(from var(--card) l c h / 0.8);
+  background-color: oklch(from var(--card) l c h / 0.85); /* Efecto vidrio */
 }
 .header-container {
   display: flex;
@@ -160,7 +201,7 @@ header {
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: white;
+  color: white; /* Texto blanco siempre en Hero por la imagen */
   background-image: url('https://images.unsplash.com/photo-1511556532299-8f662fc26c06?q=80&w=2070&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
@@ -169,7 +210,7 @@ header {
   position: absolute;
   inset: 0;
   background-color: black;
-  opacity: 0.5;
+  opacity: 0.5; /* Overlay oscuro para legibilidad */
 }
 .hero-content {
   position: relative; /* Para que esté por encima del overlay */
@@ -210,6 +251,7 @@ header {
 .featured-section {
   padding: 4rem 2rem;
   text-align: center;
+  background-color: var(--background); /* Fondo de página */
 }
 .section-title {
   font-size: 2.25rem; /* 36px */
@@ -231,10 +273,11 @@ header {
   overflow: hidden;
   text-align: left;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
 }
 .featured-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.05);
 }
 .featured-card img {
   width: 100%;
@@ -260,7 +303,9 @@ header {
   padding: 2rem;
   font-size: 0.875rem; /* 14px */
   color: var(--muted-foreground);
+  margin-top: 4rem; /* Espacio antes del footer */
 }
+
 /*
 ================================================================================
  6. ESTILOS DE LA PÁGINA DE CATÁLOGO Y COMPONENTES GENERALES
@@ -283,7 +328,7 @@ header {
   z-index: 50;
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(8px);
-  background-color: oklch(from var(--background) l c h / 0.8); /* Fondo con transparencia */
+  background-color: oklch(from var(--card) l c h / 0.85); /* Fondo con transparencia */
 }
 .main-header .header-content {
   display: flex;
@@ -291,12 +336,7 @@ header {
   justify-content: space-between;
   height: 4rem; /* 64px */
 }
-.header-logo {
-  font-size: 1.5rem; /* 24px */
-  font-weight: 700;
-  color: var(--primary);
-  text-decoration: none;
-}
+
 .header-nav {
   display: none; /* Oculto en móviles */
 }
@@ -341,6 +381,7 @@ header {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2.5rem; /* 40px */
+  margin-top: 4rem; /* Espacio desde el header */
 }
 .page-title {
   font-size: 2.25rem; /* 36px */
@@ -374,10 +415,11 @@ header {
   border-radius: var(--radius);
   overflow: hidden;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
 }
 .product-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.05);
 }
 .product-card-image-wrapper {
   position: relative;
@@ -422,6 +464,7 @@ header {
   background-color: var(--muted);
   color: var(--muted-foreground);
   border-radius: 0.25rem;
+  border: 1px solid var(--border);
 }
 .add-to-cart-btn {
   width: 100%;
@@ -437,20 +480,6 @@ header {
 .add-to-cart-btn:hover {
   opacity: 0.8;
 }
-
-
-/* --- Alertas (Actualizadas para usar verde y rojo explícitamente) --- */
-.alert-success {
-  background-color: rgba(74, 222, 128, 0.1); /* bg-green-500/10 */
-  border: 1px solid rgba(34, 197, 94, 0.5);   /* border-green-500 */
-  color: #86efac; /* text-green-300 */
-}
-.alert-error {
-  background-color: rgba(239, 68, 68, 0.1); /* bg-red-500/10 */
-  border: 1px solid rgba(220, 38, 38, 0.5);   /* border-red-500 */
-  color: #fca5a5; /* text-red-300 */
-}
-
 
 /* --- Media Queries para responsividad --- */
 @media (min-width: 768px) { /* md */
@@ -471,7 +500,12 @@ header {
     grid-template-columns: repeat(4, 1fr);
   }
 }
-/* --- Página del Carrito --- */
+
+/*
+================================================================================
+ 7. PÁGINA DEL CARRITO
+================================================================================
+*/
 .cart-page {
   padding: 4rem 0;
   min-height: 60vh;
@@ -480,6 +514,11 @@ header {
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
+}
+@media (min-width: 1024px) { /* lg */
+  .cart-grid {
+    grid-template-columns: 2fr 1fr; /* Carrito más ancho que el resumen */
+  }
 }
 .cart-items-list {
   display: flex;
@@ -534,6 +573,7 @@ header {
   border: 1px solid var(--border);
   position: sticky;
   top: 6rem; /* Para que no choque con el header */
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
 }
 .summary-title {
   font-size: 1.5rem;
@@ -572,73 +612,6 @@ header {
   text-decoration: none;
 }
 
-/* --- Modal de Inicio de Sesión --- */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-.modal-overlay.is-visible {
-  opacity: 1;
-  visibility: visible;
-}
-.modal-content {
-  background-color: var(--card);
-  padding: 2rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  text-align: center;
-  max-width: 400px;
-  width: 90%;
-  transform: scale(0.9);
-  transition: transform 0.3s ease;
-}
-.modal-overlay.is-visible .modal-content {
-  transform: scale(1);
-}
-.modal-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-top: 0;
-  color: var(--foreground);
-}
-.modal-description {
-  color: var(--muted-foreground);
-  margin-bottom: 1.5rem;
-}
-.modal-actions {
-  display: flex;
-  gap: 1rem;
-}
-.modal-btn {
-  flex: 1;
-  padding: 0.75rem;
-  border-radius: var(--radius);
-  text-decoration: none;
-  font-weight: 600;
-  transition: opacity 0.2s ease;
-}
-.modal-btn.primary {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-}
-.modal-btn.secondary {
-  background-color: transparent;
-  color: var(--foreground);
-  border: 1px solid var(--border);
-}
-.modal-btn:hover {
-  opacity: 0.8;
-  text-decoration: none;
-}
 /*
 ================================================================================
  9. ESTILOS PARA NOTIFICACIONES (TOAST) Y MODAL DE LOGIN
@@ -655,7 +628,7 @@ header {
     padding: 1rem 1.5rem;
     border-radius: var(--radius);
     border: 1px solid var(--border);
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.05);
     z-index: 100;
     display: flex;
     align-items: center;
@@ -673,7 +646,7 @@ header {
     height: 1.5rem;
 }
 .toast-icon.success {
-    color: var(--admin-accent-green); /* Usando una variable de admin por conveniencia */
+    color: var(--success);
 }
 .toast-message {
     font-weight: 500;
@@ -683,7 +656,7 @@ header {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.5); /* Menos oscuro */
     backdrop-filter: blur(4px);
     z-index: 100;
     display: flex;
@@ -748,15 +721,14 @@ header {
     opacity: 0.8;
     text-decoration: none;
 }
+
 /*
 ================================================================================
  10. ESTILOS DEL HEADER MINIMALISTA (ACTUALIZADO)
 ================================================================================
 */
-
-/* --- Contenedor del Header --- */
 .site-header {
-    background-color: var(--card); /* Usa el color de la tarjeta (blanco o negro según el tema) */
+    background-color: var(--card);
     border-bottom: 1px solid var(--border);
     padding: 0 2rem;
     position: sticky;
@@ -765,7 +737,6 @@ header {
     backdrop-filter: blur(8px);
     background-color: oklch(from var(--card) l c h / 0.9); /* Efecto de vidrio esmerilado */
 }
-
 .site-header-container {
     display: flex;
     justify-content: space-between;
@@ -774,8 +745,6 @@ header {
     margin: 0 auto;
     height: 5rem; /* 80px */
 }
-
-/* --- Logo (Izquierda) --- */
 .site-header-logo {
     font-size: 1.5rem;
     font-weight: 800;
@@ -783,8 +752,6 @@ header {
     text-decoration: none;
     letter-spacing: -1px;
 }
-
-/* --- Navegación (Centro) --- */
 .site-header-nav {
     display: flex; /* Alinea los enlaces uno al lado del otro */
     gap: 2.5rem; /* 40px de espacio entre enlaces */
@@ -792,7 +759,6 @@ header {
     padding: 0;
     margin: 0;
 }
-
 .site-header-nav a {
     font-size: 0.875rem; /* 14px */
     font-weight: 500;
@@ -801,18 +767,14 @@ header {
     transition: color 0.2s ease;
     padding-bottom: 4px;
 }
-
 .site-header-nav a:hover {
     color: var(--foreground); /* Cambia al color principal al pasar el ratón */
 }
-
-/* --- Acciones (Derecha) --- */
 .site-header-actions {
     display: flex;
     align-items: center;
     gap: 1.5rem; /* 24px */
 }
-
 .header-action-link, .header-auth-btn {
     color: var(--muted-foreground);
     background: none;
@@ -826,28 +788,29 @@ header {
     font-family: inherit;
     text-decoration: none;
 }
-
 .header-action-link:hover, .header-auth-btn:hover {
     color: var(--foreground);
 }
-
 .header-action-link svg {
     width: 1.5rem; /* 24px */
     height: 1.5rem;
 }
-
-/* Ocultar la navegación central en pantallas pequeñas para no saturar */
 @media (max-width: 768px) {
     .site-header-nav {
         display: none;
     }
 }
+
+/*
+================================================================================
+ 11. ESTILOS CHECKOUT, COMPRAS, ETC.
+================================================================================
+*/
 .quantity-adjuster {
     display: flex;
     align-items: center;
     gap: 0.5rem; /* 8px */
 }
-
 .quantity-btn {
     background-color: var(--border);
     color: var(--foreground);
@@ -863,17 +826,14 @@ header {
     justify-content: center;
     transition: background-color 0.2s ease;
 }
-
 .quantity-btn:hover {
     background-color: var(--primary);
     color: var(--primary-foreground);
 }
-
 .quantity-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }
-
 .quantity-display {
     font-size: 1rem;
     font-weight: 600;
@@ -884,39 +844,24 @@ header {
     padding: 4rem 0;
     min-height: 70vh;
 }
-
 .checkout-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 3rem; /* Espacio entre el formulario y el resumen */
 }
-
-/* Para pantallas más grandes, usamos dos columnas */
 @media (min-width: 1024px) {
     .checkout-grid {
         grid-template-columns: 1.5fr 1fr; /* La columna del formulario es más ancha */
     }
 }
-
 .checkout-form .form-section {
     margin-bottom: 2.5rem;
 }
-
-.section-title {
-    font-size: 1.5rem; /* 24px */
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border);
-    color: var(--foreground);
-}
-
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
 }
-
 .order-summary {
     background-color: var(--card);
     padding: 1.5rem;
@@ -924,8 +869,8 @@ header {
     border: 1px solid var(--border);
     position: sticky;
     top: 6rem; /* Para que se mantenga visible al hacer scroll */
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
 }
-
 .summary-item {
     display: flex;
     align-items: center;
@@ -936,51 +881,40 @@ header {
 .summary-item:last-child {
     border-bottom: none;
 }
-
 .summary-item-image img {
     width: 64px;
     height: 64px;
     object-fit: cover;
     border-radius: 0.375rem;
 }
-
 .summary-item-details {
     flex-grow: 1;
 }
-
 .summary-item-title {
     font-weight: 600;
 }
-
 .summary-item-price {
     font-weight: 600;
     margin-left: auto; /* Empuja el precio a la derecha */
 }
-/*
-================================================================================
- 11. ESTILOS PARA HISTORIAL DE COMPRAS Y CONFIRMACIÓN
-================================================================================
-*/
 
 /* --- Página de Historial de Compras --- */
 .orders-page {
     padding: 4rem 0;
     min-height: 70vh;
 }
-
 .orders-list {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
-
 .order-card {
     background-color: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
 }
-
 .order-header {
     display: flex;
     justify-content: space-between;
@@ -989,7 +923,6 @@ header {
     background-color: var(--muted);
     border-bottom: 1px solid var(--border);
 }
-
 .order-id {
     font-size: 0.875rem;
     font-weight: 500;
@@ -1012,11 +945,9 @@ header {
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
 }
-
 .order-body {
     padding: 1rem 1.5rem;
 }
-
 .order-item {
     display: flex;
     justify-content: space-between;
@@ -1027,7 +958,6 @@ header {
 .order-item:not(:last-child) {
     border-bottom: 1px dashed var(--border);
 }
-
 .order-footer {
     display: flex;
     justify-content: space-between;
@@ -1082,85 +1012,38 @@ header {
     color: var(--primary-foreground);
     text-decoration: none;
 }
-/* ... Tus otras variables y estilos ... */
 
-/*
-================================================================================
- 4. SECCIONES DESTACADAS Y TARJETAS DE PRODUCTO (HOME, CATÁLOGO)
-================================================================================
-*/
-
-.featured-section {
-    padding: 4rem 0;
-    text-align: center;
-    background-color: var(--background); /* Asegúrate de usar una variable de fondo */
-}
-
-.section-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 3rem;
-    color: var(--foreground); /* Color del título */
-}
-
-.featured-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 3 columnas en desktop, se ajusta a pantallas más pequeñas */
-    gap: 2rem;
-    max-width: 1200px; /* Ancho máximo para la cuadrícula */
-    margin: 0 auto; /* Centrar la cuadrícula */
-}
-
-.featured-card {
-    background-color: var(--card); /* Fondo para la tarjeta */
-    border: 1px solid var(--border); /* Borde sutil */
-    border-radius: var(--radius); /* Bordes redondeados */
-    overflow: hidden; /* Asegura que la imagen no se desborde */
-    text-align: left;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    display: flex; /* Para organizar el contenido verticalmente */
-    flex-direction: column;
-}
-
-.featured-card:hover {
-    transform: translateY(-5px); /* Efecto al pasar el ratón */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Sombra al pasar el ratón */
-}
-
+/* --- Sección Productos Destacados (Home, Catálogo) --- */
 .featured-card-img {
     width: 100%;
     height: 250px; /* Altura fija para las imágenes */
     object-fit: cover; /* Ajusta la imagen sin distorsionarla */
     border-bottom: 1px solid var(--border);
 }
-
 .featured-card-title {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--foreground);
     margin: 1.5rem 1.5rem 0.5rem 1.5rem;
 }
-
 .featured-card-price {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--accent); /* Color para el precio */
     margin: 0 1.5rem 1rem 1.5rem;
 }
-
 .featured-card-description {
     font-size: 0.9rem;
     color: var(--muted-foreground);
     margin: 0 1.5rem 1.5rem 1.5rem;
     flex-grow: 1; /* Para que la descripción ocupe el espacio restante */
 }
-
 .featured-card-button {
     display: block; /* Ocupa todo el ancho */
     width: calc(100% - 3rem); /* Ancho completo menos padding */
     margin: 0 1.5rem 1.5rem 1.5rem; /* Margen para centrar y separar */
     padding: 0.75rem 1rem;
-    background-color: var(--primary); /* Tu color principal (neón) */
+    background-color: var(--primary); /* Tu color principal */
     color: var(--primary-foreground); /* Color del texto del botón */
     text-align: center;
     text-decoration: none;
@@ -1168,26 +1051,20 @@ header {
     font-weight: 600;
     transition: background-color 0.2s ease;
 }
-
 .featured-card-button:hover {
     background-color: oklch(from var(--primary) l c h / 0.8); /* Un poco más oscuro al pasar el ratón */
     text-decoration: none;
-}
-/* --- Estilos para los enlaces de acción del Header --- */
-.site-header-actions .header-action-link {
-    display: inline-flex; /* Usa flexbox para alinear */
-    align-items: center;   /* Centra verticalmente el ícono y el texto */
-    gap: 0.5rem;           /* Añade un pequeño espacio entre ellos */
 }
 .product-link {
     text-decoration: none;
     color: inherit; /* Hereda el color del texto de su contenedor */
     display: block; /* Asegura que el enlace ocupe todo el espacio de la tarjeta */
 }
-
 .product-link:hover {
     text-decoration: none; /* Evita el subrayado al pasar el ratón */
 }
+
+/* --- Formulario de Filtro (Catálogo) --- */
 .catalogo-filtro-form {
     display: flex;
     flex-wrap: wrap;
@@ -1195,33 +1072,29 @@ header {
     margin-bottom: 2rem;
     justify-content: center;
 }
-
 .input-estetico {
-    background-color: #1e1e2f;
-    color: #fff;
-    border: 1px solid #444;
-    border-radius: 8px;
+    background-color: var(--input);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     padding: 0.5rem 1rem;
     font-size: 1rem;
     min-width: 200px;
     transition: all 0.3s ease;
 }
-
 .input-estetico::placeholder {
-    color: #aaa;
+    color: var(--muted-foreground);
 }
-
 .input-estetico:focus {
     outline: none;
-    border-color: #00e0ff;
-    box-shadow: 0 0 5px #00e0ff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px oklch(from var(--primary) l c h / 0.4);
 }
-
 .btn-filtrar {
-    background-color: #00e0ff;
-    color: #000;
+    background-color: var(--primary);
+    color: var(--primary-foreground);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius);
     padding: 0.5rem 1.5rem;
     font-size: 1rem;
     font-weight: bold;
@@ -1229,7 +1102,6 @@ header {
     transition: all 0.3s ease;
     min-width: 150px;
 }
-
 .btn-filtrar:hover {
-    background-color: #00bcd4;
+    opacity: 0.8;
 }

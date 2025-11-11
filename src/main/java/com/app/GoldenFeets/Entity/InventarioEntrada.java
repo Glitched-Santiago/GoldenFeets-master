@@ -28,13 +28,23 @@ public class InventarioEntrada {
     @Column(nullable = false, length = 50)
     private String color;
 
+    // --- NUEVOS CAMPOS ---
+    @Column(name = "precio_costo_unitario", nullable = false, columnDefinition = "double default 0.0")
+    private Double precioCostoUnitario = 0.0;
+
+    @Column(name = "costo_total_entrada", nullable = false, columnDefinition = "double default 0.0")
+    private Double costoTotalEntrada = 0.0;
+    // --- FIN DE NUEVOS CAMPOS ---
+
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;
 
-    // Se establece la fecha de registro automáticamente antes de guardar
     @PrePersist
     protected void onCreate() {
         fechaRegistro = LocalDateTime.now();
+        // Calculamos el costo total al guardar
+        if (this.cantidad != null && this.precioCostoUnitario != null) {
+            this.costoTotalEntrada = this.cantidad * this.precioCostoUnitario;
+        }
     }
 }
-
