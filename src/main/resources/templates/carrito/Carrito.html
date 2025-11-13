@@ -8,7 +8,26 @@
 <body>
 <section layout:fragment="content">
     <div class="container cart-page">
+        <h1 class="page-title" style="margin-bottom: 2rem;">Tu Carrito</h1><div class="container cart-page">
         <h1 class="page-title" style="margin-bottom: 2rem;">Tu Carrito</h1>
+
+        <div th:if="${errorMessage}"
+             style="background-color: #f8d7da; color: #721c24; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border: 1px solid #f5c6cb;">
+            <strong>Error:</strong> <span th:text="${errorMessage}"></span>
+        </div>
+        ```
+
+        Una vez que hagas esto, **intenta hacer la compra de nuevo**. Ahora, en lugar de no ver nada, serás redirigido al carrito y te aparecerá un cuadro rojo con el mensaje exacto del error (ej: "Error: No hay stock suficiente para...").
+
+        #### 2. Implementa la Validación Proactiva (Recomendado)
+
+        Para evitar que el usuario llegue al pago si no hay stock, modifica tu `PedidoController.java` para que valide el stock *antes* de mostrar la página de `Checkout.html`.
+
+        Necesitarás inyectar `ProductoService` en tu `PedidoController` y modificar el método `showCheckoutPage` (el `GET` de `/checkout`) como te mostré en la respuesta anterior.
+
+        ---
+
+        El primer paso es el más importante ahora mismo. Por favor, añade el bloque de HTML a tu `Carrito.html` y dime qué mensaje de error te aparece cuando intentas finalizar la compra.
 
         <div th:if="${#lists.isEmpty(items)}" style="text-align: center; padding: 3rem 0;">
             <p>Tu carrito está vacío. <a th:href="@{/catalogo}" style="text-decoration: underline; color: var(--primary);">¡Sigue comprando!</a></p>

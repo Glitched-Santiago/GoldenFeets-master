@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.time.LocalDate;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +51,7 @@ public class InventarioService {
                 nuevaEntrada.setPrecioCostoUnitario(entradaDTO.getPrecioCostoUnitario());
                 System.out.println("DEBUG (Entrada): Precio de costo DTO: " + entradaDTO.getPrecioCostoUnitario());
             } else {
-                System.out.println("DEBUG (Entrada): Precio de costo DTO es NULL. Se usará el default 0.0");
+                System.out.println("DEBUG (Entrada): Pre    cio de costo DTO es NULL. Se usará el default 0.0");
             }
 
             // 3. Guardar el registro de la entrada.
@@ -74,7 +76,6 @@ public class InventarioService {
             throw e; // Vuelve a lanzar el error para que el rollback ocurra
         }
     }
-
     @Transactional
     public InventarioSalida registrarSalidaManual(InventarioSalidaDTO salidaDTO) {
         // --- INICIO DEPURACIÓN ---
@@ -136,71 +137,141 @@ public class InventarioService {
         productoRepository.save(producto);
         return nuevaSalida;
     }
-
-    // --- DEPURACIÓN EN LECTURA ---
-
     @Transactional(readOnly = true)
-    public List<HistorialInventarioDTO> getHistorialUnificado() {
-        System.out.println("\n--- DEBUG: Iniciando getHistorialUnificado (Lectura) ---");
+    public List<HistorialInventarioDTO> getHistorialUnificado(
+            LocalDate fechaDesde, LocalDate fechaHasta, String productoNombre, String tipo
+    ) {
+        System.out.println("\n--- DEBUG: Iniciando getHistorialUnificado (Arreglo ImmutableList) ---");
         List<HistorialInventarioDTO> historial = new ArrayList<>();
 
-        // 1. Obtener todas las entradas
-        List<InventarioEntrada> entradas = inventarioEntradaRepository.findAll();
-        System.out.println("DEBUG (Lectura): Entradas encontradas en BBDD: " + entradas.size());
+        // 1. Obtener entradas (CON LA NUEVA CONSULTA)
+        List<InventarioEntrada> entradas = inventarioEntradaRepository.findAllWithProducto();
+        System.out.println("DEBUG (Lectura): Entradas encontradas (con fetch): " + entradas.size());
 
         for (InventarioEntrada e : entradas) {
+            // ... (Tu lógica de mapeo de entrada se queda igual)
+            if (e == null || e.getFechaRegistro() == null) continue;
             HistorialInventarioDTO dto = new HistorialInventarioDTO();
             dto.setFecha(e.getFechaRegistro());
-            dto.setProductoNombre(e.getProducto().getNombre());
+            dto.setProductoNombre(e.getProducto() != null ? e.getProducto().getNombre() : "Producto Desconocido");
             dto.setTipo("Entrada");
             dto.setCantidad(e.getCantidad());
-            dto.setDescripcion("Distribuidor: " + e.getDistribuidor());
+            dto.setDescripcion("Distribuidor: " + (e.getDistribuidor() != null ? e.getDistribuidor() : "N/A"));
+            Double costoUnitario = (e.getPrecioCostoUnitario() != null) ? e.getPrecioCostoUnitario() : 0.0;
+            dto.setPrecioUnitario(costoUnitario);
+            dto.setValorMonetario((e.getCantidad() != null ? e.getCantidad() : 0) * costoUnitario);
             historial.add(dto);
         }
 
-        // 2. Obtener todas las salidas
-        List<InventarioSalida> salidas = inventarioSalidaRepository.findAll();
-        System.out.println("DEBUG (Lectura): Salidas encontradas en BBDD: " + salidas.size());
+        // 2. Obtener salidas (CON LA NUEVA CONSULTA)
+        List<InventarioSalida> salidas = inventarioSalidaRepository.findAllWithPedidoAndDetalles();
+        System.out.println("DEBUG (Lectura): Salidas encontradas (con fetch): " + salidas.size());
 
         for (InventarioSalida s : salidas) {
+            // ... (Tu lógica de mapeo de salida se queda igual)
+            if (s == null || s.getFechaRegistro() == null) continue;
             HistorialInventarioDTO dto = new HistorialInventarioDTO();
             dto.setFecha(s.getFechaRegistro());
-            dto.setProductoNombre(s.getProducto().getNombre());
+            dto.setProductoNombre(s.getProducto() != null ? s.getProducto().getNombre() : "Producto Desconocido");
             dto.setTipo("Salida");
             dto.setCantidad(s.getCantidad());
-            dto.setDescripcion(s.getMotivo());
+
             if (s.getPedido() != null) {
-                dto.setPedidoId(s.getPedido().getId());
-                dto.setDescripcion("Venta (Pedido #" + s.getPedido().getId() + ")");
+                Pedido pedido = s.getPedido(); // ¡Esto ya está cargado!
+                dto.setPedidoId(pedido.getId());
+                dto.setDescripcion("Venta (Pedido #" + pedido.getId() + ")");
+
+                if (pedido.getDetalles() != null && !pedido.getDetalles().isEmpty()) {
+                    PedidoDetalle detalle = pedido.getDetalles().stream()
+                            .filter(d -> d != null && d.getProducto() != null && s.getProducto() != null && d.getProducto().getId().equals(s.getProducto().getId()))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (detalle != null && detalle.getPrecioUnitario() != null) {
+                        dto.setPrecioUnitario(detalle.getPrecioUnitario());
+                        dto.setValorMonetario((s.getCantidad() != null ? s.getCantidad() : 0) * detalle.getPrecioUnitario());
+                    } else {
+                        dto.setPrecioUnitario(0.0);
+                        dto.setValorMonetario(0.0);
+                    }
+                } else {
+                    dto.setPrecioUnitario(0.0);
+                    dto.setValorMonetario(0.0);
+                }
+            } else {
+                dto.setDescripcion(s.getMotivo() != null ? s.getMotivo() : "Salida Manual/Ajuste");
+                dto.setPrecioUnitario(0.0);
+                dto.setValorMonetario(0.0);
             }
             historial.add(dto);
         }
 
-        // 3. Ordenar por fecha (más reciente primero)
-        historial.sort(Comparator.comparing(HistorialInventarioDTO::getFecha).reversed());
-        System.out.println("DEBUG (Lectura): Total items en historial: " + historial.size());
-        System.out.println("--- DEBUG: getHistorialUnificado FINALIZADO ---");
-        return historial;
+        // --- FILTRADO ---
+        Stream<HistorialInventarioDTO> stream = historial.stream();
+
+        if (fechaDesde != null) {
+            stream = stream.filter(h -> h.getFecha() != null && !h.getFecha().toLocalDate().isBefore(fechaDesde));
+        }
+        if (fechaHasta != null) {
+            stream = stream.filter(h -> h.getFecha() != null && !h.getFecha().toLocalDate().isAfter(fechaHasta));
+        }
+        if (productoNombre != null && !productoNombre.trim().isEmpty()) {
+            String lowerProducto = productoNombre.trim().toLowerCase();
+            stream = stream.filter(h -> h.getProductoNombre() != null && h.getProductoNombre().toLowerCase().contains(lowerProducto));
+        }
+        if (tipo != null && !tipo.isEmpty()) {
+            stream = stream.filter(h -> h.getTipo() != null && h.getTipo().equalsIgnoreCase(tipo));
+        }
+
+        // --- ¡AQUÍ ESTÁ EL ARREGLO, MI PANA! ---
+
+        // 3. Ordenar DENTRO del stream
+        List<HistorialInventarioDTO> historialFiltrado = stream
+                .sorted(Comparator.comparing(HistorialInventarioDTO::getFecha).reversed()) // <-- ¡ORDENAMOS AQUÍ!
+                .toList(); // Y ahora sí lo volvemos lista
+
+        // ¡Y BORRAMOS LA LÍNEA QUE SE REVENTABA!
+        // historialFiltrado.sort(Comparator.comparing(HistorialInventarioDTO::getFecha).reversed());  <-- ¡ESTA SE VA!
+
+        System.out.println("DEBUG (Lectura): Total items en historial (filtrado y ordenado): " + historialFiltrado.size());
+
+        return historialFiltrado;
     }
 
     @Transactional(readOnly = true)
-    public EstadisticasInventarioDTO getEstadisticasInventario() {
-        System.out.println("\n--- DEBUG: Iniciando getEstadisticasInventario ---");
+    public EstadisticasInventarioDTO getEstadisticasInventario(
+            LocalDate fechaDesde, LocalDate fechaHasta
+    ) {
+        System.out.println("\n--- DEBUG: Iniciando getEstadisticasInventario (CON FETCH JOINS) ---");
         EstadisticasInventarioDTO stats = new EstadisticasInventarioDTO();
 
-        double totalGastado = inventarioEntradaRepository.findAll().stream()
-                .mapToDouble(InventarioEntrada::getCostoTotalEntrada)
-                .sum();
-        stats.setTotalGastado(totalGastado);
-        System.out.println("DEBUG (Stats): Total Gastado: " + totalGastado);
+        // --- CÁLCULO SEGURO DE GASTADO (CON NUEVA CONSULTA) ---
+        Stream<InventarioEntrada> entradasStream = inventarioEntradaRepository.findAllWithProducto().stream();
 
-        double totalIngresado = pedidoRepository.findAll().stream()
-                .filter(pedido -> pedido.getEstado() == EstadoPedido.PAGADO) // Ajusta tu enum
-                .mapToDouble(Pedido::getTotal)
-                .sum();
+        if (fechaDesde != null) {
+            entradasStream = entradasStream.filter(e -> e.getFechaRegistro() != null && !e.getFechaRegistro().toLocalDate().isBefore(fechaDesde));
+        }
+        if (fechaHasta != null) {
+            entradasStream = entradasStream.filter(e -> e.getFechaRegistro() != null && !e.getFechaRegistro().toLocalDate().isAfter(fechaHasta));
+        }
+        double totalGastado = entradasStream.mapToDouble(e -> (e.getCantidad() != null && e.getPrecioCostoUnitario() != null) ? e.getCantidad() * e.getPrecioCostoUnitario() : 0.0).sum();
+        stats.setTotalGastado(totalGastado);
+        System.out.println("DEBUG (Stats): Total Gastado (Filtrado): " + totalGastado);
+
+        // --- CÁLCULO SEGURO DE INGRESADO (CON NUEVA CONSULTA) ---
+        // Usamos el EstadoPedido.PAGADO, ¡asegúrate que exista en tu Enum!
+        List<Pedido> pedidos = pedidoRepository.findAllByEstado(EstadoPedido.PAGADO);
+        Stream<Pedido> pedidosStream = pedidos.stream();
+
+        if (fechaDesde != null) {
+            pedidosStream = pedidosStream.filter(p -> p.getFechaCreacion() != null && !p.getFechaCreacion().toLocalDate().isBefore(fechaDesde));
+        }
+        if (fechaHasta != null) {
+            pedidosStream = pedidosStream.filter(p -> p.getFechaCreacion() != null && !p.getFechaCreacion().toLocalDate().isAfter(fechaHasta));
+        }
+        double totalIngresado = pedidosStream.mapToDouble(p -> (p.getTotal() != null) ? p.getTotal() : 0.0).sum();
         stats.setTotalIngresado(totalIngresado);
-        System.out.println("DEBUG (Stats): Total Ingresado: " + totalIngresado);
-        System.out.println("--- DEBUG: getEstadisticasInventario FINALIZADO ---");
+        System.out.println("DEBUG (Stats): Total Ingresado (Filtrado): " + totalIngresado);
 
         return stats;
     }

@@ -13,10 +13,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.context.Context;
+import com.app.GoldenFeets.DTO.EstadisticasInventarioDTO;
+import com.app.GoldenFeets.DTO.HistorialInventarioDTO;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.util.Collections;
 
 @Controller
 @RequestMapping("/admin/inventario")
@@ -176,16 +181,55 @@ public class InventarioController {
         return "redirect:/admin/inventario";
     }
     @GetMapping("/historial")
-    public String mostrarHistorial(Model model) {
+    public String mostrarHistorial(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaDesde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaHasta,
+            @RequestParam(required = false) String productoNombre,
+            @RequestParam(required = false) String tipo,
+            Model model) {
 
-        // ESTA LÍNEA ES CRUCIAL:
-        model.addAttribute("estadisticas", inventarioService.getEstadisticasInventario());
+        // --- ¡AQUÍ ESTÁ LA TRAMPA! ---
+        try {
+            System.out.println("--- DEBUG (Controlador): Buscando Estadísticas ---");
 
-        // Y ESTA LÍNEA TAMBIÉN:
-        // Asegúrate de que el nombre "historial" esté correcto.
-        model.addAttribute("historial", inventarioService.getHistorialUnificado());
+            EstadisticasInventarioDTO estadisticas = inventarioService.getEstadisticasInventario(fechaDesde, fechaHasta);
+            model.addAttribute("estadisticas", estadisticas);
+            System.out.println("--- DEBUG (Controlador): ¡Estadísticas Encontradas! ---");
+
+
+            System.out.println("--- DEBUG (Controlador): Buscando Historial ---");
+            List<HistorialInventarioDTO> historial = inventarioService.getHistorialUnificado(fechaDesde, fechaHasta, productoNombre, tipo);
+            model.addAttribute("historial", historial);
+            System.out.println("--- DEBUG (Controlador): ¡Historial Encontrado! ---");
+
+        } catch (Exception e) {
+            // --- ¡EL SAPO! ---
+            // ¡SI ALGO FALLA, ESTO IMPRIMIRÁ EL CHISME COMPLETO EN LA CONSOLA!
+            System.err.println("¡NO JODA, SE REVENTÓ EL CONTROLADOR!");
+            System.err.println("¡AQUÍ ESTÁ EL ERROR COMPLETO, MI PANA!");
+            e.printStackTrace(); // <-- ¡ESTA ES LA LÍNEA MÁS IMPORTANTE!
+            System.err.println("¡BUSCA ESTE ERROR ROJO EN LA CONSOLA DE INTELLIJ!");
+
+            // Ponemos valores vacíos para que la página al menos intente cargar
+            // aunque lo más seguro es que igual salga el 500, pero ya tendremos el error.
+            model.addAttribute("estadisticas", new EstadisticasInventarioDTO());
+            model.addAttribute("historial", Collections.emptyList());
+
+            // Volvemos a lanzar el error para que veas el 500,
+            // pero ya el chisme quedó en la consola.
+            throw new RuntimeException("Error en mostrarHistorial, revisa la consola", e);
+        }
+        // --- FIN DE LA TRAMPA ---
+
 
         model.addAttribute("activePage", "inventario");
+
+        // Devolver parámetros a la vista
+        model.addAttribute("fechaDesdeParam", fechaDesde);
+        model.addAttribute("fechaHastaParam", fechaHasta);
+        model.addAttribute("productoNombreParam", productoNombre);
+        model.addAttribute("tipoParam", tipo);
+
         return "inventario/inventario-historial";
     }
 }
