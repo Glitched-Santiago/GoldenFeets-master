@@ -12,4 +12,6 @@ public class HistorialInventarioDTO {
     private Integer cantidad;
     private String descripcion; // Distribuidor, Motivo o Venta
     private Long pedidoId; // Opcional
+    private Double precioUnitario;
+    private Double valorMonetario;
 }

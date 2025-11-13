@@ -359,4 +359,90 @@ body.admin-body {
 .profile-link:hover {
     color: var(--admin-accent-blue);
     text-decoration: underline;
-}
+}/* --- Pega esto en tu archivo Admin.css --- */
+
+ /* 1. LA REJILLA DE ESTADÍSTICAS */
+ .stats-grid {
+     display: grid;
+     /* Esto hace que se ponga en 3 columnas en pantallas grandes y 1 en celular */
+     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+     gap: 1.5rem; /* Espacio entre las tarjetas */
+     margin-bottom: 2rem;
+ }
+
+ /* 2. LA TARJETA DE CADA ESTADÍSTICA */
+ .stat-card {
+     background-color: #ffffff; /* Fondo blanco, como el resto de tu página */
+     border: 1px solid #e2e8f0; /* Un borde gris suave */
+     border-radius: 0.75rem; /* Bordes bien redondeados */
+     padding: 1.5rem;
+     /* Una sombra suave pa' que se vea profesional */
+     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+ }
+
+ .stat-card-title {
+     font-size: 0.875rem; /* Letra pequeña */
+     color: #64748b; /* Un gris-azul */
+     text-transform: uppercase;
+     font-weight: 600;
+     margin-bottom: 0.5rem;
+ }
+
+ .stat-card-value {
+     font-size: 2.25rem; /* Letra grande pa' los números */
+     font-weight: 700;
+     line-height: 1;
+ }
+
+ /* Los colores que ya tenías */
+ .stat-card-value.gastado { color: #ef4444; } /* Rojo */
+ .stat-card-value.ingresado { color: #22c55e; } /* Verde */
+ .stat-card-value.neto { color: #3b82f6; } /* Azul */
+
+
+ /* 3. LA TARJETA GRANDE (Pal filtro y la tabla) */
+ .admin-card {
+     background-color: #ffffff;
+     border: 1px solid #e2e8f0;
+     border-radius: 0.75rem;
+     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+     margin-bottom: 2rem;
+ }
+
+ /* 4. Arreglo del Formulario de Filtro (pa' que se vea bien DENTRO de la tarjeta) */
+ .filter-form {
+     padding: 1.5rem; /* Espacio por dentro */
+ }
+
+ /* La rejilla del formulario */
+ .filter-form-grid {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+     gap: 1rem;
+ }
+
+ /* Arreglo pa' los campos y etiquetas del filtro */
+ .filter-form .label {
+     display: block;
+     margin-bottom: 0.5rem;
+     font-size: 0.875rem;
+     font-weight: 500;
+     color: #334155;
+ }
+
+ .filter-form .input-field {
+     width: 100%;
+     padding: 0.75rem;
+     border: 1px solid #cbd5e1;
+     border-radius: 0.375rem;
+     background-color: #f8fafc; /* Un fondo suave pa'l campo */
+     color: #334155;
+     box-sizing: border-box; /* ¡CLAVE pa' que no se dañe el ancho! */
+ }
+
+ /* Botones del filtro */
+ .filter-form-buttons {
+     display: flex;
+     align-items: flex-end; /* Alinea los botones abajo */
+     gap: 0.5rem;
+ }
