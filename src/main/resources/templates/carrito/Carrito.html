@@ -4,33 +4,214 @@
       layout:decorate="~{base/base-cliente}">
 <head>
     <title>Carrito de Compras</title>
+    <style>
+        /* Añadido estilos para mejorar la vista de carrito vacío */
+        .empty-cart-container {
+            text-align: center;
+            padding: 4rem 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .empty-cart-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .empty-cart-icon svg {
+            width: 60px;
+            height: 60px;
+            color: #999;
+        }
+
+        .empty-cart-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.75rem;
+        }
+
+        .empty-cart-description {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .empty-cart-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .primary-action-btn {
+            display: inline-block;
+            background-color: var(--primary, #007bff);
+            color: white;
+            padding: 0.875rem 2.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+        }
+
+        .primary-action-btn:hover {
+            background-color: var(--primary-dark, #0056b3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.3);
+            color: white;
+        }
+
+        .secondary-link {
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .secondary-link:hover {
+            color: var(--primary, #007bff);
+            text-decoration: underline;
+        }
+
+        .empty-cart-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            padding-top: 3rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .feature-item {
+            text-align: center;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 0.75rem;
+            background-color: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feature-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--primary, #007bff);
+        }
+
+        .feature-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-description {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        @media (max-width: 640px) {
+            .empty-cart-icon {
+                width: 100px;
+                height: 100px;
+            }
+
+            .empty-cart-icon svg {
+                width: 50px;
+                height: 50px;
+            }
+
+            .empty-cart-title {
+                font-size: 1.5rem;
+            }
+
+            .empty-cart-features {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
 <section layout:fragment="content">
     <div class="container cart-page">
-        <h1 class="page-title" style="margin-bottom: 2rem;">Tu Carrito</h1><div class="container cart-page">
         <h1 class="page-title" style="margin-bottom: 2rem;">Tu Carrito</h1>
 
         <div th:if="${errorMessage}"
              style="background-color: #f8d7da; color: #721c24; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border: 1px solid #f5c6cb;">
             <strong>Error:</strong> <span th:text="${errorMessage}"></span>
         </div>
-        ```
 
-        Una vez que hagas esto, **intenta hacer la compra de nuevo**. Ahora, en lugar de no ver nada, serás redirigido al carrito y te aparecerá un cuadro rojo con el mensaje exacto del error (ej: "Error: No hay stock suficiente para...").
+        <!-- Vista mejorada de carrito vacío con diseño moderno y llamadas a la acción claras -->
+        <div th:if="${#lists.isEmpty(items)}" class="empty-cart-container">
+            <div class="empty-cart-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+            </div>
 
-        #### 2. Implementa la Validación Proactiva (Recomendado)
+            <h2 class="empty-cart-title">Tu carrito está vacío</h2>
+            <p class="empty-cart-description">
+                Parece que aún no has agregado ningún producto. <br>
+                ¡Explora nuestro catálogo y encuentra lo que necesitas!
+            </p>
 
-        Para evitar que el usuario llegue al pago si no hay stock, modifica tu `PedidoController.java` para que valide el stock *antes* de mostrar la página de `Checkout.html`.
+            <div class="empty-cart-actions">
+                <a th:href="@{/catalogo}" class="primary-action-btn">
+                    Explorar Productos
+                </a>
+                <a th:href="@{/}" class="secondary-link">
+                    Volver al inicio
+                </a>
+            </div>
 
-        Necesitarás inyectar `ProductoService` en tu `PedidoController` y modificar el método `showCheckoutPage` (el `GET` de `/checkout`) como te mostré en la respuesta anterior.
+            <div class="empty-cart-features">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div class="feature-title">Envío Gratis</div>
+                    <div class="feature-description">En todos tus pedidos</div>
+                </div>
 
-        ---
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <div class="feature-title">Compra Segura</div>
+                    <div class="feature-description">Pago protegido</div>
+                </div>
 
-        El primer paso es el más importante ahora mismo. Por favor, añade el bloque de HTML a tu `Carrito.html` y dime qué mensaje de error te aparece cuando intentas finalizar la compra.
-
-        <div th:if="${#lists.isEmpty(items)}" style="text-align: center; padding: 3rem 0;">
-            <p>Tu carrito está vacío. <a th:href="@{/catalogo}" style="text-decoration: underline; color: var(--primary);">¡Sigue comprando!</a></p>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                    </div>
+                    <div class="feature-title">Fácil y Rápido</div>
+                    <div class="feature-description">Checkout simple</div>
+                </div>
+            </div>
         </div>
 
         <div class="cart-grid" th:if="${not #lists.isEmpty(items)}">
@@ -85,9 +266,7 @@
                     <span th:text="|$${#numbers.formatDecimal(total, 1, 2)}|"></span>
                 </div>
 
-                <!-- CORRECCIÓN: Cambiamos el <form> por un enlace <a> -->
                 <a th:href="@{/pedidos/checkout}" class="checkout-btn">Finalizar Compra</a>
-
             </div>
         </div>
     </div>

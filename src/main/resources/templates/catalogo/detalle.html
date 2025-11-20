@@ -57,8 +57,8 @@
 
                 <form th:action="@{/carrito/agregar}" method="post" class="add-to-cart-form" th:if="*{stock > 0}">
                     <input type="hidden" name="productoId" th:value="*{id}" />
-                    <input type="number" name="cantidad" value="1" min="1" th:max="*{stock}" class="quantity-input" required>
-                    <button type="submit" class="cta-button" style="flex-grow: 1;">Añadir al Carrito</button>
+                    <input type="number" name="cantidad" value="1" min="1" th:max="*{stock}" class="quantity-input" required />
+                    <button type="submit" class="add-to-cart-btn">Añadir al Carrito</button>
                 </form>
             </div>
         </div>
