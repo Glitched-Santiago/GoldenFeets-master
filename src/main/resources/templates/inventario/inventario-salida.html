@@ -3,46 +3,56 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{base/base-admin}">
 <head>
-    <title>Registrar Salida de Inventario</title>
+    <title th:text="${producto.id == null ? 'Añadir Producto' : 'Editar Producto'}">Formulario de Producto</title>
 </head>
 <body>
 <section layout:fragment="content">
-    <h1 class="admin-title">Registrar Salida de Inventario</h1>
+    <div class="admin-header">
+        <h1 class="admin-title" th:text="${producto.id == null ? 'Añadir Nuevo Producto' : 'Editar Producto'}"></h1>
+    </div>
 
-    <div class="admin-card" style="max-width: 600px; margin: 0 auto;">
-
-        <div th:if="${param.error}" class="alert alert-danger" role="alert"
-             th:text="${param.error}">
+    <div class="admin-card">
+        <div class="alert alert-info mb-4" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+            Aquí editas la información base. Para añadir Stock, Tallas o Colores, usa la opción <strong>"Registrar Entrada"</strong>.
         </div>
 
-        <form th:action="@{/admin/inventario/salida}" th:object="${salidaDto}" method="post" class="admin-form">
+        <form th:action="@{/admin/inventario/guardar}" th:object="${producto}" method="post" class="admin-form">
+            <input type="hidden" th:field="*{id}" />
 
-            <div class="form-group">
-                <label for="productoId" class="form-label">Producto:</label>
-                <select id="productoId" th:field="*{productoId}" class="form-control" required>
-                    <option value="">Seleccione un producto...</option>
-                    <option th:each="prod : ${productos}"
-                            th:value="${prod.id}"
-                            th:text="|${prod.nombre} (Stock: ${prod.stock})|"></option>
-                </select>
+            <div class="form-group full-width">
+                <label for="nombre" class="form-label">Nombre del Producto</label>
+                <input type="text" th:field="*{nombre}" id="nombre" class="form-control" required>
             </div>
 
-            <div class="form-group">
-                <label for="cantidad" class="form-label">Cantidad a retirar:</label>
-                <input type="number" id="cantidad" th:field="*{cantidad}" class="form-control" min="1" required>
+            <div class="form-group full-width">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea th:field="*{descripcion}" id="descripcion" class="form-control" rows="3"></textarea>
             </div>
 
-            <div class="form-group">
-                <label for="motivo" class="form-label">Motivo de la salida:</label>
-                <select id="motivo" th:field="*{motivo}" class="form-control" required>
-                    <option value="">Seleccione un motivo...</option>
-                    <option th:each="m : ${motivos}" th:value="${m}" th:text="${m}"></option>
-                </select>
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="categoria" class="form-label">Categoría</label>
+                    <select th:field="*{categoria}" id="categoria" class="form-control">
+                        <option value="">Selecciona una categoría</option>
+                        <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="precio" class="form-label">Precio de Venta ($)</label>
+                    <input type="number" th:field="*{precio}" id="precio" class="form-control" step="0.01" required>
+                </div>
             </div>
 
-            <div class="form-actions">
+            <div class="form-group full-width">
+                <label for="imagenUrl" class="form-label">URL de la Imagen</label>
+                <input type="text" th:field="*{imagenUrl}" id="imagenUrl" class="form-control" placeholder="https://...">
+            </div>
+
+            <div class="form-actions mt-4">
+                <button type="submit" class="btn btn-primary">Guardar Información Base</button>
                 <a th:href="@{/admin/inventario}" class="btn btn-secondary">Cancelar</a>
-                <button type="submit" class="btn btn-primary" style="background-color: var(--admin-accent-red); color: #FFFFFF;">Confirmar Salida</button>
             </div>
         </form>
     </div>

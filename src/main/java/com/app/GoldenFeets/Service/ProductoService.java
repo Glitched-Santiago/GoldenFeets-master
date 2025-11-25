@@ -2,7 +2,7 @@ package com.app.GoldenFeets.Service;
 
 import com.app.GoldenFeets.Entity.Producto;
 import com.app.GoldenFeets.Repository.ProductoRepository;
-import com.app.GoldenFeets.spec.ProductoSpecification; // Importante mantener el import
+import com.app.GoldenFeets.spec.ProductoSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -16,16 +16,17 @@ import java.util.stream.Collectors;
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
-    // --- Se elimina la dependencia de ProductoSpecification ---
 
     public List<Producto> findAll() {
         return productoRepository.findAll();
     }
 
+    // --- CORRECCIÓN DEL ERROR AQUÍ ---
     public List<Producto> obtenerProductosDisponibles() {
         return productoRepository.findAll()
                 .stream()
-                .filter(p -> p.getStock() > 0)
+                // Usamos getStockTotal() porque 'stock' ya no existe como campo único
+                .filter(p -> p.getStockTotal() > 0)
                 .collect(Collectors.toList());
     }
 
@@ -45,11 +46,8 @@ public class ProductoService {
         return productoRepository.findRandomProductos(limite);
     }
 
-    // --- MÉTODO DE BÚSQUEDA CORREGIDO ---
     public List<Producto> search(String keyword, Long categoriaId, Double precioMin, Double precioMax, String talla, String color) {
-        // --- Llamada estática directa a la clase Specification ---
         Specification<Producto> spec = ProductoSpecification.findByCriteria(keyword, categoriaId, precioMin, precioMax, talla, color);
         return productoRepository.findAll(spec);
     }
 }
-

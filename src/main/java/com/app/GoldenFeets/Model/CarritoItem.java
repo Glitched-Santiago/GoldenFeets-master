@@ -1,16 +1,15 @@
 package com.app.GoldenFeets.Model;
 
 import com.app.GoldenFeets.Entity.Producto;
+import com.app.GoldenFeets.Entity.ProductoVariante; // <-- IMPORTANTE: Importar la nueva entidad
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.io.Serializable; // <-- IMPORTANTE
+import java.io.Serializable;
 
 @Data
 @NoArgsConstructor
-// AÑADIMOS "implements Serializable"
 public class CarritoItem implements Serializable {
 
-    // AÑADIMOS UN serialVersionUID, es una buena práctica para clases serializables.
     private static final long serialVersionUID = 1L;
 
     private Long productoId;
@@ -20,12 +19,27 @@ public class CarritoItem implements Serializable {
     private int cantidad;
     private Double subtotal;
 
-    public CarritoItem(Producto producto, int cantidad) {
+    // --- NUEVOS CAMPOS PARA SOPORTAR VARIANTES ---
+    private Long productoVarianteId; // ID único de la combinación (ej: ID 55 = Nike Air - Talla 40 - Rojo)
+    private String talla;
+    private String color;
+
+    // --- CONSTRUCTOR ACTUALIZADO ---
+    // Ahora recibe también el objeto ProductoVariante
+    public CarritoItem(Producto producto, ProductoVariante variante, int cantidad) {
         this.productoId = producto.getId();
         this.nombre = producto.getNombre();
         this.imagenUrl = producto.getImagenUrl();
         this.precio = producto.getPrecio();
         this.cantidad = cantidad;
+
+        // Guardamos los datos de la variante seleccionada
+        if (variante != null) {
+            this.productoVarianteId = variante.getId();
+            this.talla = variante.getTalla();
+            this.color = variante.getColor();
+        }
+
         this.actualizarSubtotal();
     }
 

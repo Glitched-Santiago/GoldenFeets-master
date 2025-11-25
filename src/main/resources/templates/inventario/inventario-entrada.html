@@ -3,74 +3,56 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{base/base-admin}">
 <head>
-    <title>Registrar Entrada de Inventario</title>
-    <style>
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-        }
-        .full-width {
-            grid-column: 1 / -1;
-        }
-    </style>
+    <title th:text="${producto.id == null ? 'Añadir Producto' : 'Editar Producto'}">Formulario de Producto</title>
 </head>
 <body>
 <section layout:fragment="content">
     <div class="admin-header">
-        <h1 class="admin-title">Registrar Entrada de Inventario</h1>
+        <h1 class="admin-title" th:text="${producto.id == null ? 'Añadir Nuevo Producto' : 'Editar Producto'}"></h1>
     </div>
 
     <div class="admin-card">
-        <form th:action="@{/admin/inventario/entrada}" th:object="${entradaDto}" method="post" class="admin-form">
+        <div class="alert alert-info mb-4" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+            Aquí editas la información base. Para añadir Stock, Tallas o Colores, usa la opción <strong>"Registrar Entrada"</strong>.
+        </div>
+
+        <form th:action="@{/admin/inventario/guardar}" th:object="${producto}" method="post" class="admin-form">
+            <input type="hidden" th:field="*{id}" />
 
             <div class="form-group full-width">
-                <label for="producto" class="form-label">Producto</label>
-                <select th:field="*{productoId}" id="producto" class="form-control" required>
-                    <option value="">-- Selecciona un producto --</option>
-                    <option th:each="prod : ${productos}"
-                            th:value="${prod.id}"
-                            th:text="|${prod.nombre} (Stock actual: ${prod.stock})|"></option>
-                </select>
+                <label for="nombre" class="form-label">Nombre del Producto</label>
+                <input type="text" th:field="*{nombre}" id="nombre" class="form-control" required>
             </div>
 
-            <div class="form-grid">
+            <div class="form-group full-width">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea th:field="*{descripcion}" id="descripcion" class="form-control" rows="3"></textarea>
+            </div>
 
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
-                    <label for="distribuidor" class="form-label">Distribuidor</label>
-                    <select th:field="*{distribuidor}" id="distribuidor" class="form-control" required>
-                        <option value="">-- Selecciona un distribuidor --</option>
-                        <option th:each="dist : ${distribuidores}"
-                                th:value="${dist}"
-                                th:text="${dist}"></option>
+                    <label for="categoria" class="form-label">Categoría</label>
+                    <select th:field="*{categoria}" id="categoria" class="form-control">
+                        <option value="">Selecciona una categoría</option>
+                        <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="cantidad" class="form-label">Cantidad a Ingresar</label>
-                    <input type="number" th:field="*{cantidad}" id="cantidad" class="form-control" min="1" required>
-                </div>
-            </div>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-                    <label for="precioCostoUnitario" class="form-label">Precio de Costo (Por unidad)</label>
-                    <input type="number" th:field="*{precioCostoUnitario}" id="precioCostoUnitario"
-                           class="form-control" step="0.01" min="0" required
-                           placeholder="Ej: 80000">
+                    <label for="precio" class="form-label">Precio de Venta ($)</label>
+                    <input type="number" th:field="*{precio}" id="precio" class="form-control" step="0.01" required>
                 </div>
 
-                <div class="form-group">
-                    <label for="color" class="form-label">Color (del lote)</label>
-                    <input type="text" th:field="*{color}" id="color" placeholder="Ej: Azul Marino" class="form-control" required>
+                <div class="form-group full-width">
+                    <label for="imagenUrl" class="form-label">URL de la Imagen</label>
+                    <input type="text" th:field="*{imagenUrl}" id="imagenUrl" class="form-control" placeholder="https://...">
                 </div>
-            </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Registrar Entrada</button>
-                <a th:href="@{/admin/inventario}" class="btn btn-secondary">Cancelar</a>
-            </div>
+                <div class="form-actions mt-4">
+                    <button type="submit" class="btn btn-primary">Guardar Información Base</button>
+                    <a th:href="@{/admin/inventario}" class="btn btn-secondary">Cancelar</a>
+                </div>
         </form>
     </div>
 </section>

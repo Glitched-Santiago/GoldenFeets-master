@@ -10,14 +10,14 @@
     <div class="admin-header">
         <h1 class="admin-title">Gestión de Inventario</h1>
         <div class="flex items-center space-x-2">
-            <a th:href="@{/admin/inventario/exportar-pdf(keyword=${keywordParam}, categoriaId=${categoriaIdParam}, precioMin=${precioMinParam}, precioMax=${precioMaxParam}, talla=${tallaParam}, color=${colorParam})}"
+            <a th:href="@{/admin/inventario/exportar-pdf(keyword=${keywordParam}, categoriaId=${categoriaIdParam})}"
                class="btn btn-secondary">
                 Exportar a PDF
             </a>
-            <a th:href="@{/admin/inventario/historial}" class="btn btn-´">
+            <a th:href="@{/admin/inventario/historial}" class="btn btn-secondary">
                 Ver Historial
             </a>
-            <a th:href="@{/admin/inventario/salida}" class="btn btn-primary">
+            <a th:href="@{/admin/inventario/salida}" class="btn btn-primary" style="background-color: var(--destructive);">
                 Registrar Salida
             </a>
             <a th:href="@{/admin/inventario/entrada}" class="btn btn-primary">
@@ -30,7 +30,7 @@
     </div>
 
     <div class="admin-card">
-        <!-- FORMULARIO DE BÚSQUEDA ACTUALIZADO -->
+        <!-- FORMULARIO DE BÚSQUEDA -->
         <form th:action="@{/admin/inventario}" method="get" class="search-form">
             <div class="form-group">
                 <input type="text" name="keyword" placeholder="Buscar por nombre..." class="search-input" th:value="${keywordParam}">
@@ -41,64 +41,61 @@
                     <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}" th:selected="${categoriaIdParam == cat.id}"></option>
                 </select>
             </div>
-            <div class="form-group">
-                <input type="text" name="talla" placeholder="Talla" class="search-input" th:value="${tallaParam}">
-            </div>
-            <div class="form-group">
-                <input type="text" name="color" placeholder="Color" class="search-input" th:value="${colorParam}">
-            </div>
-            <div class="form-group">
-                <input type="number" name="precioMin" placeholder="Precio Mín." class="search-input" th:value="${precioMinParam}" step="0.01">
-            </div>
-            <div class="form-group">
-                <input type="number" name="precioMax" placeholder="Precio Máx." class="search-input" th:value="${precioMaxParam}" step="0.01">
-            </div>
             <div class="search-form-actions">
                 <button type="submit" class="btn btn-primary">Buscar</button>
                 <a th:href="@{/admin/inventario}" class="btn btn-secondary">Limpiar</a>
             </div>
         </form>
 
-        <!-- TABLA DE PRODUCTOS ACTUALIZADA -->
+        <!-- TABLA DE PRODUCTOS -->
         <div class="overflow-x-auto">
             <table class="admin-table">
                 <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Imagen</th>
                     <th>Nombre</th>
                     <th>Categoría</th>
-                    <th>Talla</th> <!-- Nueva Columna -->
-                    <th>Color</th> <!-- Nueva Columna -->
                     <th>Precio</th>
-                    <th>Stock</th>
+                    <th>Stock Total</th>
+                    <th>Variantes</th>
                     <th>Acciones</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="producto : ${productos}">
                     <td th:text="${producto.id}"></td>
+                    <td>
+                        <img th:src="${producto.imagenUrl}" class="h-10 w-10 object-cover rounded"
+                             onerror="this.src='https://placehold.co/50'"/>
+                    </td>
                     <td th:text="${producto.nombre}"></td>
                     <td th:text="${producto.categoria?.nombre ?: 'N/A'}"></td>
-                    <td th:text="${producto.talla ?: 'N/A'}"></td> <!-- Nuevo Campo -->
-                    <td th:text="${producto.color ?: 'N/A'}"></td> <!-- Nuevo Campo -->
                     <td th:text="|$${#numbers.formatDecimal(producto.precio, 1, 2)}|"></td>
-                    <td th:text="${producto.stock}"></td>
+
+                    <!-- CORRECCIÓN: Usamos stockTotal -->
+                    <td th:text="${producto.stockTotal}"></td>
+
+                    <!-- Nueva columna informativa -->
+                    <td>
+                        <span class="text-xs text-gray-500" th:if="${not #lists.isEmpty(producto.variantes)}"
+                              th:text="|${producto.variantes.size()} opciones|"></span>
+                        <span class="text-xs text-gray-400" th:if="${#lists.isEmpty(producto.variantes)}">Sin stock</span>
+                    </td>
+
                     <td>
                         <div class="actions-cell">
                             <a th:href="@{/admin/inventario/editar/{id}(id=${producto.id})}" class="action-btn action-btn-edit" title="Editar">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             </a>
                             <form th:action="@{/admin/inventario/eliminar/{id}(id=${producto.id})}" method="post" class="inline-block">
                                 <button type="submit" class="action-btn action-btn-delete" title="Eliminar"
-                                        onclick="return confirm('¿Estás seguro de que quieres eliminar este producto?');">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.033-2.134H8.716c-1.12-0-2.033.954-2.033 2.134v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                                        onclick="return confirm('¿Estás seguro?');">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                 </button>
                             </form>
                         </div>
                     </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(productos)}">
-                    <td colspan="8" class="text-center py-8">No se encontraron productos con los criterios seleccionados.</td>
                 </tr>
                 </tbody>
             </table>
@@ -107,4 +104,3 @@
 </section>
 </body>
 </html>
-

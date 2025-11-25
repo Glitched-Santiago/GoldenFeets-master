@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "productos")
@@ -26,16 +28,6 @@ public class Producto {
     @Column(nullable = false)
     private Double precio;
 
-    @Column(nullable = false)
-    private Integer stock;
-
-    // --- CAMPOS REACTIVADOS ---
-    @Column(length = 20)
-    private String talla;
-
-    @Column(length = 50)
-    private String color;
-
     @Column(name = "imagen_url", length = 255)
     private String imagenUrl;
 
@@ -43,4 +35,21 @@ public class Producto {
     @JoinColumn(name = "categoria_id")
     @ToString.Exclude
     private Categoria categoria;
+
+    // --- RELACIÓN NUEVA ---
+    // Un producto tiene muchas variantes (tallas/colores)
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductoVariante> variantes = new ArrayList<>();
+
+    // --- CAMPOS ELIMINADOS ---
+    // Se borraron: stock, talla, color (ahora viven en 'variantes')
+
+    // --- MÉTODO ÚTIL PARA LA VISTA ---
+    // Calcula el stock total sumando todas las variantes
+    public Integer getStockTotal() {
+        if (variantes == null || variantes.isEmpty()) {
+            return 0;
+        }
+        return variantes.stream().mapToInt(ProductoVariante::getStock).sum();
+    }
 }
