@@ -14,12 +14,4 @@ public class ProductoController {
 
     private final ProductoService productoService;
 
-    @GetMapping("/catalogo/{id}")
-    public String verDetalleProducto(@PathVariable("id") Long id, Model model) {
-        Producto producto = productoService.obtenerPorId(id)
-                .orElseThrow(() -> new IllegalArgumentException("ID de Producto no válido: " + id));
-
-        model.addAttribute("producto", producto);
-        return "catalogo/detalle"; // Apunta a la nueva vista de detalle
     }
-}

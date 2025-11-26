@@ -3,489 +3,290 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{base/base-cliente}">
 <head>
-    <title th:text="${producto.nombre}"></title>
+    <title th:text="${producto != null ? producto.nombre : 'Detalle del Producto'}"></title>
     <style>
-        /* Sistema de diseño inspirado en Nike con layout de galería lateral */
-        :root {
-            --nike-spacing: 1.5rem;
-            --nike-border-radius: 4px;
-            --transition-base: 0.15s ease-in-out;
+        /* ESTILOS BASE */
+        :root { --primary: #111827; --border: #e5e7eb; --radius: 8px; }
+        .product-detail-page { padding: 3rem 1rem; max-width: 1200px; margin: 0 auto; }
+
+        /* Layout */
+        .grid-layout { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        @media (min-width: 968px) { .grid-layout { grid-template-columns: 100px 1fr 400px; gap: 1rem; } }
+
+        /* Galería */
+        .thumbnails { display: flex; flex-direction: row; gap: 10px; overflow-x: auto; }
+        @media (min-width: 968px) { .thumbnails { flex-direction: column; overflow-y: auto; max-height: 600px; } }
+
+        .thumb-btn { width: 80px; height: 80px; border-radius: var(--radius); border: 1px solid transparent; cursor: pointer; overflow: hidden; transition: 0.2s; flex-shrink: 0; }
+        .thumb-btn:hover, .thumb-btn.active { border-color: var(--primary); }
+        .thumb-btn img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Imagen Principal */
+        .main-image-container { position: relative; background: #f9fafb; border-radius: 12px; overflow: hidden; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; }
+        .main-image-container img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }
+
+        /* Info */
+        .product-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.1; }
+        .product-price { font-size: 1.5rem; font-weight: 600; color: #111827; margin-bottom: 2rem; }
+
+        /* Selectores */
+        .selector-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+        .color-grid, .size-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1.5rem; }
+
+        .color-option, .size-option {
+            padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px;
+            cursor: pointer; background: white; transition: 0.2s; user-select: none; font-size: 0.9rem;
         }
+        .color-option:hover, .size-option:hover { border-color: #9ca3af; }
+        .color-option.selected, .size-option.selected { border-color: var(--primary); background: var(--primary); color: white; }
+        .size-option.disabled { opacity: 0.4; cursor: not-allowed; background: #f3f4f6; text-decoration: line-through; border-color: #e5e7eb; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
+        .error-msg { color: #dc2626; font-size: 0.85rem; display: none; margin-top: 5px; font-weight: 500; }
 
-        .product-detail-page {
-            padding: 2rem 1rem;
-            max-width: 1440px;
-            margin: 0 auto;
-        }
+        .add-btn { width: 100%; background: var(--primary); color: white; padding: 1.2rem; border-radius: 50px; font-weight: 600; border: none; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .add-btn:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
 
-        /* Layout de 3 columnas: thumbnails + imagen principal + info */
-        .product-detail-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        @media (min-width: 968px) {
-            .product-detail-grid {
-                grid-template-columns: 80px 1fr 450px;
-                gap: 1.5rem;
-            }
-        }
-
-        /* Galería de miniaturas vertical estilo Nike */
-        .product-thumbnails {
-            display: none;
-        }
-
-        @media (min-width: 968px) {
-            .product-thumbnails {
-                display: flex;
-                flex-direction: column;
-                gap: 0.75rem;
-            }
-
-            .thumbnail-item {
-                width: 80px;
-                height: 80px;
-                border-radius: var(--nike-border-radius);
-                overflow: hidden;
-                cursor: pointer;
-                border: 2px solid transparent;
-                transition: var(--transition-base);
-            }
-
-            .thumbnail-item:hover,
-            .thumbnail-item.active {
-                border-color: hsl(var(--foreground));
-            }
-
-            .thumbnail-item img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-        }
-
-        /* Imagen principal más grande y limpia */
-        .product-image-gallery {
-            position: relative;
-            background: hsl(var(--muted) / 0.3);
-            border-radius: var(--nike-border-radius);
-            overflow: hidden;
-            aspect-ratio: 1 / 1;
-        }
-
-        .product-image-gallery img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Panel de información estilo Nike con mejor jerarquía */
-        .product-info {
-            padding: 0 1rem;
-        }
-
-        @media (min-width: 968px) {
-            .product-info {
-                padding: 1.5rem 0;
-            }
-        }
-
-        .product-info .product-title {
-            font-size: 1.75rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            line-height: 1.2;
-            color: hsl(var(--foreground));
-        }
-
-        .product-subtitle {
-            font-size: 1rem;
-            color: hsl(var(--muted-foreground));
-            margin-bottom: 1.5rem;
-        }
-
-        /* Precio estilo Nike con descuento */
-        .price-section {
-            margin-bottom: 2rem;
-        }
-
-        .price-container {
-            display: flex;
-            align-items: baseline;
-            gap: 0.75rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .product-info .product-price {
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: hsl(var(--foreground));
-            margin: 0;
-        }
-
-        .price-original {
-            font-size: 1.125rem;
-            color: hsl(var(--muted-foreground));
-            text-decoration: line-through;
-        }
-
-        .price-discount {
-            font-size: 1.125rem;
-            color: hsl(142 76% 36%);
-            font-weight: 600;
-        }
-
-        /* Selector de color/variante con miniaturas */
-        .variant-selector {
-            margin-bottom: 2rem;
-        }
-
-        .variant-label {
-            font-size: 0.9375rem;
-            font-weight: 500;
-            color: hsl(var(--foreground));
-            margin-bottom: 0.75rem;
-            display: block;
-        }
-
-        .variant-options {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .variant-option {
-            width: 80px;
-            height: 80px;
-            border-radius: var(--nike-border-radius);
-            overflow: hidden;
-            cursor: pointer;
-            border: 2px solid hsl(var(--border));
-            transition: var(--transition-base);
-        }
-
-        .variant-option:hover,
-        .variant-option.selected {
-            border-color: hsl(var(--foreground));
-        }
-
-        .variant-option img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Selector de talla estilo Nike con botones */
-        .size-selector {
-            margin-bottom: 1.5rem;
-        }
-
-        .size-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-
-        .size-label {
-            font-size: 0.9375rem;
-            font-weight: 500;
-            color: hsl(var(--foreground));
-        }
-
-        .size-guide {
-            font-size: 0.875rem;
-            color: hsl(var(--muted-foreground));
-            text-decoration: underline;
-            cursor: pointer;
-        }
-
-        .size-guide:hover {
-            color: hsl(var(--foreground));
-        }
-
-        .size-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 0.5rem;
-        }
-
-        .size-option {
-            padding: 0.875rem;
-            border: 1px solid hsl(var(--border));
-            border-radius: var(--nike-border-radius);
-            background: hsl(var(--background));
-            cursor: pointer;
-            text-align: center;
-            font-size: 0.9375rem;
-            font-weight: 500;
-            transition: var(--transition-base);
-        }
-
-        .size-option:hover {
-            border-color: hsl(var(--foreground));
-        }
-
-        .size-option.selected {
-            border-color: hsl(var(--foreground));
-            border-width: 2px;
-        }
-
-        .size-option.disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            text-decoration: line-through;
-        }
-
-        /* Botón de añadir al carrito estilo Nike */
-        .add-to-cart-btn {
-            width: 100%;
-            background: hsl(var(--foreground));
-            color: hsl(var(--background));
-            border: none;
-            border-radius: 30px;
-            padding: 1.375rem 1.5rem;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition-base);
-            text-transform: none;
-            letter-spacing: 0;
-            margin-bottom: 1rem;
-        }
-
-        .add-to-cart-btn:hover {
-            background: hsl(var(--foreground) / 0.8);
-            transform: none;
-        }
-
-        /* Información de envío estilo Nike */
-        .shipping-info {
-            padding: 1.5rem 0;
-            border-top: 1px solid hsl(var(--border));
-            margin-top: 1.5rem;
-        }
-
-        .shipping-title {
-            font-size: 1rem;
-            font-weight: 500;
-            color: hsl(var(--foreground));
-            margin-bottom: 0.5rem;
-        }
-
-        .shipping-text {
-            font-size: 0.9375rem;
-            color: hsl(var(--muted-foreground));
-            line-height: 1.6;
-        }
-
-        .shipping-link {
-            color: hsl(var(--muted-foreground));
-            text-decoration: underline;
-            cursor: pointer;
-        }
-
-        .shipping-link:hover {
-            color: hsl(var(--foreground));
-        }
-
-        /* Descripción del producto con mejor formato */
-        .product-description-section {
-            padding: 2rem 0;
-            border-top: 1px solid hsl(var(--border));
-            margin-top: 1rem;
-        }
-
-        .product-info .product-description {
-            line-height: 1.75;
-            color: hsl(var(--foreground));
-            font-size: 0.9375rem;
-            margin: 0;
-        }
-
-        .product-attributes {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid hsl(var(--border));
-        }
-
-        .attribute-item {
-            display: flex;
-            gap: 0.5rem;
-            font-size: 0.9375rem;
-            color: hsl(var(--foreground));
-        }
-
-        .attribute-item strong {
-            min-width: 80px;
-            color: hsl(var(--muted-foreground));
-            font-weight: 500;
-        }
-
-        /* Badge de stock minimalista */
-        .stock-badge {
-            display: inline-block;
-            color: hsl(142 76% 36%);
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-
-        .stock-badge.out-of-stock {
-            color: hsl(var(--destructive));
-        }
-
-        /* Alertas minimalistas */
-        .alert {
-            padding: 1rem;
-            border-radius: var(--nike-border-radius);
-            margin-bottom: 1.5rem;
-            font-size: 0.9375rem;
-        }
-
-        .alert-success {
-            background: hsl(142 76% 36% / 0.1);
-            color: hsl(142 76% 36%);
-        }
-
-        .alert-error {
-            background: hsl(var(--destructive) / 0.1);
-            color: hsl(var(--destructive));
-        }
-
-        /* Input de cantidad oculto - integrado en el flujo */
-        .quantity-input {
-            display: none;
-        }
-
-        /* Responsive mejorado */
-        @media (max-width: 967px) {
-            .product-info .product-title { font-size: 1.5rem; }
-            .size-options { grid-template-columns: repeat(3, 1fr); }
-        }
+        .desc-text { line-height: 1.7; color: #4b5563; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border); }
     </style>
 </head>
 <body>
 <section layout:fragment="content">
-    <div class="container product-detail-page">
-        <!-- Alertas -->
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
 
-        <div class="product-detail-grid" th:object="${producto}">
-            <!-- Galería de miniaturas vertical (solo desktop) -->
-            <div class="product-thumbnails">
-                <div class="thumbnail-item active">
-                    <img th:src="*{imagenUrl}" th:alt="*{nombre}"
-                         onerror="this.src='https://placehold.co/80x80/F3F4F6/6B7280?text=1';"/>
+    <div th:if="${producto != null}" class="product-detail-page">
+
+        <div th:if="${successMessage}" class="alert alert-success mb-4" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-error mb-4" th:text="${errorMessage}"></div>
+
+        <div class="grid-layout">
+
+            <div class="thumbnails">
+                <div class="thumb-btn active"
+                     th:data-img="${producto.imagenUrl}"
+                     onclick="changeMainImage(this.getAttribute('data-img'))">
+                    <img th:src="${producto.imagenUrl}" onerror="this.src='https://placehold.co/80';">
                 </div>
-                <div class="thumbnail-item">
-                    <img th:src="*{imagenUrl}" th:alt="*{nombre}"
-                         onerror="this.src='https://placehold.co/80x80/F3F4F6/6B7280?text=2';"/>
-                </div>
-                <div class="thumbnail-item">
-                    <img th:src="*{imagenUrl}" th:alt="*{nombre}"
-                         onerror="this.src='https://placehold.co/80x80/F3F4F6/6B7280?text=3';"/>
-                </div>
+
+                <th:block th:each="v : ${producto.variantes}">
+                    <div th:if="${v != null and v.imagenUrl != null and v.imagenUrl != ''}"
+                         class="thumb-btn"
+                         th:data-img="${v.imagenUrl}"
+                         onclick="changeMainImage(this.getAttribute('data-img'))">
+                        <img th:src="${v.imagenUrl}" onerror="this.style.display='none'">
+                    </div>
+                </th:block>
             </div>
 
-            <!-- Imagen principal limpia -->
-            <div class="product-image-gallery">
-                <img th:src="*{imagenUrl}" th:alt="*{nombre}"
-                     onerror="this.src='https://placehold.co/800x800/F3F4F6/6B7280?text=Imagen+no+disponible';"/>
+            <div class="main-image-container">
+                <img id="mainImage" th:src="${producto.imagenUrl}" onerror="this.src='https://placehold.co/600x600?text=No+Image';">
             </div>
 
-            <!-- Panel de información estilo Nike -->
-            <div class="product-info">
-                <h1 class="product-title" th:text="*{nombre}"></h1>
-                <p class="product-subtitle" th:text="*{descripcion != null && !#strings.isEmpty(descripcion)} ? ${#strings.abbreviate(producto.descripcion, 60)} : 'Producto de alta calidad'"></p>
+            <div class="info-panel">
+                <h1 class="product-title" th:text="${producto.nombre}"></h1>
+                <div class="text-gray-500 mb-2" th:text="${producto.categoria?.nombre}"></div>
+                <div class="product-price" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 'POINT', 2, 'COMMA')}"></div>
 
-                <!-- Sección de precio con descuento -->
-                <div class="price-section">
-                    <div class="price-container">
-                        <p class="product-price" th:text="'$ ' + ${#numbers.formatDecimal(producto.precio, 1, 'POINT', 2, 'COMMA')}"></p>
-                        <!-- Simulación de precio original y descuento -->
-                        <span class="price-original" th:text="'$ ' + ${#numbers.formatDecimal(producto.precio * 1.25, 1, 'POINT', 2, 'COMMA')}"></span>
-                        <span class="price-discount">25% de descuento</span>
-                    </div>
-                </div>
+                <form th:action="@{/carrito/agregar/{id}(id=${producto.id})}" method="post" id="addToCartForm">
+                    <input type="hidden" name="productoVarianteId" id="selectedVariantId">
+                    <input type="hidden" name="cantidad" value="1">
 
-                <!-- Selector de variante/color con miniaturas -->
-                <div class="variant-selector" th:if="*{color != null and !color.isEmpty()}">
-                    <label class="variant-label" th:text="'Color: ' + *{color}">Color</label>
-                    <div class="variant-options">
-                        <div class="variant-option selected">
-                            <img th:src="*{imagenUrl}" th:alt="*{color}"
-                                 onerror="this.src='https://placehold.co/80x80/F3F4F6/6B7280?text=C1';"/>
-                        </div>
+                    <div class="selector-label">
+                        <span>Color</span>
+                        <span id="selectedColorText" class="font-normal text-gray-500"></span>
                     </div>
-                </div>
+                    <div class="color-grid" id="colorContainer"></div>
+                    <div id="colorError" class="error-msg">Selecciona un color</div>
 
-                <!-- Selector de talla estilo Nike con botones -->
-                <div class="size-selector" th:if="*{talla != null and !talla.isEmpty()}">
-                    <div class="size-header">
-                        <label class="size-label">Selecciona la Talla</label>
-                        <span class="size-guide">Guía de tallas</span>
+                    <div class="selector-label">
+                        <span>Talla</span>
+                        <span id="selectedSizeText" class="font-normal text-gray-500"></span>
                     </div>
-                    <div class="size-options">
-                        <div class="size-option" th:text="'S'">S</div>
-                        <div class="size-option selected" th:text="*{talla}">M</div>
-                        <div class="size-option" th:text="'L'">L</div>
-                        <div class="size-option" th:text="'XL'">XL</div>
-                    </div>
-                </div>
+                    <div class="size-grid" id="sizeContainer"></div>
+                    <div id="sizeError" class="error-msg">Selecciona una talla</div>
 
-                <!-- Formulario simplificado con botón grande -->
-                <form th:action="@{/carrito/agregar/{id}(id=*{id})}" method="post" th:if="*{stock > 0}">
-                    <input type="hidden" name="cantidad" value="1" />
-                    <button type="submit" class="add-to-cart-btn">Agregar a la bolsa de compras</button>
+                    <button type="button" id="btnAddToCart" class="add-btn" disabled onclick="submitForm()">
+                        Seleccionar opciones
+                    </button>
+
+                    <p id="stockDisplay" class="text-center mt-3 text-sm font-medium" style="display:none;"></p>
                 </form>
 
-                <div th:if="*{stock <= 0}">
-                    <button class="add-to-cart-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Agotado</button>
-                </div>
-
-                <!-- Información de envío estilo Nike -->
-                <div class="shipping-info">
-                    <div class="shipping-title">Envío</div>
-                    <p class="shipping-text">
-                        Para obtener información de envío precisa<br/>
-                        <span class="shipping-link">Editar ubicación</span>
-                    </p>
-                </div>
-
-                <!-- Descripción detallada del producto -->
-                <div class="product-description-section">
-                    <p class="product-description" th:text="*{descripcion}"></p>
-
-                    <div class="product-attributes">
-                        <div class="attribute-item" th:if="*{talla != null and !talla.isEmpty()}">
-                            <strong>Talla</strong>
-                            <span th:text="*{talla}"></span>
-                        </div>
-                        <div class="attribute-item" th:if="*{color != null and !color.isEmpty()}">
-                            <strong>Color</strong>
-                            <span th:text="*{color}"></span>
-                        </div>
-                        <div class="attribute-item">
-                            <strong>Stock</strong>
-                            <span th:text="*{stock > 0} ? (*{stock} + ' disponibles') : 'Agotado'"
-                                  th:classappend="*{stock > 0} ? 'text-green-600' : 'text-red-600'"></span>
-                        </div>
-                    </div>
-                </div>
+                <p class="desc-text" th:text="${producto.descripcion}"></p>
             </div>
         </div>
     </div>
+
+    <div th:if="${producto == null}" class="text-center py-20">
+        <h2 class="text-2xl font-bold text-red-600">Producto no encontrado</h2>
+        <a href="/catalogo" class="btn btn-primary mt-4">Volver al catálogo</a>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const variants = [];
+
+        /* LÓGICA SEGURA DE EXTRACCIÓN DE DATOS */
+        /*[# th:if="${producto != null}"]*/
+        /*[# th:each="v : ${producto.variantes}"]*/
+        // Verificamos que v no sea nulo antes de escribir el JS
+        /*[# th:if="${v != null and v.activo}"]*/
+        try {
+            variants.push({
+                id: [[${v.id}]],
+                // Usamos el operador seguro de Thymeleaf (?.) por si acaso
+                color: [[${v.color}]],
+                talla: [[${v.talla}]],
+                img: [[${v.imagenUrl}]],
+                stock: [[${v.stock != null ? v.stock : 0}]]
+            });
+        } catch (e) {
+            console.error("Error procesando variante", e);
+        }
+        /*[/]*/
+        /*[/]*/
+        /*[/]*/
+
+        // Referencias DOM
+        const colorContainer = document.getElementById('colorContainer');
+        const sizeContainer = document.getElementById('sizeContainer');
+        const mainImage = document.getElementById('mainImage');
+        const hiddenInput = document.getElementById('selectedVariantId');
+        const btnAdd = document.getElementById('btnAddToCart');
+        const stockDisplay = document.getElementById('stockDisplay');
+
+        let selectedColor = null;
+        let selectedSize = null;
+
+        function init() {
+            if(variants.length === 0) {
+                if(stockDisplay) {
+                    stockDisplay.style.display = 'block';
+                    stockDisplay.innerText = 'No hay stock disponible actualmente.';
+                    stockDisplay.style.color = '#dc2626';
+                }
+                return;
+            }
+            renderColors();
+            renderSizes();
+        }
+
+        function renderColors() {
+            const colors = [...new Set(variants.map(v => v.color))].sort();
+            colorContainer.innerHTML = '';
+            colors.forEach(color => {
+                const div = document.createElement('div');
+                div.className = 'color-option';
+                div.innerText = color;
+                div.onclick = () => selectColor(color, div);
+                colorContainer.appendChild(div);
+            });
+        }
+
+        function renderSizes() {
+            const allSizes = [...new Set(variants.map(v => v.talla))].sort((a, b) => a - b);
+            sizeContainer.innerHTML = '';
+
+            allSizes.forEach(size => {
+                const div = document.createElement('div');
+                div.className = 'size-option';
+                div.innerText = size;
+
+                // Verificar disponibilidad
+                let available = false;
+                if (selectedColor) {
+                    const variant = variants.find(v => v.color === selectedColor && v.talla === size && v.stock > 0);
+                    if (variant) available = true;
+                }
+
+                // Estilos
+                if (!selectedColor) {
+                    div.classList.add('disabled'); // Bloqueado hasta elegir color
+                } else if (!available) {
+                    div.classList.add('disabled'); // Sin stock para ese color
+                } else {
+                    div.onclick = () => selectSize(size, div);
+                }
+
+                if (selectedSize === size && available) div.classList.add('selected');
+
+                sizeContainer.appendChild(div);
+            });
+        }
+
+        function selectColor(color, element) {
+            selectedColor = color;
+            selectedSize = null; // Reset talla
+            hiddenInput.value = '';
+
+            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('selectedColorText').innerText = color;
+            document.getElementById('selectedSizeText').innerText = '';
+
+            // Cambiar imagen si existe para este color
+            const variantWithImg = variants.find(v => v.color === color && v.img && v.img !== '');
+            if (variantWithImg) changeMainImage(variantWithImg.img);
+
+            renderSizes();
+            updateButtonState();
+        }
+
+        function selectSize(size, element) {
+            selectedSize = size;
+            document.querySelectorAll('.size-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('selectedSizeText').innerText = size;
+
+            updateButtonState();
+        }
+
+        function updateButtonState() {
+            document.getElementById('colorError').style.display = 'none';
+            document.getElementById('sizeError').style.display = 'none';
+            stockDisplay.style.display = 'none';
+
+            if (selectedColor && selectedSize) {
+                const finalVariant = variants.find(v => v.color === selectedColor && v.talla === selectedSize);
+
+                if (finalVariant) {
+                    hiddenInput.value = finalVariant.id;
+                    btnAdd.disabled = false;
+                    btnAdd.innerText = "Agregar a la bolsa";
+                    btnAdd.style.background = "#111827";
+
+                    stockDisplay.style.display = 'block';
+                    if(finalVariant.stock < 5) {
+                        stockDisplay.innerText = `¡Solo quedan ${finalVariant.stock} unidades!`;
+                        stockDisplay.style.color = '#dc2626';
+                    } else {
+                        stockDisplay.innerText = 'Stock Disponible';
+                        stockDisplay.style.color = '#166534';
+                    }
+                }
+            } else {
+                btnAdd.disabled = true;
+                btnAdd.innerText = "Seleccionar opciones";
+                btnAdd.style.background = "#e5e7eb";
+            }
+        }
+
+        function changeMainImage(url) {
+            if (url) {
+                const img = document.getElementById('mainImage');
+                img.style.opacity = 0;
+                setTimeout(() => { img.src = url; img.style.opacity = 1; }, 150);
+            }
+        }
+
+        function submitForm() {
+            if (!selectedColor) return document.getElementById('colorError').style.display = 'block';
+            if (!selectedSize) return document.getElementById('sizeError').style.display = 'block';
+            document.getElementById('addToCartForm').submit();
+        }
+
+        // Inicializar
+        document.addEventListener("DOMContentLoaded", init);
+        /*]]>*/
+    </script>
 </section>
 </body>
 </html>

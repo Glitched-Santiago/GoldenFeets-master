@@ -34,14 +34,6 @@ public class PedidoController {
     // --- PASO 3: INYECTAMOS EL CarritoService ---
     private final CarritoService carritoService;
 
-    // --- PASO 4: ELIMINAMOS EL MÉTODO ANTIGUO getCarrito ---
-    /*
-    @SuppressWarnings("unchecked")
-    private Map<Long, CarritoItem> getCarrito(HttpSession session) {
-        return (Map<Long, CarritoItem>) session.getAttribute("CARRITO_SESSION");
-    }
-    */
-
     @GetMapping("/checkout")
     // --- PASO 5: ELIMINAMOS HttpSession de los parámetros ---
     public String showCheckoutPage(Model model, RedirectAttributes redirectAttributes) {

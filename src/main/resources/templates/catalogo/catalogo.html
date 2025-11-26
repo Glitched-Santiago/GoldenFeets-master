@@ -4,10 +4,24 @@
       layout:decorate="~{base/base-cliente}">
 <head>
     <title>Catálogo</title>
+    <style>
+        /* Estilo simple para el botón de opciones */
+        .btn-options {
+            display: block; width: 100%; padding: 10px; text-align: center;
+            background-color: #111827; color: white; text-decoration: none;
+            border-radius: 6px; font-weight: 600; transition: background 0.2s;
+        }
+        .btn-options:hover { background-color: #374151; }
+
+        /* Etiquetas de stock */
+        .badge-stock { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; background: #f3f4f6; color: #6b7280; }
+        .badge-out { background: #fee2e2; color: #991b1b; }
+    </style>
 </head>
 <body>
 <section layout:fragment="content">
     <main class="container" style="padding-top: 3rem; padding-bottom: 3rem;">
+
         <div class="page-header">
             <h1 class="page-title">Nuestro Catálogo</h1>
         </div>
@@ -16,62 +30,64 @@
         <div th:if="${errorMessage}" class="alert alert-error" role="alert" th:text="${errorMessage}"></div>
 
         <form method="get" th:action="@{/catalogo}" class="catalogo-filtro-form">
-            <input type="text" name="keyword" th:value="${keyword}" placeholder="Buscar por nombre" class="input-estetico">
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="Buscar..." class="input-estetico">
+
             <select name="categoriaId" class="input-estetico">
-                <option value="">Categoría</option>
+                <option value="">Todas las Categorías</option>
                 <option th:each="categoria : ${categorias}"
                         th:value="${categoria.id}"
                         th:selected="${categoria.id == categoriaId}"
                         th:text="${categoria.nombre}">
                 </option>
             </select>
-            <input type="number" name="precioMin" th:value="${precioMin}" placeholder="Precio Mínimo" class="input-estetico">
-            <input type="number" name="precioMax" th:value="${precioMax}" placeholder="Precio Máximo" class="input-estetico">
-            <input type="text" name="talla" th:value="${talla}" placeholder="Talla" class="input-estetico">
-            <input type="text" name="color" th:value="${color}" placeholder="Color" class="input-estetico">
+
+            <input type="number" name="precioMin" th:value="${precioMin}" placeholder="Min $" class="input-estetico">
+            <input type="number" name="precioMax" th:value="${precioMax}" placeholder="Max $" class="input-estetico">
+
+            <input type="text" name="talla" th:value="${talla}" placeholder="Talla (ej: 40)" class="input-estetico" style="width: 100px;">
+            <input type="text" name="color" th:value="${color}" placeholder="Color" class="input-estetico" style="width: 100px;">
+
             <button type="submit" class="btn-filtrar">Filtrar</button>
         </form>
 
         <div class="product-grid" th:if="${not #lists.isEmpty(productos)}">
             <div th:each="producto : ${productos}" class="product-card">
+
                 <a th:href="@{/catalogo/{id}(id=${producto.id})}" class="product-link">
                     <div class="product-card-image-wrapper">
-                        <img class="product-card-image" th:src="${producto.imagenUrl}" alt="Imagen del producto"
-                             onerror="this.onerror=null; this.src='https://placehold.co/600x400/1F2937/FFFFFF?text=Imagen+no+disponible';"/>
+                        <img class="product-card-image" th:src="${producto.imagenUrl}" alt="Zapato"
+                             onerror="this.src='https://placehold.co/600x400/f3f4f6/a3a3a3?text=No+Image';"/>
                     </div>
                 </a>
+
                 <div class="product-card-content">
                     <a th:href="@{/catalogo/{id}(id=${producto.id})}" class="product-link">
                         <h3 class="product-card-title" th:text="${producto.nombre}"></h3>
+
                         <div class="product-card-details">
-                            <p class="product-price" th:text="|$${#numbers.formatDecimal(producto.precio, 1, 2)}|"></p>
+                            <p class="product-price" th:text="|$${#numbers.formatDecimal(producto.precio, 1, 'POINT', 2, 'COMMA')}|"></p>
                             <span class="product-tag" th:text="${producto.categoria?.nombre}"></span>
                         </div>
-                        <div class="product-card-attributes" style="margin-top: 0.5rem; font-size: 0.8rem; color: #9CA3AF;">
-                            <span th:if="${producto.talla}" th:text="|Talla: ${producto.talla}|"></span>
 
-                            <span th:if="${!#strings.isEmpty(producto.talla) and !#strings.isEmpty(producto.color)}"> &middot; </span>
-
-                            <span th:if="${producto.color}" th:text="|Color: ${producto.color}|"></span>
+                        <div class="product-card-attributes" style="margin-top: 0.5rem;">
+                            <span th:if="${producto.stockTotal > 0}" class="badge-stock"
+                                  th:text="|${producto.variantes.size()} colores/tallas|"></span>
+                            <span th:if="${producto.stockTotal <= 0}" class="badge-stock badge-out">Agotado</span>
                         </div>
                     </a>
 
-                    <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <a th:href="@{/catalogo/{id}(id=${producto.id})}" class="add-to-cart-btn">Ver Detalles</a>
-
-                        <form th:action="@{/carrito/agregar/{id}(id=${producto.id})}" method="post">
-                            <input type="hidden" name="cantidad" value="1" />
-                            <button type="submit" class="add-to-cart-btn">Añadir al Carrito</button>
-                        </form>
-
-
+                    <div style="margin-top: 1rem;">
+                        <a th:href="@{/catalogo/{id}(id=${producto.id})}" class="btn-options">
+                            Ver Opciones
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div th:if="${#lists.isEmpty(productos)}" style="text-align: center; padding: 3rem 0;">
-            <p>No se encontraron productos con los filtros seleccionados.</p>
+        <div th:if="${#lists.isEmpty(productos)}" style="text-align: center; padding: 4rem 0; color: #6b7280;">
+            <p>No encontramos zapatos con esos criterios.</p>
+            <a th:href="@{/catalogo}" style="text-decoration: underline; color: #111827;">Ver todos los productos</a>
         </div>
     </main>
 </section>

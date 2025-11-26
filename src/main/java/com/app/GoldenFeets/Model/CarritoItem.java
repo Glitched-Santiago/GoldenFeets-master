@@ -1,7 +1,7 @@
 package com.app.GoldenFeets.Model;
 
 import com.app.GoldenFeets.Entity.Producto;
-import com.app.GoldenFeets.Entity.ProductoVariante; // <-- IMPORTANTE: Importar la nueva entidad
+import com.app.GoldenFeets.Entity.ProductoVariante;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.io.Serializable;
@@ -19,21 +19,26 @@ public class CarritoItem implements Serializable {
     private int cantidad;
     private Double subtotal;
 
-    // --- NUEVOS CAMPOS PARA SOPORTAR VARIANTES ---
-    private Long productoVarianteId; // ID único de la combinación (ej: ID 55 = Nike Air - Talla 40 - Rojo)
+    // Campos de la Variante
+    private Long productoVarianteId;
     private String talla;
     private String color;
 
-    // --- CONSTRUCTOR ACTUALIZADO ---
-    // Ahora recibe también el objeto ProductoVariante
     public CarritoItem(Producto producto, ProductoVariante variante, int cantidad) {
         this.productoId = producto.getId();
         this.nombre = producto.getNombre();
-        this.imagenUrl = producto.getImagenUrl();
+
+        // Lógica inteligente de imagen:
+        // Si la variante tiene foto específica, usamos esa. Si no, la del producto.
+        if (variante != null && variante.getImagenUrl() != null && !variante.getImagenUrl().isEmpty()) {
+            this.imagenUrl = variante.getImagenUrl();
+        } else {
+            this.imagenUrl = producto.getImagenUrl();
+        }
+
         this.precio = producto.getPrecio();
         this.cantidad = cantidad;
 
-        // Guardamos los datos de la variante seleccionada
         if (variante != null) {
             this.productoVarianteId = variante.getId();
             this.talla = variante.getTalla();

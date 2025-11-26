@@ -31,19 +31,43 @@
 
     <div class="admin-card">
         <!-- FORMULARIO DE BÚSQUEDA -->
-        <form th:action="@{/admin/inventario}" method="get" class="search-form">
-            <div class="form-group">
-                <input type="text" name="keyword" placeholder="Buscar por nombre..." class="search-input" th:value="${keywordParam}">
+        <form th:action="@{/admin/inventario}" method="get" class="search-form"
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; align-items: end;">
+
+            <div class="form-group" style="grid-column: span 2;">
+                <label class="text-xs font-bold text-gray-500 uppercase">Nombre</label>
+                <input type="text" name="keyword" placeholder="Buscar..." class="search-input w-full" th:value="${keywordParam}">
             </div>
+
             <div class="form-group">
-                <select name="categoriaId" class="search-input">
-                    <option value="">Categoría</option>
+                <label class="text-xs font-bold text-gray-500 uppercase">Categoría</label>
+                <select name="categoriaId" class="search-input w-full">
+                    <option value="">Todas</option>
                     <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}" th:selected="${categoriaIdParam == cat.id}"></option>
                 </select>
             </div>
-            <div class="search-form-actions">
-                <button type="submit" class="btn btn-primary">Buscar</button>
-                <a th:href="@{/admin/inventario}" class="btn btn-secondary">Limpiar</a>
+
+            <div class="form-group">
+                <label class="text-xs font-bold text-gray-500 uppercase">Precio Min</label>
+                <input type="number" name="precioMin" placeholder="Min" class="search-input w-full" th:value="${precioMinParam}">
+            </div>
+            <div class="form-group">
+                <label class="text-xs font-bold text-gray-500 uppercase">Precio Max</label>
+                <input type="number" name="precioMax" placeholder="Max" class="search-input w-full" th:value="${precioMaxParam}">
+            </div>
+
+            <div class="form-group">
+                <label class="text-xs font-bold text-gray-500 uppercase">Talla</label>
+                <input type="text" name="talla" placeholder="Ej: 40" class="search-input w-full" th:value="${tallaParam}">
+            </div>
+            <div class="form-group">
+                <label class="text-xs font-bold text-gray-500 uppercase">Color</label>
+                <input type="text" name="color" placeholder="Ej: Rojo" class="search-input w-full" th:value="${colorParam}">
+            </div>
+
+            <div class="search-form-actions" style="grid-column: span 2; display: flex; gap: 0.5rem;">
+                <button type="submit" class="btn btn-primary w-full">Filtrar</button>
+                <a th:href="@{/admin/inventario}" class="btn btn-secondary w-full text-center">Limpiar</a>
             </div>
         </form>
 
@@ -66,8 +90,10 @@
                 <tr th:each="producto : ${productos}">
                     <td th:text="${producto.id}"></td>
                     <td>
-                        <img th:src="${producto.imagenUrl}" class="h-10 w-10 object-cover rounded"
-                             onerror="this.src='https://placehold.co/50'"/>
+                        <img th:src="${producto.imagenUrl}"
+                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"
+                             alt="Img"
+                             onerror="this.src='https://placehold.co/50';"/>
                     </td>
                     <td th:text="${producto.nombre}"></td>
                     <td th:text="${producto.categoria?.nombre ?: 'N/A'}"></td>

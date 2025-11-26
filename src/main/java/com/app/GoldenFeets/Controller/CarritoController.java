@@ -17,7 +17,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CarritoController {
 
-    // Spring inyectará el proxy del CarritoService correcto para la sesión del usuario.
     private final CarritoService carritoService;
     private final ProductoService productoService;
 
@@ -25,72 +24,63 @@ public class CarritoController {
     public String verCarrito(Model model) {
         model.addAttribute("items", carritoService.getItems().values());
         model.addAttribute("total", carritoService.getTotal());
-        return "carrito/carrito";
+        return "carrito/carrito"; // Asegúrate que esta vista existe
     }
 
     @PostMapping("/agregar/{productoId}")
     public String agregarAlCarrito(
             @PathVariable Long productoId,
-            // 1. Aceptamos la cantidad desde el formulario
             @RequestParam(name = "cantidad", defaultValue = "1") int cantidad,
-            // 2. Aceptamos el ID de la variante (Talla/Color) seleccionado
             @RequestParam(name = "productoVarianteId", required = false) Long productoVarianteId,
             RedirectAttributes redirectAttributes) {
+
+        // 1. Validar Selección
+        if (productoVarianteId == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Por favor selecciona un Color y una Talla.");
+            return "redirect:/catalogo/" + productoId;
+        }
 
         Optional<Producto> productoOpt = productoService.obtenerPorId(productoId);
         if (productoOpt.isPresent()) {
             Producto producto = productoOpt.get();
 
-            // 3. Validamos que se haya seleccionado una variante
-            if (productoVarianteId == null) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Debes seleccionar una talla y color.");
-                return "redirect:/catalogo/" + productoId;
-            }
-
-            // 4. Buscamos la variante específica (Talla/Color) dentro del producto
+            // 2. Buscar variante específica
             ProductoVariante variante = producto.getVariantes().stream()
                     .filter(v -> v.getId().equals(productoVarianteId))
                     .findFirst()
                     .orElse(null);
 
-            if (variante == null) {
-                redirectAttributes.addFlashAttribute("errorMessage", "La variante seleccionada no es válida.");
+            if (variante == null || !variante.getActivo()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "La opción seleccionada no está disponible.");
                 return "redirect:/catalogo/" + productoId;
             }
 
-            // 5. Verificamos que haya suficiente stock EN LA VARIANTE (no en el producto general)
+            // 3. Validar Stock
             if (variante.getStock() >= cantidad) {
-                // 6. Pasamos la variante al servicio (usando el nuevo método)
                 carritoService.agregarProducto(producto, variante, cantidad);
-                redirectAttributes.addFlashAttribute("successMessage", "¡Producto añadido al carrito!");
+                redirectAttributes.addFlashAttribute("successMessage", "¡Añadido a la bolsa!");
             } else {
-                redirectAttributes.addFlashAttribute("errorMessage", "No hay stock suficiente para la talla solicitada (" + variante.getStock() + " disponibles).");
+                redirectAttributes.addFlashAttribute("errorMessage", "Stock insuficiente. Solo quedan " + variante.getStock() + " unidades.");
             }
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Producto no encontrado.");
         }
-        // Redirige de vuelta a la página del producto desde donde se añadió
+
+        // Volvemos al detalle para seguir comprando
         return "redirect:/catalogo/" + productoId;
     }
 
     @PostMapping("/eliminar/{id}")
     public String eliminarDelCarrito(@PathVariable("id") Long productoVarianteId) {
-        // El ID ahora corresponde a la clave del mapa en el servicio (Variante ID)
+        // El ID que recibimos es el de la variante (clave del mapa)
         carritoService.removerProducto(productoVarianteId);
         return "redirect:/carrito";
     }
 
-    /**
-     * Nuevo método para manejar la actualización de la cantidad de un producto.
-     * Recibe el ID de la variante y la nueva cantidad.
-     */
     @PostMapping("/actualizar")
     public String actualizarCantidad(@RequestParam("productoVarianteId") Long productoVarianteId,
                                      @RequestParam("cantidad") int cantidad) {
-
-        // Nota: Si quisieras validar stock aquí, necesitarías inyectar ProductoRepository o similar
-        // para buscar la variante por su ID y chequear stock vs cantidad nueva.
-
+        // Aquí podrías añadir validación de stock nuevamente si quisieras ser muy estricto
         carritoService.actualizarCantidad(productoVarianteId, cantidad);
         return "redirect:/carrito";
     }

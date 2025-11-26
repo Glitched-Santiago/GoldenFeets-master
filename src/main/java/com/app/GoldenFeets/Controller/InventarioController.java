@@ -5,10 +5,13 @@ import com.app.GoldenFeets.DTO.HistorialInventarioDTO;
 import com.app.GoldenFeets.DTO.InventarioEntradaDTO;
 import com.app.GoldenFeets.DTO.InventarioSalidaDTO;
 import com.app.GoldenFeets.Entity.Producto;
+import com.app.GoldenFeets.Entity.ProductoVariante;
 import com.app.GoldenFeets.Repository.CategoriaRepository;
+import com.app.GoldenFeets.Repository.ProductoVarianteRepository;
 import com.app.GoldenFeets.Service.InventarioService;
 import com.app.GoldenFeets.Service.PdfService;
 import com.app.GoldenFeets.Service.ProductoService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,6 +25,9 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import com.app.GoldenFeets.Entity.ProductoVariante;
 
 @Controller
 @RequestMapping("/admin/inventario")
@@ -32,6 +38,7 @@ public class InventarioController {
     private final PdfService pdfService;
     private final CategoriaRepository categoriaRepository;
     private final InventarioService inventarioService;
+    private final ProductoVarianteRepository productoVarianteRepository; // Inyecta esto
 
     // --- LISTAR INVENTARIO ---
     @GetMapping
@@ -197,9 +204,17 @@ public class InventarioController {
 
     @GetMapping("/editar/{id}")
     public String mostrarFormularioEditar(@PathVariable Long id, Model model) {
-        model.addAttribute("producto", productoService.obtenerPorId(id).orElseThrow(() -> new IllegalArgumentException("ID inválido")));
+        Producto producto = productoService.obtenerPorId(id)
+                .orElseThrow(() -> new IllegalArgumentException("ID inválido"));
+
+        // 1. LOGICA NUEVA: Agrupar variantes por Color usando Java Streams
+        Map<String, List<ProductoVariante>> variantesPorColor = producto.getVariantes().stream()
+                .collect(Collectors.groupingBy(ProductoVariante::getColor));
+
+        model.addAttribute("producto", producto);
+        model.addAttribute("variantesPorColor", variantesPorColor); // <--- ESTO ES LA CLAVE
         model.addAttribute("categorias", categoriaRepository.findAll());
-        model.addAttribute("activePage", "inventario");
+
         return "inventario/inventario-form";
     }
 
@@ -213,5 +228,49 @@ public class InventarioController {
     public String eliminarProducto(@PathVariable Long id) {
         productoService.eliminar(id);
         return "redirect:/admin/inventario";
+    }
+    @GetMapping("/variante/{id}/toggle")
+    public String toggleVariante(@PathVariable Long id, HttpServletRequest request) {
+        ProductoVariante v = productoVarianteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Variante no encontrada"));
+
+        // Invertir estado (Si es true pasa a false, y viceversa)
+        v.setActivo(!v.getActivo());
+        productoVarianteRepository.save(v);
+
+        // Redirigir a la página anterior (la de edición del producto)
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/admin/inventario");
+    }
+    @PostMapping("/variante/agregar-manual")
+    public String agregarVarianteManual(
+            @RequestParam Long productoId,
+            @RequestParam String talla,
+            @RequestParam String color,
+            jakarta.servlet.http.HttpServletRequest request,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+
+        try {
+            productoService.crearVarianteManual(productoId, talla, color);
+            redirectAttributes.addFlashAttribute("successMessage", "Variante agregada correctamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
+        }
+
+        // Redirige a la misma página donde estabas
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/admin/inventario");
+    }
+    @GetMapping("/variante/toggle-color")
+    public String toggleColorCompleto(
+            @RequestParam Long productoId,
+            @RequestParam String color,
+            jakarta.servlet.http.HttpServletRequest request) {
+
+        productoService.toggleVariantesPorColor(productoId, color);
+
+        // Recargar la página actual
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/admin/inventario");
     }
 }

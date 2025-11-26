@@ -28,25 +28,22 @@ public class InventarioService {
     private final PedidoRepository pedidoRepository;
 
     /**
-     * Registra una entrada de inventario.
-     * Si la variante (Talla/Color) ya existe, suma el stock.
-     * Si no existe, crea una nueva variante asociada al producto.
+     * Registra entrada de stock y guarda la foto del stock (antes/después).
      */
     @Transactional
     public InventarioEntrada registrarEntrada(InventarioEntradaDTO entradaDTO) {
-        System.out.println("--- DEBUG: Iniciando registrarEntrada ---");
         try {
-            // 1. Buscar el producto padre
             Producto producto = productoRepository.findById(entradaDTO.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + entradaDTO.getProductoId()));
 
-            // 2. Normalizar entradas (evitar duplicados por mayúsculas/minúsculas)
-            String colorInput = (entradaDTO.getColor() != null && !entradaDTO.getColor().isEmpty())
-                    ? entradaDTO.getColor().trim() : "Único";
-            String tallaInput = (entradaDTO.getTalla() != null && !entradaDTO.getTalla().isEmpty())
-                    ? entradaDTO.getTalla().trim() : "Única";
+            // Instanciamos aquí para tener la variable disponible
+            InventarioEntrada nuevaEntrada = new InventarioEntrada();
 
-            // 3. Buscar si la variante ya existe
+            String colorInput = (entradaDTO.getColor() != null && !entradaDTO.getColor().isEmpty()) ? entradaDTO.getColor().trim() : "Único";
+            String tallaInput = (entradaDTO.getTalla() != null && !entradaDTO.getTalla().isEmpty()) ? entradaDTO.getTalla().trim() : "Única";
+
+            if (producto.getVariantes() == null) producto.setVariantes(new ArrayList<>());
+
             Optional<ProductoVariante> varianteExistente = producto.getVariantes().stream()
                     .filter(v -> v.getColor().equalsIgnoreCase(colorInput) && v.getTalla().equalsIgnoreCase(tallaInput))
                     .findFirst();
@@ -54,129 +51,117 @@ public class InventarioService {
             ProductoVariante variante;
 
             if (varianteExistente.isPresent()) {
-                // Opción A: Actualizar existente
                 variante = varianteExistente.get();
-                variante.setStock(variante.getStock() + entradaDTO.getCantidad());
-                System.out.println("DEBUG: Variante encontrada. Nuevo stock: " + variante.getStock());
+
+                // [CORRECCIÓN STOCK] Capturamos stock antes
+                int stockAntes = variante.getStock();
+                nuevaEntrada.setStockAnterior(stockAntes);
+
+                variante.setStock(stockAntes + entradaDTO.getCantidad());
+
+                // [CORRECCIÓN STOCK] Capturamos stock nuevo
+                nuevaEntrada.setStockNuevo(variante.getStock());
             } else {
-                // Opción B: Crear nueva variante
                 variante = new ProductoVariante();
                 variante.setProducto(producto);
                 variante.setColor(colorInput);
                 variante.setTalla(tallaInput);
                 variante.setStock(entradaDTO.getCantidad());
-                producto.getVariantes().add(variante); // Agregamos a la lista del padre
-                System.out.println("DEBUG: Nueva variante creada: " + tallaInput + " - " + colorInput);
+                producto.getVariantes().add(variante);
+
+                // [CORRECCIÓN STOCK] Si es nuevo, antes había 0
+                nuevaEntrada.setStockAnterior(0);
+                nuevaEntrada.setStockNuevo(entradaDTO.getCantidad());
             }
 
-            // 4. Guardar cambios en Producto (Cascade guardará la variante)
             productoRepository.save(producto);
 
-            // 5. Crear Registro Histórico de Entrada
-            InventarioEntrada nuevaEntrada = new InventarioEntrada();
             nuevaEntrada.setProducto(producto);
             nuevaEntrada.setDistribuidor(entradaDTO.getDistribuidor());
             nuevaEntrada.setCantidad(entradaDTO.getCantidad());
-            // Guardamos el detalle de la variante en el campo 'color' de la tabla histórica o similar
-            // Para mantener compatibilidad con tu tabla actual de entradas que tiene campo 'color':
             nuevaEntrada.setColor(colorInput + " / " + tallaInput);
-
-            if (entradaDTO.getPrecioCostoUnitario() != null) {
-                nuevaEntrada.setPrecioCostoUnitario(entradaDTO.getPrecioCostoUnitario());
-            } else {
-                nuevaEntrada.setPrecioCostoUnitario(0.0);
-            }
+            nuevaEntrada.setPrecioCostoUnitario(entradaDTO.getPrecioCostoUnitario() != null ? entradaDTO.getPrecioCostoUnitario() : 0.0);
 
             return inventarioEntradaRepository.save(nuevaEntrada);
 
         } catch (Exception e) {
-            System.err.println("--- ERROR en registrarEntrada ---");
             e.printStackTrace();
-            throw e;
+            throw new RuntimeException("Error al registrar entrada: " + e.getMessage());
         }
     }
 
     /**
-     * Registra una salida manual (pérdida, daño, uso interno).
-     * Requiere especificar Talla y Color en el DTO para descontar de la variante correcta.
+     * Registra salida manual y guarda la foto del stock (antes/después).
      */
     @Transactional
     public InventarioSalida registrarSalidaManual(InventarioSalidaDTO salidaDTO) {
-        System.out.println("--- DEBUG: Iniciando registrarSalidaManual ---");
         try {
-            // 1. Buscar Producto
             Producto producto = productoRepository.findById(salidaDTO.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-            // 2. Identificar Variante a descontar
-            // Asumimos que el DTO viene con Talla y Color desde el formulario
             String colorTarget = (salidaDTO.getColor() != null) ? salidaDTO.getColor().trim() : "";
             String tallaTarget = (salidaDTO.getTalla() != null) ? salidaDTO.getTalla().trim() : "";
 
             ProductoVariante variante = producto.getVariantes().stream()
                     .filter(v -> v.getColor().equalsIgnoreCase(colorTarget) && v.getTalla().equalsIgnoreCase(tallaTarget))
                     .findFirst()
-                    .orElseThrow(() -> new RuntimeException("No se encontró la variante " + tallaTarget + " - " + colorTarget + " para este producto."));
+                    .orElseThrow(() -> new RuntimeException("Variante no encontrada: " + tallaTarget + " " + colorTarget));
 
-            // 3. Validar Stock
             if (variante.getStock() < salidaDTO.getCantidad()) {
-                throw new RuntimeException("Stock insuficiente. Disponible: " + variante.getStock() + ", Solicitado: " + salidaDTO.getCantidad());
+                throw new RuntimeException("Stock insuficiente.");
             }
 
-            // 4. Descontar y Guardar
-            variante.setStock(variante.getStock() - salidaDTO.getCantidad());
+            // [CORRECCIÓN STOCK] Capturamos antes
+            int stockAntes = variante.getStock();
+
+            // Restamos
+            variante.setStock(stockAntes - salidaDTO.getCantidad());
             productoRepository.save(producto);
 
-            // 5. Registro Histórico
             InventarioSalida nuevaSalida = new InventarioSalida();
             nuevaSalida.setProducto(producto);
             nuevaSalida.setCantidad(salidaDTO.getCantidad());
             nuevaSalida.setMotivo(salidaDTO.getMotivo() + " [" + tallaTarget + "/" + colorTarget + "]");
 
+            // [CORRECCIÓN STOCK] Guardamos en el historial
+            nuevaSalida.setStockAnterior(stockAntes);
+            nuevaSalida.setStockNuevo(variante.getStock());
+
             return inventarioSalidaRepository.save(nuevaSalida);
 
         } catch (Exception e) {
-            System.err.println("--- ERROR en registrarSalidaManual ---");
             e.printStackTrace();
-            throw e;
+            throw new RuntimeException("Error al registrar salida: " + e.getMessage());
         }
     }
 
     /**
-     * Registra salida automática por venta (Checkout).
-     * Usa el objeto PedidoDetalle que ya tiene vinculada la ProductoVariante.
+     * Registra salida por Venta.
+     * OJO: El stock YA FUE RESTADO en PedidoService. Aquí solo registramos la foto.
      */
     @Transactional
     public InventarioSalida registrarSalidaPorVenta(PedidoDetalle detalle) {
         Producto producto = detalle.getProducto();
-        ProductoVariante variante = detalle.getProductoVariante();
+        ProductoVariante variante = detalle.getProductoVariante(); // Variante ya actualizada en PedidoService
 
-        // Validación de seguridad (aunque PedidoService ya debió validar)
-        if (variante == null) {
-            throw new RuntimeException("Error crítico: El detalle del pedido no tiene variante asignada.");
-        }
-
-        Integer cantidad = detalle.getCantidad();
-        if (variante.getStock() < cantidad) {
-            throw new RuntimeException("Stock insuficiente para confirmar venta: " + producto.getNombre() + " (" + variante.getTalla() + ")");
-        }
-
-        // Descontar Stock
-        variante.setStock(variante.getStock() - cantidad);
-        productoRepository.save(producto);
-
-        // Registro Histórico
         InventarioSalida nuevaSalida = new InventarioSalida();
         nuevaSalida.setProducto(producto);
-        nuevaSalida.setCantidad(cantidad);
+        nuevaSalida.setCantidad(detalle.getCantidad());
         nuevaSalida.setMotivo("Venta Web");
         nuevaSalida.setPedido(detalle.getPedido());
+
+        // [CORRECCIÓN STOCK]
+        // Como PedidoService ya restó, el stock actual de la variante es el "Nuevo".
+        // El "Anterior" era: Actual + lo que se vendió.
+        int stockActual = variante.getStock();
+        nuevaSalida.setStockNuevo(stockActual);
+        nuevaSalida.setStockAnterior(stockActual + detalle.getCantidad());
 
         return inventarioSalidaRepository.save(nuevaSalida);
     }
 
     /**
-     * Obtiene historial combinado de entradas y salidas.
+     * Mapea los datos al DTO para verlos en el HTML.
      */
     @Transactional(readOnly = true)
     public List<HistorialInventarioDTO> getHistorialUnificado(
@@ -191,11 +176,14 @@ public class InventarioService {
 
             HistorialInventarioDTO dto = new HistorialInventarioDTO();
             dto.setFecha(e.getFechaRegistro());
-            dto.setProductoNombre(e.getProducto() != null ? e.getProducto().getNombre() : "Producto Eliminado");
+            dto.setProductoNombre(e.getProducto() != null ? e.getProducto().getNombre() : "Eliminado");
             dto.setTipo("Entrada");
             dto.setCantidad(e.getCantidad());
-            dto.setDescripcion("Prov: " + (e.getDistribuidor() != null ? e.getDistribuidor() : "N/A") +
-                    (e.getColor() != null ? " (" + e.getColor() + ")" : ""));
+            dto.setDescripcion("Prov: " + (e.getDistribuidor() != null ? e.getDistribuidor() : "N/A") + " (" + e.getColor() + ")");
+
+            // [CORRECCIÓN MAPEO] Pasar los stocks al DTO
+            dto.setStockAnterior(e.getStockAnterior());
+            dto.setStockNuevo(e.getStockNuevo());
 
             Double costo = (e.getPrecioCostoUnitario() != null) ? e.getPrecioCostoUnitario() : 0.0;
             dto.setPrecioUnitario(costo);
@@ -211,28 +199,29 @@ public class InventarioService {
 
             HistorialInventarioDTO dto = new HistorialInventarioDTO();
             dto.setFecha(s.getFechaRegistro());
-            dto.setProductoNombre(s.getProducto() != null ? s.getProducto().getNombre() : "Producto Eliminado");
+            dto.setProductoNombre(s.getProducto() != null ? s.getProducto().getNombre() : "Eliminado");
             dto.setTipo("Salida");
             dto.setCantidad(s.getCantidad());
 
+            // [CORRECCIÓN MAPEO] Pasar los stocks al DTO
+            dto.setStockAnterior(s.getStockAnterior());
+            dto.setStockNuevo(s.getStockNuevo());
+
             if (s.getPedido() != null) {
-                // Es una venta
                 dto.setPedidoId(s.getPedido().getId());
                 dto.setDescripcion("Venta #" + s.getPedido().getId());
 
-                // Intentar obtener precio de venta del detalle
                 double precioVenta = 0.0;
-                if (s.getPedido().getDetalles() != null) {
-                    precioVenta = s.getPedido().getDetalles().stream()
-                            .filter(d -> d.getProducto().getId().equals(s.getProducto().getId()))
-                            .findFirst()
-                            .map(PedidoDetalle::getPrecioUnitario)
-                            .orElse(0.0);
-                }
+                try {
+                    if (s.getPedido().getDetalles() != null) {
+                        precioVenta = s.getPedido().getDetalles().stream()
+                                .filter(d -> d.getProducto().getId().equals(s.getProducto().getId()))
+                                .findFirst().map(PedidoDetalle::getPrecioUnitario).orElse(0.0);
+                    }
+                } catch (Exception ignored) {}
                 dto.setPrecioUnitario(precioVenta);
                 dto.setValorMonetario(s.getCantidad() * precioVenta);
             } else {
-                // Es manual
                 dto.setDescripcion(s.getMotivo());
                 dto.setPrecioUnitario(0.0);
                 dto.setValorMonetario(0.0);
@@ -240,36 +229,20 @@ public class InventarioService {
             historial.add(dto);
         }
 
-        // 3. Filtrar y Ordenar
+        // 3. Filtros
         Stream<HistorialInventarioDTO> stream = historial.stream();
+        if (fechaDesde != null) stream = stream.filter(h -> !h.getFecha().toLocalDate().isBefore(fechaDesde));
+        if (fechaHasta != null) stream = stream.filter(h -> !h.getFecha().toLocalDate().isAfter(fechaHasta));
+        if (productoNombre != null && !productoNombre.isBlank()) stream = stream.filter(h -> h.getProductoNombre().toLowerCase().contains(productoNombre.toLowerCase()));
+        if (tipo != null && !tipo.isBlank()) stream = stream.filter(h -> h.getTipo().equalsIgnoreCase(tipo));
 
-        if (fechaDesde != null) {
-            stream = stream.filter(h -> !h.getFecha().toLocalDate().isBefore(fechaDesde));
-        }
-        if (fechaHasta != null) {
-            stream = stream.filter(h -> !h.getFecha().toLocalDate().isAfter(fechaHasta));
-        }
-        if (productoNombre != null && !productoNombre.isBlank()) {
-            String term = productoNombre.toLowerCase();
-            stream = stream.filter(h -> h.getProductoNombre().toLowerCase().contains(term));
-        }
-        if (tipo != null && !tipo.isBlank()) {
-            stream = stream.filter(h -> h.getTipo().equalsIgnoreCase(tipo));
-        }
-
-        return stream
-                .sorted(Comparator.comparing(HistorialInventarioDTO::getFecha).reversed())
-                .collect(Collectors.toList());
+        return stream.sorted(Comparator.comparing(HistorialInventarioDTO::getFecha).reversed()).collect(Collectors.toList());
     }
 
-    /**
-     * Calcula estadísticas financieras básicas.
-     */
     @Transactional(readOnly = true)
     public EstadisticasInventarioDTO getEstadisticasInventario(LocalDate fechaDesde, LocalDate fechaHasta) {
         EstadisticasInventarioDTO stats = new EstadisticasInventarioDTO();
 
-        // Calcular Gastos (Entradas)
         List<InventarioEntrada> entradas = inventarioEntradaRepository.findAllWithProducto();
         double totalGastado = entradas.stream()
                 .filter(e -> e.getFechaRegistro() != null)
@@ -278,8 +251,7 @@ public class InventarioService {
                 .mapToDouble(e -> (e.getCantidad() * (e.getPrecioCostoUnitario() != null ? e.getPrecioCostoUnitario() : 0.0)))
                 .sum();
 
-        // Calcular Ingresos (Pedidos Pagados)
-        List<Pedido> pedidos = pedidoRepository.findAllByEstado(EstadoPedido.PAGADO); // Asegúrate que tu Enum tenga PAGADO
+        List<Pedido> pedidos = pedidoRepository.findAllByEstado(EstadoPedido.PAGADO);
         double totalIngresado = pedidos.stream()
                 .filter(p -> p.getFechaCreacion() != null)
                 .filter(p -> fechaDesde == null || !p.getFechaCreacion().toLocalDate().isBefore(fechaDesde))

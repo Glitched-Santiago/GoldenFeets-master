@@ -8,7 +8,7 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "producto_variantes")
-@Data
+@Data // <--- Esto genera automáticamente el getImagenUrl()
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductoVariante {
@@ -26,8 +26,15 @@ public class ProductoVariante {
     @Column(nullable = false)
     private Integer stock;
 
+    private Boolean activo = true;
+
+    // --- AGREGA ESTO ---
+    @Column(name = "imagen_url")
+    private String imagenUrl;
+    // -------------------
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id")
-    @ToString.Exclude // Evita bucles infinitos al imprimir logs
+    @ToString.Exclude
     private Producto producto;
 }

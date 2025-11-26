@@ -14,4 +14,7 @@ public class HistorialInventarioDTO {
     private Long pedidoId; // Opcional
     private Double precioUnitario;
     private Double valorMonetario;
+
+    private Integer stockAnterior; // Nuevo
+    private Integer stockNuevo;    // Nuevo
 }

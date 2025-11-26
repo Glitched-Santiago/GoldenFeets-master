@@ -1,14 +1,12 @@
 package com.app.GoldenFeets.Service;
 
-import com.app.GoldenFeets.Entity.Cliente;
-import com.app.GoldenFeets.Entity.EstadoPedido;
-import com.app.GoldenFeets.Entity.Pedido;
-import com.app.GoldenFeets.Entity.PedidoDetalle;
-import com.app.GoldenFeets.Entity.Producto;
+import com.app.GoldenFeets.Entity.*;
 import com.app.GoldenFeets.Exceptions.StockInsuficienteException;
 import com.app.GoldenFeets.Model.CarritoItem;
 import com.app.GoldenFeets.Repository.PedidoRepository;
 import com.app.GoldenFeets.Repository.ProductoRepository;
+// [NUEVO] Importamos el repositorio y la entidad de variantes
+import com.app.GoldenFeets.Repository.ProductoVarianteRepository;
 import com.app.GoldenFeets.Repository.spec.PedidoSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
@@ -27,13 +25,13 @@ public class PedidoService {
     private final ProductoRepository productoRepository;
     private final PedidoSpecification pedidoSpecification;
 
-    // --- INYECTAMOS EL SERVICIO DE INVENTARIO ---
+    // [NUEVO] Inyectamos el repositorio para buscar tallas y colores
+    private final ProductoVarianteRepository productoVarianteRepository;
+
     private final InventarioService inventarioService;
 
     /**
      * Procesa la creación de un nuevo pedido a partir del carrito de un cliente.
-     * Este método es transaccional, lo que significa que si algo falla (ej. falta de stock),
-     * todos los cambios en la base de datos se revierten.
      */
     @Transactional
     public Pedido crearPedido(Map<Long, CarritoItem> carrito, Cliente cliente) {
@@ -43,67 +41,67 @@ public class PedidoService {
 
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
-
-        // --- CAMBIO REQUERIDO ---
-        // Aquí establecemos el estado como PAGADO (asumiendo que tu Enum se llama 'PAGADO')
-        // Si tu Enum usa otro nombre para "pagado", ajústalo aquí.
         pedido.setEstado(EstadoPedido.PAGADO);
-        // --- FIN DEL CAMBIO ---
 
         for (CarritoItem item : carrito.values()) {
+            // 1. Buscamos el Producto padre
             Producto producto = productoRepository.findById(item.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + item.getProductoId()));
 
-            // 1. Verificación de stock (falla rápido si no hay)
-            if (producto.getStock() < item.getCantidad()) {
-                throw new StockInsuficienteException("No hay stock suficiente para el producto: " + producto.getNombre());
+            // 2. [NUEVO] Buscamos la Variante específica (Talla y Color)
+            // IMPORTANTE: Asegúrate de que tu clase CarritoItem tenga los métodos getTalla() y getColor()
+            ProductoVariante variante = productoVarianteRepository
+                    .findByProductoAndTallaAndColor(producto, item.getTalla(), item.getColor())
+                    .orElseThrow(() -> new RuntimeException("No disponible: " + producto.getNombre() + " Talla: " + item.getTalla()));
+
+            // 3. [CORREGIDO] Verificación de stock en la VARIANTE (ya no en producto.getStock())
+            if (variante.getStock() < item.getCantidad()) {
+                throw new StockInsuficienteException("No hay stock suficiente para: " + producto.getNombre() + " (" + item.getTalla() + ")");
             }
 
-            // 2. Creamos el detalle del pedido
+            // 4. Creamos el detalle del pedido
             PedidoDetalle detalle = new PedidoDetalle();
             detalle.setProducto(producto);
+
+            // [NUEVO] Guardamos qué variante exacta se compró
+            detalle.setProductoVariante(variante);
+
             detalle.setCantidad(item.getCantidad());
-            detalle.setPrecioUnitario(producto.getPrecio()); // Guarda el precio al momento de la compra
+            detalle.setPrecioUnitario(producto.getPrecio());
             detalle.setPedido(pedido);
 
             pedido.getDetalles().add(detalle);
 
-            // 3. --- LÓGICA DE STOCK ACTUALIZADA ---
+            // 5. [LÓGICA ACTUALIZADA] Descontar stock directamente de la variante
+            variante.setStock(variante.getStock() - item.getCantidad());
+            productoVarianteRepository.save(variante);
+
+            // Registro en historial (opcional, si tu inventarioService lo requiere)
             try {
                 inventarioService.registrarSalidaPorVenta(detalle);
             } catch (Exception e) {
-                throw new RuntimeException("Error al registrar la salida de inventario: " + e.getMessage());
+                // Logueamos el error pero no detenemos la venta si el stock ya se descontó arriba
+                System.err.println("Advertencia al registrar historial: " + e.getMessage());
             }
         }
 
-        // Calculamos el total del pedido
+        // Calculamos el total
         double total = carrito.values().stream().mapToDouble(CarritoItem::getSubtotal).sum();
         pedido.setTotal(total);
 
-        // Guardamos el pedido (y sus detalles en cascada)
         return pedidoRepository.save(pedido);
     }
 
-    /**
-     * Devuelve el historial de pedidos para un cliente específico.
-     * Usado en el panel del cliente.
-     */
+    // --- MÉTODOS DE CONSULTA (SIN CAMBIOS) ---
+
     public List<Pedido> obtenerPedidosPorCliente(Cliente cliente) {
         return pedidoRepository.findByClienteOrderByFechaCreacionDesc(cliente);
     }
 
-    /**
-     * Devuelve una lista de todos los pedidos realizados en el sistema.
-     * Usado en el panel del administrador.
-     */
     public List<Pedido> obtenerTodosLosPedidos() {
         return pedidoRepository.findAllByOrderByFechaCreacionDesc();
     }
 
-    /**
-     * Busca pedidos basado en múltiples criterios (nombre de cliente y rango de fechas).
-     * Usado para los filtros en el panel del administrador.
-     */
     public List<Pedido> buscarPedidos(String clienteNombre, LocalDate fechaDesde, LocalDate fechaHasta) {
         Specification<Pedido> spec = pedidoSpecification.findByCriteria(clienteNombre, fechaDesde, fechaHasta);
         return pedidoRepository.findAll(spec);

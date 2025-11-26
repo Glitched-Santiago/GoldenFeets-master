@@ -33,6 +33,12 @@ public class InventarioSalida {
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;
 
+    @Column(name = "stock_anterior")
+    private Integer stockAnterior;
+
+    @Column(name = "stock_nuevo")
+    private Integer stockNuevo;
+
     @PrePersist
     protected void onCreate() {
         fechaRegistro = LocalDateTime.now();

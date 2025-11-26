@@ -30,35 +30,49 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Rutas de Administrador (requieren rol ADMIN)
+                        // 1. ZONA ADMIN (Protegida)
                         .requestMatchers("/admin/**", "/inventario/**", "/usuarios/**").hasRole("ADMIN")
 
-                        // 2. Rutas de Cliente (requieren rol CLIENTE - solo el carrito y la compra)
-                        .requestMatchers("/carrito/**", "/pedidos/**").hasRole("CLIENTE")
+                        // 2. ZONA CLIENTE / COMPRAS (Requiere Login)
+                        // Solo pedimos login cuando va a pagar o ver sus pedidos pasados
+                        .requestMatchers("/pedidos/**").authenticated()
 
-                        // 3. Rutas Públicas (accesibles para todos, incluyendo el catálogo y sus detalles)
-                        .requestMatchers("/", "/catalogo/**", "/login", "/registro", "/Global.css", "/js/**", "/images/**").permitAll()
+                        // 3. ZONA PÚBLICA (Todo esto es accesible sin login)
+                        .requestMatchers(
+                                "/", "/home", "/index",           // Páginas de inicio
+                                "/catalogo/**",                   // Ver productos y detalles
+                                "/carrito/**",                    // Ver y añadir al carrito
+                                "/login", "/registro",            // Autenticación
+                                "/error",                         // Para ver mensajes de error sin redirigir al login
+                                "/css/**", "/js/**", "/images/**", "/webjars/**", // Recursos estáticos carpetas
+                                "/*.css", "/Global.css", "/Admin.css" // Recursos estáticos raíz
+                        ).permitAll()
 
-                        // 4. El resto de peticiones (cualquier otra URL no definida) requieren autenticación
+                        // Cualquier otra ruta no listada arriba requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .successHandler((request, response, authentication) -> {
+                            // Lógica para redirigir según el rol
                             boolean isAdmin = authentication.getAuthorities().stream()
-                                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+                                    .anyMatch(g -> g.getAuthority().equals("ROLE_ADMIN"));
 
                             if (isAdmin) {
                                 response.sendRedirect("/admin/dashboard");
                             } else {
-                                // Redirige al catálogo después de que un cliente inicie sesión
+                                // Si el usuario estaba intentando comprar, Spring lo llevará allí.
+                                // Si no, lo llevamos al catálogo.
                                 response.sendRedirect("/catalogo");
                             }
                         })
                         .permitAll()
                 )
                 .logout(logout -> logout
+                        .logoutUrl("/logout") // URL para cerrar sesión (debe ser POST)
                         .logoutSuccessUrl("/login?logout")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
                 .authenticationProvider(authenticationProvider());
