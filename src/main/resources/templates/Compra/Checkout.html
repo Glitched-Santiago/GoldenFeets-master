@@ -10,57 +10,106 @@
     <div class="container checkout-page">
         <h1 class="page-title">Finalizar Compra</h1>
 
-        <div class="checkout-grid">
-            <form th:action="@{/pedidos/checkout}" method="post" class="checkout-form">
+        <div th:if="${errorMessage}" class="alert alert-error mb-4" role="alert" th:text="${errorMessage}"></div>
 
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <div class="checkout-grid">
+            <form th:action="@{/pedidos/checkout}" method="post" class="checkout-form" id="paymentForm" onsubmit="return validarFormulario(event)">
 
                 <div class="form-section">
-                    <h2 class="section-title">Información de Envío</h2>
+                    <h2 class="section-title">Datos de Envío</h2>
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="nombres" class="label">Nombres</label>
-                            <input type="text" id="nombres" name="nombres" class="input-field" required>
+                            <label class="label">Nombres</label>
+                            <input type="text" name="nombres" class="input-field" required>
                         </div>
                         <div class="form-group">
-                            <label for="apellidos" class="label">Apellidos</label>
-                            <input type="text" id="apellidos" name="apellidos" class="input-field" required>
+                            <label class="label">Apellidos</label>
+                            <input type="text" name="apellidos" class="input-field" required>
                         </div>
                     </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="label">Ciudad</label>
+                            <input type="text" name="ciudad" class="input-field" value="Bogotá, D.C." readonly style="background-color: #f3f4f6; cursor: not-allowed;">
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Localidad</label>
+                            <select name="localidad" id="localidad" class="input-field" required>
+                                <option value="">Selecciona...</option>
+                                <option value="Usaquen">Usaquén</option>
+                                <option value="Chapinero">Chapinero</option>
+                                <option value="Santa Fe">Santa Fe</option>
+                                <option value="San Cristobal">San Cristóbal</option>
+                                <option value="Usme">Usme</option>
+                                <option value="Tunjuelito">Tunjuelito</option>
+                                <option value="Bosa">Bosa</option>
+                                <option value="Kennedy">Kennedy</option>
+                                <option value="Fontibon">Fontibón</option>
+                                <option value="Engativa">Engativá</option>
+                                <option value="Suba">Suba</option>
+                                <option value="Barrios Unidos">Barrios Unidos</option>
+                                <option value="Teusaquillo">Teusaquillo</option>
+                                <option value="Los Martires">Los Mártires</option>
+                                <option value="Antonio Nariño">Antonio Nariño</option>
+                                <option value="Puente Aranda">Puente Aranda</option>
+                                <option value="La Candelaria">La Candelaria</option>
+                                <option value="Rafael Uribe Uribe">Rafael Uribe Uribe</option>
+                                <option value="Ciudad Bolivar">Ciudad Bolívar</option>
+                                <option value="Sumapaz">Sumapaz</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="form-group">
-                        <label for="direccion" class="label">Dirección</label>
-                        <input type="text" id="direccion" name="direccion" class="input-field" placeholder="Calle, número, apartamento" required>
+                        <label class="label">Dirección Exacta</label>
+                        <input type="text" name="direccion" class="input-field" placeholder="Ej: Calle 123 # 45-67 Apto 101" required>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="ciudad" class="label">Ciudad</label>
-                            <input type="text" id="ciudad" name="ciudad" class="input-field" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="codigoPostal" class="label">Código Postal</label>
-                            <input type="text" id="codigoPostal" name="codigoPostal" class="input-field" required>
-                        </div>
+
+                    <div class="form-group">
+                        <label class="label">Celular</label>
+                        <input type="tel" name="telefono" id="telefono" class="input-field"
+                               placeholder="300 123 4567" maxlength="10"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                        <small id="telError" style="color: red; display: none; font-size: 0.8rem;">Debe ser un número válido de 10 dígitos (Ej: 300...)</small>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h2 class="section-title">Detalles del Pago</h2>
+                    <h2 class="section-title">Método de Pago (Simulado)</h2>
+
                     <div class="form-group">
-                        <label for="nombreTarjeta" class="label">Nombre en la Tarjeta</label>
-                        <input type="text" id="nombreTarjeta" name="nombreTarjeta" class="input-field" required>
+                        <label class="label">Número de Tarjeta</label>
+                        <input type="text" id="cardNumber" class="input-field"
+                               placeholder="0000 0000 0000 0000" maxlength="16"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                        <small id="cardError" style="color: red; display: none; font-size: 0.8rem;">La tarjeta debe tener 16 dígitos.</small>
                     </div>
-                    <div class="form-group">
-                        <label for="numeroTarjeta" class="label">Número de la Tarjeta</label>
-                        <input type="text" id="numeroTarjeta" name="numeroTarjeta" class="input-field" placeholder="0000 0000 0000 0000" required>
-                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="fechaVencimiento" class="label">Fecha de Vencimiento</label>
-                            <input type="text" id="fechaVencimiento" name="fechaVencimiento" class="input-field" placeholder="MM/AA" required>
+                            <label class="label">Vencimiento</label>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="expMonth" class="input-field" required style="width: 50%;">
+                                    <option value="" disabled selected>Mes</option>
+                                    <option value="01">01</option><option value="02">02</option><option value="03">03</option>
+                                    <option value="04">04</option><option value="05">05</option><option value="06">06</option>
+                                    <option value="07">07</option><option value="08">08</option><option value="09">09</option>
+                                    <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                                </select>
+                                <select id="expYear" class="input-field" required style="width: 50%;">
+                                    <option value="" disabled selected>Año</option>
+                                </select>
+                            </div>
                         </div>
+
                         <div class="form-group">
-                            <label for="cvc" class="label">CVC</label>
-                            <input type="text" id="cvc" name="cvc" class="input-field" placeholder="123" required>
+                            <label class="label">CVC</label>
+                            <input type="text" id="cvc" class="input-field"
+                                   placeholder="123" maxlength="3"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                            <small id="cvcError" style="color: red; display: none; font-size: 0.8rem;">Código inválido (3 dígitos).</small>
                         </div>
                     </div>
                 </div>
@@ -69,24 +118,100 @@
             </form>
 
             <div class="order-summary">
-                <h2 class="summary-title">Resumen de tu Pedido</h2>
+                <h2 class="summary-title">Resumen del Pedido</h2>
+
                 <div th:each="item : ${items}" class="summary-item">
                     <div class="summary-item-image">
-                        <img th:src="${item.imagenUrl}" alt="Imagen del producto">
+                        <img th:src="${item.imagenUrl}" alt="Producto" onerror="this.src='https://placehold.co/60';">
                     </div>
                     <div class="summary-item-details">
-                        <span class="summary-item-title" th:text="${item.nombre}"></span><br>
-                        <span style="font-size: 0.8rem; color: var(--muted-foreground);" th:text="|Cantidad: ${item.cantidad}|"></span>
+                        <span class="summary-item-title" th:text="${item.nombre}"></span>
+
+                        <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">
+                            <span th:text="${item.color}"></span> / Talla <span th:text="${item.talla}"></span>
+                        </div>
+
+                        <div style="font-size: 0.8rem; font-weight: 600; margin-top: 2px;">
+                            x<span th:text="${item.cantidad}"></span>
+                        </div>
                     </div>
                     <span class="summary-item-price" th:text="|$${#numbers.formatDecimal(item.subtotal, 1, 2)}|"></span>
                 </div>
-                <div class="summary-row summary-total" style="margin-top: 1.5rem;">
-                    <span>Total</span>
+
+                <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 1rem 0;">
+
+                <div class="summary-row summary-total">
+                    <span>Total a Pagar</span>
                     <span th:text="|$${#numbers.formatDecimal(total, 1, 2)}|"></span>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        // 1. Llenar años automáticamente
+        document.addEventListener("DOMContentLoaded", function() {
+            const yearSelect = document.getElementById("expYear");
+            const currentYear = new Date().getFullYear();
+            for (let i = 0; i < 10; i++) {
+                const year = currentYear + i;
+                const option = document.createElement("option");
+                option.value = year;
+                option.text = year;
+                yearSelect.appendChild(option);
+            }
+        });
+
+        // 2. Función de validación al enviar
+        function validarFormulario(event) {
+            let isValid = true;
+
+            // Validar Celular (Colombia: Empieza por 3 y tiene 10 dígitos)
+            const telefono = document.getElementById("telefono");
+            const telError = document.getElementById("telError");
+            const telRegex = /^3\d{9}$/; // Inicia con 3 y siguen 9 dígitos
+
+            if (!telRegex.test(telefono.value)) {
+                telefono.style.borderColor = "red";
+                telError.style.display = "block";
+                isValid = false;
+            } else {
+                telefono.style.borderColor = "#e5e7eb";
+                telError.style.display = "none";
+            }
+
+            // Validar Tarjeta (16 dígitos exactos)
+            const card = document.getElementById("cardNumber");
+            const cardError = document.getElementById("cardError");
+            if (card.value.length !== 16) {
+                card.style.borderColor = "red";
+                cardError.style.display = "block";
+                isValid = false;
+            } else {
+                card.style.borderColor = "#e5e7eb";
+                cardError.style.display = "none";
+            }
+
+            // Validar CVC (3 dígitos)
+            const cvc = document.getElementById("cvc");
+            const cvcError = document.getElementById("cvcError");
+            if (cvc.value.length !== 3) {
+                cvc.style.borderColor = "red";
+                cvcError.style.display = "block";
+                isValid = false;
+            } else {
+                cvc.style.borderColor = "#e5e7eb";
+                cvcError.style.display = "none";
+            }
+
+            // Si algo falló, detenemos el envío
+            if (!isValid) {
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        }
+    </script>
 </section>
 </body>
 </html>

@@ -3,81 +3,64 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{base/base-cliente}">
 <head>
-    <title th:text="${producto != null ? producto.nombre : 'Detalle del Producto'}"></title>
+    <title th:text="${producto != null ? producto.nombre : 'Detalle'}"></title>
     <style>
-        /* ESTILOS BASE */
         :root { --primary: #111827; --border: #e5e7eb; --radius: 8px; }
         .product-detail-page { padding: 3rem 1rem; max-width: 1200px; margin: 0 auto; }
-
-        /* Layout */
         .grid-layout { display: grid; grid-template-columns: 1fr; gap: 2rem; }
         @media (min-width: 968px) { .grid-layout { grid-template-columns: 100px 1fr 400px; gap: 1rem; } }
 
-        /* Galería */
         .thumbnails { display: flex; flex-direction: row; gap: 10px; overflow-x: auto; }
         @media (min-width: 968px) { .thumbnails { flex-direction: column; overflow-y: auto; max-height: 600px; } }
-
-        .thumb-btn { width: 80px; height: 80px; border-radius: var(--radius); border: 1px solid transparent; cursor: pointer; overflow: hidden; transition: 0.2s; flex-shrink: 0; }
+        .thumb-btn { width: 80px; height: 80px; border-radius: var(--radius); border: 1px solid transparent; cursor: pointer; overflow: hidden; flex-shrink: 0; }
         .thumb-btn:hover, .thumb-btn.active { border-color: var(--primary); }
         .thumb-btn img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Imagen Principal */
         .main-image-container { position: relative; background: #f9fafb; border-radius: 12px; overflow: hidden; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; }
-        .main-image-container img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }
+        .main-image-container img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s; }
 
-        /* Info */
-        .product-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.1; }
+        .product-title { font-size: 2rem; font-weight: 700; line-height: 1.1; margin-bottom: 0.5rem; }
         .product-price { font-size: 1.5rem; font-weight: 600; color: #111827; margin-bottom: 2rem; }
 
-        /* Selectores */
-        .selector-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+        .selector-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.8rem; display: flex; justify-content: space-between; }
         .color-grid, .size-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1.5rem; }
 
         .color-option, .size-option {
             padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px;
-            cursor: pointer; background: white; transition: 0.2s; user-select: none; font-size: 0.9rem;
+            cursor: pointer; background: white; user-select: none; transition: 0.2s;
         }
-        .color-option:hover, .size-option:hover { border-color: #9ca3af; }
         .color-option.selected, .size-option.selected { border-color: var(--primary); background: var(--primary); color: white; }
-        .size-option.disabled { opacity: 0.4; cursor: not-allowed; background: #f3f4f6; text-decoration: line-through; border-color: #e5e7eb; }
+        .size-option.disabled { opacity: 0.3; cursor: not-allowed; background: #f3f4f6; text-decoration: line-through; }
 
-        .error-msg { color: #dc2626; font-size: 0.85rem; display: none; margin-top: 5px; font-weight: 500; }
-
-        .add-btn { width: 100%; background: var(--primary); color: white; padding: 1.2rem; border-radius: 50px; font-weight: 600; border: none; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .add-btn { width: 100%; background: var(--primary); color: white; padding: 1.2rem; border-radius: 50px; font-weight: 600; border: none; cursor: pointer; }
         .add-btn:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
-
-        .desc-text { line-height: 1.7; color: #4b5563; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+        .error-msg { color: #dc2626; font-size: 0.85rem; display: none; margin-top: 5px; }
     </style>
 </head>
 <body>
 <section layout:fragment="content">
-
-    <div th:if="${producto != null}" class="product-detail-page">
+    <div class="product-detail-page" th:if="${producto != null}">
 
         <div th:if="${successMessage}" class="alert alert-success mb-4" th:text="${successMessage}"></div>
         <div th:if="${errorMessage}" class="alert alert-error mb-4" th:text="${errorMessage}"></div>
 
         <div class="grid-layout">
-
             <div class="thumbnails">
-                <div class="thumb-btn active"
-                     th:data-img="${producto.imagenUrl}"
-                     onclick="changeMainImage(this.getAttribute('data-img'))">
+                <div class="thumb-btn active" th:onclick="changeMainImage([[${producto.imagenUrl}]])">
                     <img th:src="${producto.imagenUrl}" onerror="this.src='https://placehold.co/80';">
                 </div>
-
                 <th:block th:each="v : ${producto.variantes}">
-                    <div th:if="${v != null and v.imagenUrl != null and v.imagenUrl != ''}"
+                    <div th:if="${v.imagenUrl != null and !#strings.isEmpty(v.imagenUrl)}"
                          class="thumb-btn"
-                         th:data-img="${v.imagenUrl}"
-                         onclick="changeMainImage(this.getAttribute('data-img'))">
+                         th:onclick="changeMainImage([[${v.imagenUrl}]])">
                         <img th:src="${v.imagenUrl}" onerror="this.style.display='none'">
                     </div>
                 </th:block>
             </div>
 
             <div class="main-image-container">
-                <img id="mainImage" th:src="${producto.imagenUrl}" onerror="this.src='https://placehold.co/600x600?text=No+Image';">
+                <img id="mainImage" th:src="${producto.imagenUrl}"
+                     onerror="this.src='https://placehold.co/600x600?text=Sin+Imagen';">
             </div>
 
             <div class="info-panel">
@@ -89,66 +72,57 @@
                     <input type="hidden" name="productoVarianteId" id="selectedVariantId">
                     <input type="hidden" name="cantidad" value="1">
 
-                    <div class="selector-label">
-                        <span>Color</span>
-                        <span id="selectedColorText" class="font-normal text-gray-500"></span>
-                    </div>
+                    <label class="selector-label">Color: <span id="selectedColorText" class="font-normal text-gray-500"></span></label>
                     <div class="color-grid" id="colorContainer"></div>
                     <div id="colorError" class="error-msg">Selecciona un color</div>
 
-                    <div class="selector-label">
-                        <span>Talla</span>
-                        <span id="selectedSizeText" class="font-normal text-gray-500"></span>
-                    </div>
+                    <label class="selector-label">Talla: <span id="selectedSizeText" class="font-normal text-gray-500"></span></label>
                     <div class="size-grid" id="sizeContainer"></div>
                     <div id="sizeError" class="error-msg">Selecciona una talla</div>
 
                     <button type="button" id="btnAddToCart" class="add-btn" disabled onclick="submitForm()">
                         Seleccionar opciones
                     </button>
-
                     <p id="stockDisplay" class="text-center mt-3 text-sm font-medium" style="display:none;"></p>
                 </form>
 
-                <p class="desc-text" th:text="${producto.descripcion}"></p>
+                <div class="mt-8 pt-8 border-t text-gray-600 leading-relaxed" th:text="${producto.descripcion}"></div>
             </div>
         </div>
     </div>
 
     <div th:if="${producto == null}" class="text-center py-20">
-        <h2 class="text-2xl font-bold text-red-600">Producto no encontrado</h2>
-        <a href="/catalogo" class="btn btn-primary mt-4">Volver al catálogo</a>
+        <h2 class="text-2xl font-bold">Producto no encontrado</h2>
+        <a href="/catalogo" class="text-blue-600 underline">Volver al catálogo</a>
     </div>
 
     <script th:inline="javascript">
         /*<![CDATA[*/
         const variants = [];
+        // Guardamos la imagen original del producto como respaldo
+        const mainProductImage = [[${producto != null ? producto.imagenUrl : ''}]];
 
-        /* LÓGICA SEGURA DE EXTRACCIÓN DE DATOS */
         /*[# th:if="${producto != null}"]*/
-        /*[# th:each="v : ${producto.variantes}"]*/
-        // Verificamos que v no sea nulo antes de escribir el JS
-        /*[# th:if="${v != null and v.activo}"]*/
-        try {
-            variants.push({
-                id: [[${v.id}]],
-                // Usamos el operador seguro de Thymeleaf (?.) por si acaso
-                color: [[${v.color}]],
-                talla: [[${v.talla}]],
-                img: [[${v.imagenUrl}]],
-                stock: [[${v.stock != null ? v.stock : 0}]]
-            });
-        } catch (e) {
-            console.error("Error procesando variante", e);
-        }
-        /*[/]*/
-        /*[/]*/
+            /*[# th:each="v : ${producto.variantes}"]*/
+                /*[# th:if="${v.activo}"]*/
+                try {
+                    variants.push({
+                        id: [[${v.id}]],
+                        color: [[${v.color}]],
+                        talla: [[${v.talla}]],
+                        img: [[${v.imagenUrl != null ? v.imagenUrl : ''}]],
+                        stock: [[${v.stock}]]
+                    });
+                } catch(e) { console.error("Error parsing variant"); }
+                /*[/]*/
+            /*[/]*/
         /*[/]*/
 
-        // Referencias DOM
+        // DEBUG: Abre la consola del navegador (F12) para ver esto
+        console.log("Variantes cargadas:", variants);
+
         const colorContainer = document.getElementById('colorContainer');
         const sizeContainer = document.getElementById('sizeContainer');
-        const mainImage = document.getElementById('mainImage');
         const hiddenInput = document.getElementById('selectedVariantId');
         const btnAdd = document.getElementById('btnAddToCart');
         const stockDisplay = document.getElementById('stockDisplay');
@@ -157,26 +131,21 @@
         let selectedSize = null;
 
         function init() {
-            if(variants.length === 0) {
-                if(stockDisplay) {
-                    stockDisplay.style.display = 'block';
-                    stockDisplay.innerText = 'No hay stock disponible actualmente.';
-                    stockDisplay.style.color = '#dc2626';
-                }
-                return;
-            }
+            if(variants.length === 0) return;
             renderColors();
             renderSizes();
         }
 
         function renderColors() {
-            const colors = [...new Set(variants.map(v => v.color))].sort();
+            // Normalizamos los colores para evitar duplicados por mayúsculas/espacios
+            const uniqueColors = [...new Set(variants.map(v => v.color.trim()))].sort();
             colorContainer.innerHTML = '';
-            colors.forEach(color => {
+            uniqueColors.forEach(colorName => {
                 const div = document.createElement('div');
                 div.className = 'color-option';
-                div.innerText = color;
-                div.onclick = () => selectColor(color, div);
+                div.innerText = colorName; // Mostramos el nombre original
+                // Al hacer click, usamos este nombre normalizado
+                div.onclick = () => selectColor(colorName, div);
                 colorContainer.appendChild(div);
             });
         }
@@ -190,41 +159,58 @@
                 div.className = 'size-option';
                 div.innerText = size;
 
-                // Verificar disponibilidad
                 let available = false;
                 if (selectedColor) {
-                    const variant = variants.find(v => v.color === selectedColor && v.talla === size && v.stock > 0);
+                    // Comparación segura de color (minúsculas y sin espacios)
+                    const variant = variants.find(v =>
+                        v.color.toLowerCase().trim() === selectedColor.toLowerCase().trim() &&
+                        v.talla === size &&
+                        v.stock > 0
+                    );
                     if (variant) available = true;
                 }
 
-                // Estilos
                 if (!selectedColor) {
-                    div.classList.add('disabled'); // Bloqueado hasta elegir color
+                    div.classList.add('disabled');
                 } else if (!available) {
-                    div.classList.add('disabled'); // Sin stock para ese color
+                    div.classList.add('disabled');
                 } else {
                     div.onclick = () => selectSize(size, div);
                 }
 
                 if (selectedSize === size && available) div.classList.add('selected');
-
                 sizeContainer.appendChild(div);
             });
         }
 
-        function selectColor(color, element) {
-            selectedColor = color;
-            selectedSize = null; // Reset talla
+        function selectColor(colorClicked, element) {
+            selectedColor = colorClicked;
+            selectedSize = null;
             hiddenInput.value = '';
 
             document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
             element.classList.add('selected');
-            document.getElementById('selectedColorText').innerText = color;
+            document.getElementById('selectedColorText').innerText = selectedColor;
             document.getElementById('selectedSizeText').innerText = '';
 
-            // Cambiar imagen si existe para este color
-            const variantWithImg = variants.find(v => v.color === color && v.img && v.img !== '');
-            if (variantWithImg) changeMainImage(variantWithImg.img);
+            // --- LÓGICA DE IMAGEN CORREGIDA Y BLINDADA ---
+            console.log("Buscando imagen para el color:", selectedColor);
+
+            // Buscamos cualquier variante que coincida con el color (ignorando mayúsculas/espacios)
+            // y que tenga una URL de imagen válida (no vacía).
+            const variantWithImg = variants.find(v =>
+                v.color.toLowerCase().trim() === selectedColor.toLowerCase().trim() &&
+                v.img &&
+                v.img.trim() !== ''
+            );
+
+            if (variantWithImg) {
+                console.log("Imagen específica encontrada:", variantWithImg.img);
+                changeMainImage(variantWithImg.img);
+            } else {
+                console.log("No hay imagen específica para este color, volviendo a la original.");
+                changeMainImage(mainProductImage);
+            }
 
             renderSizes();
             updateButtonState();
@@ -235,7 +221,6 @@
             document.querySelectorAll('.size-option').forEach(el => el.classList.remove('selected'));
             element.classList.add('selected');
             document.getElementById('selectedSizeText').innerText = size;
-
             updateButtonState();
         }
 
@@ -245,7 +230,11 @@
             stockDisplay.style.display = 'none';
 
             if (selectedColor && selectedSize) {
-                const finalVariant = variants.find(v => v.color === selectedColor && v.talla === selectedSize);
+                // Comparación segura para encontrar la variante final
+                const finalVariant = variants.find(v =>
+                    v.color.toLowerCase().trim() === selectedColor.toLowerCase().trim() &&
+                    v.talla === selectedSize
+                );
 
                 if (finalVariant) {
                     hiddenInput.value = finalVariant.id;
@@ -270,10 +259,13 @@
         }
 
         function changeMainImage(url) {
-            if (url) {
+            if (url && url.trim() !== '') {
                 const img = document.getElementById('mainImage');
                 img.style.opacity = 0;
-                setTimeout(() => { img.src = url; img.style.opacity = 1; }, 150);
+                setTimeout(() => {
+                    img.src = url;
+                    img.style.opacity = 1;
+                }, 150);
             }
         }
 
@@ -283,7 +275,6 @@
             document.getElementById('addToCartForm').submit();
         }
 
-        // Inicializar
         document.addEventListener("DOMContentLoaded", init);
         /*]]>*/
     </script>

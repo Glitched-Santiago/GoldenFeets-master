@@ -28,11 +28,11 @@ public class PedidoDetalle {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = false)
     @ToString.Exclude
-    private Producto producto; // Mantenemos referencia al padre por facilidad
+    private Producto producto;
 
-    // --- NUEVO CAMPO ---
+    // --- IMPORTANTE: Relación con la variante específica ---
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_variante_id")
     @ToString.Exclude
-    private ProductoVariante productoVariante; // Referencia exacta a la talla comprada
+    private ProductoVariante productoVariante;
 }

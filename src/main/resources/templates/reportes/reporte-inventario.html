@@ -1,40 +1,82 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <title>Reporte de Inventario</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; }
-        h1 { text-align: center; color: #333; }
-        .report-date { text-align: right; font-size: 10px; color: #777;}
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        thead { background-color: #f2f2f2; color: #333; }
+        /* Estilos básicos para PDF */
+        body { font-family: sans-serif; font-size: 12px; color: #333; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #2563eb; padding-bottom: 10px; }
+        .header h1 { margin: 0; color: #1e3a8a; font-size: 24px; }
+        .header p { margin: 5px 0 0; color: #64748b; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background-color: #f1f5f9; color: #1e293b; font-weight: bold; padding: 8px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 8px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; margin-right: 2px; margin-bottom: 2px; }
+        .bg-green { background-color: #dcfce7; color: #166534; }
+        .bg-red { background-color: #fee2e2; color: #991b1b; }
+
+        .variant-list { font-size: 10px; color: #475569; }
+        .total-row { font-weight: bold; background-color: #f8fafc; }
     </style>
 </head>
 <body>
-<h1>Reporte de Inventario</h1>
-<p class="report-date">Generado el: <span th:text="${#temporals.format(fechaReporte, 'dd/MM/yyyy')}"></span></p>
+
+<div class="header">
+    <h1>Reporte de Inventario - GoldenFeets</h1>
+    <p>Generado el: <span th:text="${#temporals.format(fechaReporte, 'dd/MM/yyyy')}">Fecha</span></p>
+</div>
 
 <table>
     <thead>
     <tr>
-        <th>ID</th>
-        <th>Producto</th>
-        <th>Categoría</th>
-        <th>Precio</th>
-        <th>Stock</th>
+        <th style="width: 5%;">ID</th>
+        <th style="width: 25%;">Producto</th>
+        <th style="width: 15%;">Categoría</th>
+        <th style="width: 15%;" class="text-right">Precio</th>
+        <th style="width: 10%;" class="text-center">Stock Total</th>
+        <th style="width: 30%;">Detalle Variantes (Talla/Color)</th>
     </tr>
     </thead>
     <tbody>
-    <tr th:each="producto : ${productos}">
-        <td th:text="${producto.id}"></td>
-        <td th:text="${producto.nombre}"></td>
-        <td th:text="${producto.categoria.nombre}"></td>
-        <td th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></td>
-        <td th:text="${producto.stock}"></td>
+    <tr th:each="p : ${productos}">
+        <td th:text="${p.id}">1</td>
+        <td th:text="${p.nombre}">Nombre del Producto</td>
+        <td th:text="${p.categoria != null ? p.categoria.nombre : 'Sin Categoría'}">Categoría</td>
+        <td class="text-right" th:text="|$${#numbers.formatDecimal(p.precio, 1, 'POINT', 2, 'COMMA')}|">$0.00</td>
+
+        <td class="text-center">
+                    <span th:text="${p.stockTotal}"
+                          th:class="${p.stockTotal > 0 ? 'badge bg-green' : 'badge bg-red'}">
+                    </span>
+        </td>
+
+        <td>
+            <div class="variant-list">
+                        <span th:each="v, iterStat : ${p.variantes}" th:if="${v.activo}">
+                            <span th:text="|${v.talla} ${v.color} (${v.stock})|"></span>
+                            <span th:if="${!iterStat.last}">, </span>
+                        </span>
+                <span th:if="${#lists.isEmpty(p.variantes)}">Sin variantes registradas</span>
+            </div>
+        </td>
+    </tr>
+
+    <tr th:if="${#lists.isEmpty(productos)}">
+        <td colspan="6" class="text-center" style="padding: 20px;">
+            No se encontraron productos con los filtros seleccionados.
+        </td>
     </tr>
     </tbody>
 </table>
+
+<div style="margin-top: 30px; font-size: 10px; color: #94a3b8; text-align: center;">
+    Documento de uso interno. GoldenFeets S.A.S.
+</div>
+
 </body>
 </html>

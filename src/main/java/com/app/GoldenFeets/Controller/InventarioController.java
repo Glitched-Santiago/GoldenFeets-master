@@ -247,17 +247,22 @@ public class InventarioController {
             @RequestParam Long productoId,
             @RequestParam String talla,
             @RequestParam String color,
+            @RequestParam(required = false) String imagenUrl, // <--- IMPORTANTE: Debe llamarse igual que en el HTML
             jakarta.servlet.http.HttpServletRequest request,
             org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
 
         try {
-            productoService.crearVarianteManual(productoId, talla, color);
-            redirectAttributes.addFlashAttribute("successMessage", "Variante agregada correctamente.");
+            // Imprimir en consola para verificar que llega el dato
+            System.out.println("Recibiendo variante: Talla=" + talla + " Color=" + color + " Img=" + imagenUrl);
+
+            productoService.crearVarianteManual(productoId, talla, color, imagenUrl);
+
+            redirectAttributes.addFlashAttribute("successMessage", "Variante procesada correctamente.");
         } catch (Exception e) {
+            e.printStackTrace();
             redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
         }
 
-        // Redirige a la misma página donde estabas
         String referer = request.getHeader("Referer");
         return "redirect:" + (referer != null ? referer : "/admin/inventario");
     }
@@ -270,6 +275,24 @@ public class InventarioController {
         productoService.toggleVariantesPorColor(productoId, color);
 
         // Recargar la página actual
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/admin/inventario");
+    }
+    @GetMapping("/variante/eliminar/{id}")
+    public String eliminarVariante(
+            @PathVariable Long id,
+            jakarta.servlet.http.HttpServletRequest request,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+
+        try {
+            productoService.eliminarVariante(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Variante eliminada correctamente.");
+        } catch (Exception e) {
+            // Capturamos error si la variante ya tiene ventas asociadas
+            redirectAttributes.addFlashAttribute("errorMessage", "No se pudo eliminar: Es probable que esta variante ya tenga ventas o historial asociado. Intenta ocultarla en su lugar.");
+        }
+
+        // Redirigir a la misma página
         String referer = request.getHeader("Referer");
         return "redirect:" + (referer != null ? referer : "/admin/inventario");
     }

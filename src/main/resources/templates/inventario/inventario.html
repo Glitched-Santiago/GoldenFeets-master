@@ -10,14 +10,21 @@
     <div class="admin-header">
         <h1 class="admin-title">Gestión de Inventario</h1>
         <div class="flex items-center space-x-2">
-            <a th:href="@{/admin/inventario/exportar-pdf(keyword=${keywordParam}, categoriaId=${categoriaIdParam})}"
+            <a th:href="@{/admin/inventario/exportar-pdf(
+        keyword=${keywordParam},
+        categoriaId=${categoriaIdParam},
+        precioMin=${precioMinParam},
+        precioMax=${precioMaxParam},
+        talla=${tallaParam},
+        color=${colorParam}
+    )}"
                class="btn btn-secondary">
                 Exportar a PDF
             </a>
             <a th:href="@{/admin/inventario/historial}" class="btn btn-secondary">
                 Ver Historial
             </a>
-            <a th:href="@{/admin/inventario/salida}" class="btn btn-primary" style="background-color: var(--destructive);">
+            <a th:href="@{/admin/inventario/salida}" class="btn btn-primary">
                 Registrar Salida
             </a>
             <a th:href="@{/admin/inventario/entrada}" class="btn btn-primary">

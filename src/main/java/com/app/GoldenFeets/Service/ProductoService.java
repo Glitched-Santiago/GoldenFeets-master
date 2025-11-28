@@ -3,6 +3,7 @@ package com.app.GoldenFeets.Service;
 import com.app.GoldenFeets.Entity.Producto;
 import com.app.GoldenFeets.Entity.ProductoVariante;
 import com.app.GoldenFeets.Repository.ProductoRepository;
+import com.app.GoldenFeets.Repository.ProductoVarianteRepository;
 import com.app.GoldenFeets.spec.ProductoSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
+    private final ProductoVarianteRepository productoVarianteRepository;
 
     public List<Producto> findAll() {
         return productoRepository.findAll();
@@ -50,27 +52,50 @@ public class ProductoService {
         return productoRepository.findRandomProductos(limite);
     }
     @Transactional
-    public void crearVarianteManual(Long productoId, String talla, String color) {
+    public void crearVarianteManual(Long productoId, String talla, String color, String imagenUrl) {
         Producto producto = productoRepository.findById(productoId)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        // Validar si ya existe para no duplicar
-        boolean existe = producto.getVariantes().stream()
-                .anyMatch(v -> v.getTalla().equalsIgnoreCase(talla) && v.getColor().equalsIgnoreCase(color));
+        // 1. Limpieza de datos
+        String tallaClean = talla.trim();
+        String colorClean = color.trim();
+        String imgClean = (imagenUrl != null && !imagenUrl.isBlank()) ? imagenUrl.trim() : null;
 
-        if (!existe) {
+        // 2. Buscar si ya existe esa combinación
+        Optional<ProductoVariante> varianteExistente = producto.getVariantes().stream()
+                .filter(v -> v.getTalla().equalsIgnoreCase(tallaClean) && v.getColor().equalsIgnoreCase(colorClean))
+                .findFirst();
+
+        if (varianteExistente.isPresent()) {
+            // --- CASO A: YA EXISTE -> ACTUALIZAMOS ---
+            ProductoVariante v = varianteExistente.get();
+            System.out.println("DEBUG: Actualizando variante existente ID: " + v.getId());
+
+            // Actualizamos la imagen si nos enviaron una nueva
+            if (imgClean != null) {
+                v.setImagenUrl(imgClean);
+            }
+
+            // Nos aseguramos que esté visible
+            v.setActivo(true);
+
+            // Guardamos (al estar dentro de una transacción, esto actualiza la BD)
+            productoRepository.save(producto); // Guarda el padre y sus hijos
+
+        } else {
+            // --- CASO B: NO EXISTE -> CREAMOS ---
+            System.out.println("DEBUG: Creando nueva variante");
+
             ProductoVariante nueva = new ProductoVariante();
             nueva.setProducto(producto);
-            nueva.setTalla(talla.trim());
-            nueva.setColor(color.trim());
-            nueva.setStock(0); // Stock inicial 0
-            nueva.setActivo(true); // Visible en catálogo (aunque sin stock saldrá agotado)
+            nueva.setTalla(tallaClean);
+            nueva.setColor(colorClean);
+            nueva.setImagenUrl(imgClean); // Guardamos la imagen
+            nueva.setStock(0);
+            nueva.setActivo(true);
 
             producto.getVariantes().add(nueva);
             productoRepository.save(producto);
-        } else {
-            // Opcional: Si ya existe pero estaba oculta, podrías reactivarla aquí
-            throw new RuntimeException("Esa combinación de Talla y Color ya existe.");
         }
     }
     @Transactional
@@ -96,6 +121,26 @@ public class ProductoService {
             v.setActivo(nuevoEstado);
         }
 
+        productoRepository.save(producto);
+    }
+
+    @Transactional
+    public void eliminarVariante(Long varianteId) {
+        // Buscamos la variante
+        ProductoVariante variante = productoVarianteRepository.findById(varianteId)
+                .orElseThrow(() -> new RuntimeException("Variante no encontrada"));
+
+        // Obtenemos el producto padre para actualizarlo luego si es necesario
+        Producto producto = variante.getProducto();
+
+        // Eliminamos la variante
+        // Nota: Si hay pedidos o movimientos de inventario ligados a esta variante,
+        // la base de datos podría lanzar un error de integridad referencial (Foreign Key).
+        // En ese caso, lo ideal sería 'desactivarla' (activo = false) en lugar de borrarla.
+        productoVarianteRepository.delete(variante);
+
+        // Quitamos la variante de la lista del padre para mantener la coherencia en memoria
+        producto.getVariantes().remove(variante);
         productoRepository.save(producto);
     }
 }

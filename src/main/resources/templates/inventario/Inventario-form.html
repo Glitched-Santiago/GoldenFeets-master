@@ -5,59 +5,49 @@
 <head>
     <title th:text="${producto.id == null ? 'Nuevo Producto' : 'Gestionar: ' + producto.nombre}"></title>
     <style>
-        /* --- DISEÑO PREMIUM --- */
+        /* --- DISEÑO --- */
         :root { --primary: #2563eb; --bg-main: #f8fafc; --border: #e2e8f0; --radius: 12px; }
-
-        /* Layout */
         .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
         .premium-card { background: white; border-radius: var(--radius); border: 1px solid var(--border); padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
         .card-title { font-size: 1.2rem; font-weight: 800; color: #1e293b; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
 
-        /* Inputs */
         .input-label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .input-control { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: #f8fafc; transition: 0.2s; }
-        .input-control:focus { outline: none; border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .input-control:focus { outline: none; border-color: var(--primary); background: white; }
 
-        /* Preview Imagen */
         .preview-box { width: 100%; aspect-ratio: 1/1; border-radius: var(--radius); border: 2px dashed #cbd5e1; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f1f5f9; }
         .preview-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- GRID DE COLORES --- */
+        /* --- GRID COLORES --- */
         .colors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
 
-        .color-card {
-            border-radius: var(--radius); border: 1px solid var(--border); background: white; overflow: hidden;
-            transition: transform 0.2s; display: flex; flex-direction: column;
-        }
+        .color-card { border-radius: var(--radius); border: 1px solid var(--border); background: white; overflow: hidden; transition: transform 0.2s; display: flex; flex-direction: column; }
         .color-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
 
-        /* Encabezado Dinámico del Color */
-        .color-header {
-            padding: 1rem; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            transition: background 0.3s ease; /* Suavizar cambio de color */
-        }
-        .color-title { font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .color-header { padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .color-title { font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
 
-        /* Chips de Tallas */
+        .color-img-preview { width: 100%; height: 150px; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); position: relative; }
+        .color-img-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .no-img-text { font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; }
+
         .sizes-body { padding: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; background: white; flex-grow: 1; }
+        .size-chip-container { display: flex; flex-direction: column; align-items: center; gap: 5px; }
 
-        .size-chip {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            width: 60px; padding: 0.5rem 0; border-radius: 8px; border: 1px solid var(--border);
-            cursor: pointer; text-decoration: none; position: relative; transition: 0.2s;
-        }
-
-        /* Estados del Chip */
+        .size-chip { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 60px; padding: 0.5rem 0; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; text-decoration: none; transition: 0.2s; }
         .size-chip.active { background: #f0fdf4; border-color: #86efac; color: #166534; }
-        .size-chip.active:hover { background: #dcfce7; }
-
         .size-chip.inactive { background: #f1f5f9; border-color: #e2e8f0; color: #94a3b8; }
         .size-chip.inactive span { text-decoration: line-through; }
 
-        /* Botones */
-        .btn-icon { padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.5); color: inherit; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; text-decoration: none; transition: 0.2s; }
-        .btn-icon:hover { background: rgba(255,255,255,0.8); transform: scale(1.1); }
+        .btn-icon { padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.5); color: inherit; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; text-decoration: none; }
+
+        /* Botón de borrar rojo */
+        .btn-delete-mini {
+            font-size: 0.7rem; color: #ef4444; font-weight: 600; text-decoration: none;
+            display: flex; align-items: center; gap: 4px; padding: 4px 8px;
+            border-radius: 4px; border: 1px solid transparent; transition: 0.2s;
+        }
+        .btn-delete-mini:hover { background-color: #fee2e2; border-color: #fecaca; }
 
         .btn-primary { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; }
     </style>
@@ -84,38 +74,22 @@
 
             <div class="grid-layout">
                 <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div>
-                        <label class="input-label">Nombre</label>
-                        <input type="text" th:field="*{nombre}" class="input-control" required>
-                    </div>
+                    <div><label class="input-label">Nombre</label><input type="text" th:field="*{nombre}" class="input-control" required></div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div>
-                            <label class="input-label">Categoría</label>
+                        <div><label class="input-label">Categoría</label>
                             <select th:field="*{categoria}" class="input-control">
                                 <option value="">-- Seleccionar --</option>
                                 <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
                             </select>
                         </div>
-                        <div>
-                            <label class="input-label">Precio ($)</label>
-                            <input type="number" th:field="*{precio}" class="input-control" step="0.01" required>
-                        </div>
+                        <div><label class="input-label">Precio ($)</label><input type="number" th:field="*{precio}" class="input-control" step="0.01" required></div>
                     </div>
-                    <div>
-                        <label class="input-label">Descripción</label>
-                        <textarea th:field="*{descripcion}" class="input-control" rows="3"></textarea>
-                    </div>
-                    <div>
-                        <label class="input-label">URL Imagen Principal</label>
-                        <input type="text" th:field="*{imagenUrl}" id="imgInput" class="input-control" oninput="updatePreview()">
-                    </div>
+                    <div><label class="input-label">Descripción</label><textarea th:field="*{descripcion}" class="input-control" rows="3"></textarea></div>
+                    <div><label class="input-label">URL Imagen Principal</label><input type="text" th:field="*{imagenUrl}" id="imgInput" class="input-control" oninput="updatePreview()"></div>
                 </div>
-
                 <div>
                     <label class="input-label">Vista Previa</label>
-                    <div class="preview-box">
-                        <img id="imgPreview" th:src="*{imagenUrl}" onerror="this.style.opacity='0.2'">
-                    </div>
+                    <div class="preview-box"><img id="imgPreview" th:src="*{imagenUrl}" onerror="this.style.opacity='0.2'"></div>
                 </div>
             </div>
         </div>
@@ -127,7 +101,7 @@
             <h3 style="font-weight: 800; color: #334155; margin: 0; white-space: nowrap;">+ Nueva Variante:</h3>
             <form th:action="@{/admin/inventario/variante/agregar-manual}" method="post" style="display: flex; gap: 1rem; flex-grow: 1; align-items: center;">
                 <input type="hidden" name="productoId" th:value="${producto.id}" />
-                <input type="text" name="color" class="input-control" placeholder="Color (Ej: Rojo, Azul...)" required style="max-width: 150px;">
+                <input type="text" name="color" class="input-control" placeholder="Color (Ej: Rojo)" required style="max-width: 150px;">
                 <input type="text" name="talla" class="input-control" placeholder="Talla" required style="max-width: 100px;">
                 <input type="text" name="imagenUrl" class="input-control" placeholder="URL Imagen Específica (Opcional)">
                 <button type="submit" class="btn-primary" style="white-space: nowrap;">Añadir</button>
@@ -138,117 +112,83 @@
             <div th:each="entry : ${variantesPorColor}" class="color-card">
 
                 <div class="color-header" th:data-color-name="${entry.key}">
-
-                    <div class="color-title">
-                        <span th:text="${entry.key}">Rojo</span>
-                    </div>
-
-                    <a th:href="@{/admin/inventario/variante/toggle-color(productoId=${producto.id}, color=${entry.key})}"
-                       class="btn-icon"
-                       th:title="|Cambiar visibilidad de todos los ${entry.key}|">
-
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
+                    <div class="color-title"><span th:text="${entry.key}">Rojo</span></div>
+                    <a th:href="@{/admin/inventario/variante/toggle-color(productoId=${producto.id}, color=${entry.key})}" class="btn-icon" title="Ocultar todo">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     </a>
                 </div>
 
+                <div class="color-img-preview" th:with="variantImg=${entry.value.![imagenUrl].?[#this != null and #this != '']}">
+                    <img th:if="${!variantImg.isEmpty()}" th:src="${variantImg[0]}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span class="no-img-text" th:style="${!variantImg.isEmpty() ? 'display:none' : 'display:block'}">Usa Imagen Principal</span>
+                </div>
+
                 <div class="sizes-body">
-                    <a th:each="v : ${entry.value}"
-                       th:href="@{/admin/inventario/variante/{id}/toggle(id=${v.id})}"
-                       class="size-chip"
-                       th:classappend="${v.activo ? 'active' : 'inactive'}"
-                       th:title="${v.stock} + ' Unidades'">
+                    <div th:each="v : ${entry.value}" class="size-chip-container">
 
-                        <span style="font-weight: 800; font-size: 1.1rem;" th:text="${v.talla}">42</span>
+                        <a th:href="@{/admin/inventario/variante/{id}/toggle(id=${v.id})}"
+                           class="size-chip"
+                           th:classappend="${v.activo ? 'active' : 'inactive'}"
+                           th:title="${v.stock} + ' Unidades'">
+                            <span style="font-weight: 800; font-size: 1.1rem;" th:text="${v.talla}">42</span>
+                            <span style="font-size: 0.7rem; font-weight: 600; margin-top: 2px;"
+                                  th:text="${v.stock > 0 ? v.stock + ' u.' : 'AGOTADO'}"
+                                  th:style="${v.stock <= 0 ? 'color: #ef4444;' : ''}">
+                            </span>
+                        </a>
 
-                        <span style="font-size: 0.7rem; font-weight: 600; margin-top: 2px;"
-                              th:text="${v.stock > 0 ? v.stock + ' u.' : 'AGOTADO'}"
-                              th:style="${v.stock <= 0 ? 'color: #ef4444;' : ''}">
-                        </span>
-                    </a>
+                        <a th:href="@{/admin/inventario/variante/eliminar/{id}(id=${v.id})}"
+                           onclick="return confirm('⚠ ATENCIÓN:\n\n¿Estás seguro de eliminar la talla ' + this.getAttribute('data-talla') + '?\n\nEsta acción borrará el historial asociado y NO se puede deshacer.');"
+                           th:data-talla="${v.talla}"
+                           class="btn-delete-mini">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            Borrar
+                        </a>
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
 </section>
 
 <script layout:fragment="scripts">
-
-    // 1. Preview de Imagen Principal
     function updatePreview() {
         const url = document.getElementById('imgInput').value;
         const img = document.getElementById('imgPreview');
         if(url) { img.src = url; img.style.opacity = '1'; }
     }
 
-    // 2. LÓGICA DE COLORES
     document.addEventListener("DOMContentLoaded", function() {
-
-        // Diccionario Expandido: Español -> Hexadecimal
         const colorMap = {
-            'rojo': '#ef4444', 'red': '#ef4444',
-            'azul': '#3b82f6', 'blue': '#3b82f6', 'navy': '#1e3a8a',
-            'verde': '#22c55e', 'green': '#22c55e', 'oliva': '#4d7c0f',
-            'amarillo': '#eab308', 'yellow': '#eab308', 'gold': '#ca8a04',
-            'negro': '#0f172a', 'black': '#0f172a',
-            'blanco': '#ffffff', 'white': '#ffffff',
-            'naranja': '#f97316', 'orange': '#f97316',
-            'rosa': '#ec4899', 'pink': '#ec4899', 'fucsia': '#d946ef',
-            'gris': '#64748b', 'gray': '#64748b', 'silver': '#cbd5e1',
-            'morado': '#a855f7', 'purple': '#a855f7', 'violeta': '#8b5cf6',
-            'cafe': '#78350f', 'brown': '#78350f', 'marron': '#78350f', 'marrón': '#78350f',
-            'beige': '#f5f5dc', 'crema': '#fffdd0', 'hueso': '#e3dac9',
-            'vino': '#881337', 'burdeos': '#800020',
-            'cian': '#06b6d4', 'turquesa': '#14b8a6'
+            'rojo': '#ef4444', 'red': '#ef4444', 'azul': '#3b82f6', 'blue': '#3b82f6', 'navy': '#1e3a8a',
+            'verde': '#22c55e', 'green': '#22c55e', 'amarillo': '#eab308', 'yellow': '#eab308',
+            'negro': '#0f172a', 'black': '#0f172a', 'blanco': '#ffffff', 'white': '#ffffff',
+            'gris': '#64748b', 'morado': '#a855f7', 'naranja': '#f97316', 'rosa': '#ec4899', 'cafe': '#78350f'
         };
 
         const headers = document.querySelectorAll('.color-header');
-
         headers.forEach(header => {
-            // 1. Obtener el nombre del color limpio (minúsculas, sin espacios)
             let rawName = header.getAttribute('data-color-name');
             if (!rawName) return;
-
             rawName = rawName.toLowerCase().trim();
 
-            // 2. Buscar el código HEX
-            let finalColor = '#cbd5e1'; // Color por defecto (gris suave)
+            let finalColor = colorMap[rawName] || rawName;
 
-            if (colorMap[rawName]) {
-                finalColor = colorMap[rawName]; // Encontrado en diccionario
-            } else if (/^#[0-9A-F]{6}$/i.test(rawName)) {
-                finalColor = rawName; // Es un código Hex directo (#FF0000)
-            } else {
-                // Intento final: usar el nombre en inglés si el navegador lo reconoce
-                // (CSS acepta nombres como 'tomato', 'salmon', etc.)
-                finalColor = rawName;
-            }
+            // Protección para colores inválidos
+            if(!CSS.supports('color', finalColor)) finalColor = '#cbd5e1';
 
-            // 3. APLICAR ESTILOS VISUALES
-
-            // Borde superior grueso del color
             header.style.borderTop = `4px solid ${finalColor}`;
+            if (finalColor.startsWith('#')) header.style.background = `${finalColor}15`;
+            else { header.style.background = '#f8fafc'; header.style.borderLeft = `4px solid ${finalColor}`; }
 
-            // Fondo suave del encabezado (transparente tintado)
-            // Nota: Si el color es HEX, podemos hacerlo transparente. Si es texto, usamos opacidad simple.
-            if (finalColor.startsWith('#')) {
-                header.style.background = `${finalColor}15`; // 15 es transparencia Hex (aprox 8%)
-            } else {
-                header.style.background = '#f8fafc'; // Fondo neutro si no es hex
-                header.style.borderLeft = `4px solid ${finalColor}`; // Borde lateral extra
-            }
-
-            // 4. Ajuste especial para BLANCO
             const title = header.querySelector('.color-title span');
-            if (['blanco', 'white', '#ffffff', '#fff'].includes(rawName)) {
-                header.style.borderTop = `4px solid #cbd5e1`; // Borde gris para que se vea
+            if (['blanco', 'white'].includes(rawName)) {
+                header.style.borderTop = `4px solid #cbd5e1`;
                 header.style.background = `#ffffff`;
-                if(title) title.style.color = '#334155'; // Texto oscuro
+                if(title) title.style.color = '#334155';
             } else {
-                if(title) title.style.color = finalColor; // Texto del mismo color que el borde
+                if(title) title.style.color = finalColor;
             }
         });
     });
