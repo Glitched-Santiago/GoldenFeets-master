@@ -24,12 +24,15 @@ public class CarritoItem implements Serializable {
     private String talla;
     private String color;
 
+    // Nuevo campo para el límite
+    private Integer limiteCompra;
+
+    // --- CONSTRUCTOR ---
     public CarritoItem(Producto producto, ProductoVariante variante, int cantidad) {
         this.productoId = producto.getId();
         this.nombre = producto.getNombre();
 
-        // Lógica inteligente de imagen:
-        // Si la variante tiene foto específica, usamos esa. Si no, la del producto.
+        // Lógica inteligente de imagen
         if (variante != null && variante.getImagenUrl() != null && !variante.getImagenUrl().isEmpty()) {
             this.imagenUrl = variante.getImagenUrl();
         } else {
@@ -43,17 +46,25 @@ public class CarritoItem implements Serializable {
             this.productoVarianteId = variante.getId();
             this.talla = variante.getTalla();
             this.color = variante.getColor();
+
+            // Calculamos el límite (Máximo 10 o el stock real)
+            this.limiteCompra = Math.min(10, variante.getStock());
         }
 
+        // Llamamos al método para calcular el subtotal inicial
         this.actualizarSubtotal();
-    }
+
+    } // <--- AQUÍ TERMINA EL CONSTRUCTOR. EL OTRO MÉTODO VA AFUERA.
+
+    // --- MÉTODOS ---
 
     public void setCantidad(int cantidad) {
         this.cantidad = cantidad;
         this.actualizarSubtotal();
     }
 
-    private void actualizarSubtotal() {
+    // Este método debe estar FUERA del constructor, pero DENTRO de la clase
+    public void actualizarSubtotal() {
         this.subtotal = this.precio * this.cantidad;
     }
 }

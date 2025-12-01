@@ -4,30 +4,63 @@
       layout:decorate="~{base/base-admin}">
 <head>
     <title>Registrar Entrada</title>
+    <style>
+        /* --- ESTILOS DE BOTONES VISIBLES --- */
+        .btn-primary {
+            background-color: #111827; /* Negro */
+            color: #ffffff;
+            border: 1px solid #111827;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #000000;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .btn-secondary:hover { background-color: #f9fafb; }
+
+        /* Estilos del Formulario */
+        .admin-card { background: white; padding: 2rem; border-radius: 12px; border: 1px solid #e5e7eb; max-width: 800px; margin: 0 auto; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem; }
+        .form-control:focus { outline: none; border-color: #111827; }
+        .form-actions { display: flex; gap: 1rem; align-items: center; margin-top: 2rem; }
+    </style>
 </head>
 <body>
 <section layout:fragment="content">
-    <div class="admin-header">
-        <h1 class="admin-title">Registrar Entrada de Mercancía</h1>
+    <div class="admin-header" style="margin-bottom: 2rem; text-align: center;">
+        <h1 class="admin-title" style="font-size: 1.8rem; font-weight: 800;">Registrar Entrada de Mercancía</h1>
     </div>
 
     <div class="admin-card">
-        <div class="alert alert-info mb-4" role="alert">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;"
-                 class="h-5 w-5 inline mr-2"
-                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Usa este formulario para sumar stock. Si la Talla/Color no existe, se creará automáticamente.
+        <div class="alert alert-info mb-4" role="alert" style="background: #eff6ff; color: #1e40af; padding: 1rem; border-radius: 8px; font-size: 0.9rem;">
+            <strong style="margin-right: 5px;">ℹ️ Nota:</strong> Usa este formulario para sumar stock. Si la Talla/Color no existe, se creará automáticamente.
         </div>
 
-        <div th:if="${errorMessage}" class="alert alert-error mb-4" role="alert" th:text="${errorMessage}"></div>
-        <div th:if="${successMessage}" class="alert alert-success mb-4" role="alert" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;" th:text="${errorMessage}"></div>
+        <div th:if="${successMessage}" style="background: #dcfce7; color: #166534; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;" th:text="${successMessage}"></div>
 
         <form th:action="@{/admin/inventario/entrada}" th:object="${entradaDto}" method="post" class="admin-form">
 
-            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group full-width" style="grid-column: span 2;">
                     <label for="productoId" class="form-label">Producto</label>
                     <select th:field="*{productoId}" id="productoId" class="form-control" required>
@@ -59,7 +92,7 @@
                 </div>
             </div>
 
-            <div class="form-group full-width mt-4">
+            <div class="form-group full-width mt-4" style="margin-top: 1.5rem;">
                 <label for="distribuidor" class="form-label">Proveedor / Distribuidor</label>
                 <select th:field="*{distribuidor}" id="distribuidor" class="form-control">
                     <option value="">Selecciona o escribe...</option>
@@ -67,9 +100,9 @@
                 </select>
             </div>
 
-            <div class="form-actions mt-4">
-                <button type="submit" class="btn btn-primary">Registrar Entrada</button>
-                <a th:href="@{/admin/inventario}" class="btn btn-secondary">Volver</a>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Registrar Entrada</button>
+                <a th:href="@{/admin/inventario}" class="btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>

@@ -27,7 +27,10 @@ public class PedidoService {
     private final InventarioService inventarioService;
 
     @Transactional
-    public Pedido crearPedido(Map<Long, CarritoItem> carrito, Cliente cliente) {
+    public Pedido crearPedido(Map<Long, CarritoItem> carrito, Cliente cliente,
+                              String nombres, String apellidos, String telefono,
+                              String ciudad, String localidad, String direccion) { // <--- Nuevos argumentos
+
         if (carrito == null || carrito.isEmpty()) {
             throw new IllegalStateException("El carrito está vacío.");
         }
@@ -35,6 +38,14 @@ public class PedidoService {
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
         pedido.setEstado(EstadoPedido.PAGADO);
+
+        // --- GUARDAMOS LA INFO DE ENVÍO ---
+        pedido.setEnvioNombres(nombres);
+        pedido.setEnvioApellidos(apellidos);
+        pedido.setEnvioTelefono(telefono);
+        pedido.setEnvioCiudad(ciudad);
+        pedido.setEnvioLocalidad(localidad);
+        pedido.setEnvioDireccion(direccion);
 
         for (CarritoItem item : carrito.values()) {
             // 1. Validar que el item tenga el ID de variante (Crucial para la nueva lógica)

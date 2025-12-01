@@ -38,40 +38,48 @@
             <table class="admin-table">
                 <thead>
                 <tr>
-                    <th>ID Pedido</th>
+                    <th>ID</th>
                     <th>Fecha</th>
                     <th>Cliente</th>
-                    <th>Email</th>
                     <th>Productos</th>
                     <th>Total</th>
                     <th>Estado</th>
-                </tr>
+                    <th style="text-align: center;">Acciones</th> </tr>
                 </thead>
                 <tbody>
                 <tr th:each="pedido : ${pedidos}">
                     <td th:text="${pedido.id}">1</td>
                     <td th:text="${#temporals.format(pedido.fechaCreacion, 'dd/MM/yyyy')}"></td>
                     <td th:text="${pedido.cliente.nombres + ' ' + pedido.cliente.apellidos}"></td>
-                    <td th:text="${pedido.cliente.email}"></td>
                     <td>
-                        <ul class="product-list-in-table">
+                        <ul class="product-list-in-table" style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem;">
                             <li th:each="detalle : ${pedido.detalles}">
-                                <span th:text="${detalle.producto.nombre}"></span> - <strong th:text="|x${detalle.cantidad}|"></strong>
+                                • <span th:text="${detalle.producto.nombre}"></span>
+                                <span style="color: #6b7280;">(x<span th:text="${detalle.cantidad}"></span>)</span>
                             </li>
                         </ul>
                     </td>
-                    <td th:text="|$${#numbers.formatDecimal(pedido.total, 1, 2)}|"></td>
+                    <td style="font-weight: bold;" th:text="|$${#numbers.formatDecimal(pedido.total, 1, 2)}|"></td>
                     <td>
-                            <span class="status-badge"
-                                  th:classappend="${pedido.estado.toString() == 'COMPLETADO' ? 'status-completed' : 'status-pending'}"
-                                  th:text="${pedido.estado}"></span>
+                    <span class="status-badge"
+                          style="padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;"
+                          th:styleappend="${pedido.estado.toString() == 'PAGADO' ? 'background:#dcfce7; color:#166534;' : 'background:#fee2e2; color:#991b1b;'}"
+                          th:text="${pedido.estado}"></span>
+                    </td>
+
+                    <td style="text-align: center;">
+                        <a th:href="@{/admin/pedidos/{id}(id=${pedido.id})}"
+                           class="btn btn-primary"
+                           style="padding: 6px 12px; font-size: 0.85rem; text-decoration: none; display: inline-block;">
+                            Ver Detalle
+                        </a>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
 
-        <div th:if="${#lists.isEmpty(pedidos)}">
+        <div th:if="${#lists.isEmpty(pedidos)}" style="text-align: center; padding: 2rem; color: #6b7280;">
             <p>No se encontraron pedidos con los criterios seleccionados.</p>
         </div>
     </div>

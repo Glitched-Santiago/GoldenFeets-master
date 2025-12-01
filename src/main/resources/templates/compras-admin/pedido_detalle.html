@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base/base-admin}">
+<head>
+    <title>Detalle del Pedido</title>
+    <style>
+        .detail-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; }
+        .detail-header { padding: 1.5rem; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; background: #f9fafb; }
+        .detail-body { padding: 2rem; }
+
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; margin-bottom: 2rem; }
+
+        .info-group h3 { font-size: 0.85rem; text-transform: uppercase; color: #6b7280; font-weight: 700; margin-bottom: 1rem; letter-spacing: 0.05em; }
+        .info-row { display: flex; margin-bottom: 0.5rem; font-size: 0.95rem; }
+        .info-label { width: 140px; color: #4b5563; font-weight: 500; }
+        .info-value { color: #111827; font-weight: 600; flex: 1; }
+
+        /* Tabla de productos */
+        .items-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 1rem; }
+        .items-table th { text-align: left; padding: 1rem; background: #f9fafb; color: #6b7280; font-weight: 600; font-size: 0.85rem; border-bottom: 1px solid #e5e7eb; }
+        .items-table td { padding: 1rem; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+        .items-table tr:last-child td { border-bottom: none; }
+
+        .prod-img { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 1px solid #e5e7eb; mix-blend-mode: multiply; }
+
+        .status-badge { padding: 6px 12px; border-radius: 99px; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+        .status-pagado { background: #dcfce7; color: #166534; }
+        .status-pendiente { background: #fef9c3; color: #854d0e; }
+
+        .total-section { display: flex; justify-content: flex-end; padding-top: 2rem; border-top: 1px solid #f3f4f6; margin-top: 2rem; }
+        .total-box { min-width: 250px; }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem; color: #6b7280; }
+        .total-final { font-size: 1.5rem; color: #111827; font-weight: 800; margin-top: 1rem; border-top: 2px dashed #e5e7eb; padding-top: 1rem; }
+
+        .btn-back { display: inline-flex; align-items: center; gap: 0.5rem; color: #4b5563; text-decoration: none; font-weight: 600; margin-bottom: 1.5rem; transition: 0.2s; }
+        .btn-back:hover { color: #111827; transform: translateX(-3px); }
+    </style>
+</head>
+<body>
+<section layout:fragment="content">
+
+    <a th:href="@{/admin/dashboard}" class="btn-back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Volver al Panel
+    </a>
+
+    <div class="detail-card">
+        <div class="detail-header">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: #111827; margin: 0;">Pedido #<span th:text="${pedido.id}"></span></h1>
+                <p style="color: #6b7280; margin: 0.25rem 0 0 0; font-size: 0.9rem;">
+                    Realizado el <span th:text="${#temporals.format(pedido.fechaCreacion, 'dd ' + 'de' + ' MMMM, yyyy - HH:mm')}"></span>
+                </p>
+            </div>
+
+            <span class="status-badge"
+                  th:classappend="${pedido.estado.name() == 'PAGADO' ? 'status-pagado' : 'status-pendiente'}">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></span>
+                <span th:text="${pedido.estado}">ESTADO</span>
+            </span>
+        </div>
+
+        <div class="detail-body">
+
+            <div class="info-grid">
+                <div class="info-group">
+                    <h3>📍 Información de Envío</h3>
+
+                    <div class="info-row">
+                        <span class="info-label">Destinatario:</span>
+                        <span class="info-value" th:text="${pedido.envioNombres} + ' ' + ${pedido.envioApellidos}">Juan Pérez</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Teléfono:</span>
+                        <span class="info-value" th:text="${pedido.envioTelefono}">300 123 4567</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Ciudad:</span>
+                        <span class="info-value" th:text="${pedido.envioCiudad} + ' (' + ${pedido.envioLocalidad} + ')'">Bogotá</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Dirección:</span>
+                        <span class="info-value" th:text="${pedido.envioDireccion}">Calle 123 #45-67</span>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <h3>👤 Datos de la Cuenta</h3>
+
+                    <div class="info-row">
+                        <span class="info-label">Cliente ID:</span>
+                        <span class="info-value" th:text="'#' + ${pedido.cliente.id}">#1</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Nombre Reg.:</span>
+                        <span class="info-value" th:text="${pedido.cliente.nombres} + ' ' + ${pedido.cliente.apellidos}">Juan Pérez</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value" th:text="${pedido.cliente.email}">juan@mail.com</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+                📦 Productos Solicitados
+            </h3>
+
+            <table class="items-table">
+                <thead>
+                <tr>
+                    <th style="width: 80px;">Img</th>
+                    <th>Producto</th>
+                    <th>Detalle</th>
+                    <th>Precio Unit.</th>
+                    <th>Cant.</th>
+                    <th style="text-align: right;">Subtotal</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="detalle : ${pedido.detalles}">
+                    <td>
+                        <img th:src="${detalle.productoVariante.imagenUrl != null ? detalle.productoVariante.imagenUrl : detalle.producto.imagenUrl}"
+                             class="prod-img" alt="Foto">
+                    </td>
+                    <td>
+                        <div style="font-weight: 700; color: #1f2937;" th:text="${detalle.producto.nombre}">Nike Air</div>
+                        <div style="font-size: 0.8rem; color: #9ca3af;" th:text="'SKU: ' + ${detalle.producto.id}">SKU</div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.9rem;">
+                            <span style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">Talla: <span th:text="${detalle.productoVariante.talla}">40</span></span>
+                            <span style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; margin-left: 5px;">Color: <span th:text="${detalle.productoVariante.color}">Negro</span></span>
+                        </div>
+                    </td>
+                    <td th:text="|$${#numbers.formatDecimal(detalle.precioUnitario, 1, 2)}|">$100.00</td>
+                    <td style="font-weight: 600;" th:text="${detalle.cantidad}">1</td>
+                    <td style="text-align: right; font-weight: 700;" th:text="|$${#numbers.formatDecimal(detalle.cantidad * detalle.precioUnitario, 1, 2)}|">$100.00</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="total-section">
+                <div class="total-box">
+                    <div class="total-row">
+                        <span>Subtotal</span>
+                        <span th:text="|$${#numbers.formatDecimal(pedido.total, 1, 2)}|">$0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Envío</span>
+                        <span style="color: #16a34a; font-weight: 600;">Gratis</span>
+                    </div>
+                    <div class="total-row total-final">
+                        <span>Total</span>
+                        <span th:text="|$${#numbers.formatDecimal(pedido.total, 1, 2)}|">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+</body>
+</html>

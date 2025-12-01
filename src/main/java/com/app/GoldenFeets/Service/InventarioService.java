@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,54 +34,79 @@ public class InventarioService {
     @Transactional
     public InventarioEntrada registrarEntrada(InventarioEntradaDTO entradaDTO) {
         try {
+            // 1. Validar Producto
             Producto producto = productoRepository.findById(entradaDTO.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + entradaDTO.getProductoId()));
 
-            // Instanciamos aquí para tener la variable disponible
-            InventarioEntrada nuevaEntrada = new InventarioEntrada();
+            // 2. Normalizar Texto (Rojo / XL)
+            String colorInput = (entradaDTO.getColor() != null && !entradaDTO.getColor().isEmpty())
+                    ? normalizarTexto(entradaDTO.getColor()) : "Único";
 
-            String colorInput = (entradaDTO.getColor() != null && !entradaDTO.getColor().isEmpty()) ? entradaDTO.getColor().trim() : "Único";
-            String tallaInput = (entradaDTO.getTalla() != null && !entradaDTO.getTalla().isEmpty()) ? entradaDTO.getTalla().trim() : "Única";
+            String tallaInput = (entradaDTO.getTalla() != null && !entradaDTO.getTalla().isEmpty())
+                    ? entradaDTO.getTalla().trim().toUpperCase() : "Única";
+
+            // 3. Preparar la Entidad de Entrada
+            InventarioEntrada nuevaEntrada = new InventarioEntrada();
 
             if (producto.getVariantes() == null) producto.setVariantes(new ArrayList<>());
 
+            // 4. Buscar o Crear Variante
             Optional<ProductoVariante> varianteExistente = producto.getVariantes().stream()
-                    .filter(v -> v.getColor().equalsIgnoreCase(colorInput) && v.getTalla().equalsIgnoreCase(tallaInput))
+                    .filter(v -> v.getColor().equals(colorInput) && v.getTalla().equals(tallaInput))
                     .findFirst();
 
             ProductoVariante variante;
 
             if (varianteExistente.isPresent()) {
+                // --- CASO: EXISTE ---
                 variante = varianteExistente.get();
 
-                // [CORRECCIÓN STOCK] Capturamos stock antes
+                // Guardar stock anterior
                 int stockAntes = variante.getStock();
                 nuevaEntrada.setStockAnterior(stockAntes);
 
+                // Actualizar stock
                 variante.setStock(stockAntes + entradaDTO.getCantidad());
 
-                // [CORRECCIÓN STOCK] Capturamos stock nuevo
+                // Activar si estaba inactivo
+                if (!variante.getActivo()) variante.setActivo(true);
+
                 nuevaEntrada.setStockNuevo(variante.getStock());
             } else {
+                // --- CASO: NUEVA ---
                 variante = new ProductoVariante();
                 variante.setProducto(producto);
                 variante.setColor(colorInput);
                 variante.setTalla(tallaInput);
                 variante.setStock(entradaDTO.getCantidad());
+                variante.setActivo(true);
+                // Heredar imagen base
+                variante.setImagenUrl(producto.getImagenUrl());
+
                 producto.getVariantes().add(variante);
 
-                // [CORRECCIÓN STOCK] Si es nuevo, antes había 0
                 nuevaEntrada.setStockAnterior(0);
                 nuevaEntrada.setStockNuevo(entradaDTO.getCantidad());
             }
 
+            // 5. Guardar Producto (Cascada guarda variante)
             productoRepository.save(producto);
 
+            // 6. Llenar datos de la Entrada (Adaptado a tu Entity)
             nuevaEntrada.setProducto(producto);
             nuevaEntrada.setDistribuidor(entradaDTO.getDistribuidor());
             nuevaEntrada.setCantidad(entradaDTO.getCantidad());
+
+            // Campo 'color' en tu tabla es String, guardamos la info combinada
             nuevaEntrada.setColor(colorInput + " / " + tallaInput);
+
             nuevaEntrada.setPrecioCostoUnitario(entradaDTO.getPrecioCostoUnitario() != null ? entradaDTO.getPrecioCostoUnitario() : 0.0);
+
+            // --- CORRECCIÓN AQUÍ: Usamos setFechaRegistro en lugar de setFecha ---
+            // Aunque tu @PrePersist lo pone automático, es bueno setearlo si el DTO trajera fecha específica
+            if (nuevaEntrada.getFechaRegistro() == null) {
+                nuevaEntrada.setFechaRegistro(LocalDateTime.now());
+            }
 
             return inventarioEntradaRepository.save(nuevaEntrada);
 
@@ -264,5 +290,14 @@ public class InventarioService {
         stats.setBeneficioNeto(totalIngresado - totalGastado);
 
         return stats;
+    }
+    private String normalizarTexto(String texto) {
+        if (texto == null || texto.trim().isEmpty()) {
+            return texto;
+        }
+        // 1. Quitar espacios y pasar a minúsculas
+        String limpio = texto.trim().toLowerCase();
+        // 2. Poner primera letra en mayúscula
+        return limpio.substring(0, 1).toUpperCase() + limpio.substring(1);
     }
 }

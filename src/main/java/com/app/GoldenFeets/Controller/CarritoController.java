@@ -24,7 +24,7 @@ public class CarritoController {
     public String verCarrito(Model model) {
         model.addAttribute("items", carritoService.getItems().values());
         model.addAttribute("total", carritoService.getTotal());
-        return "carrito/carrito"; // Asegúrate que esta vista existe
+        return "carrito/carrito";
     }
 
     @PostMapping("/agregar/{productoId}")
@@ -34,7 +34,6 @@ public class CarritoController {
             @RequestParam(name = "productoVarianteId", required = false) Long productoVarianteId,
             RedirectAttributes redirectAttributes) {
 
-        // 1. Validar Selección
         if (productoVarianteId == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "Por favor selecciona un Color y una Talla.");
             return "redirect:/catalogo/" + productoId;
@@ -44,35 +43,35 @@ public class CarritoController {
         if (productoOpt.isPresent()) {
             Producto producto = productoOpt.get();
 
-            // 2. Buscar variante específica
+            // Buscar la variante real en la lista del producto (evita consultar BD de nuevo si ya tenemos el producto cargado)
             ProductoVariante variante = producto.getVariantes().stream()
                     .filter(v -> v.getId().equals(productoVarianteId))
                     .findFirst()
                     .orElse(null);
 
             if (variante == null || !variante.getActivo()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "La opción seleccionada no está disponible.");
+                redirectAttributes.addFlashAttribute("errorMessage", "Opción no disponible.");
                 return "redirect:/catalogo/" + productoId;
             }
 
-            // 3. Validar Stock
-            if (variante.getStock() >= cantidad) {
-                carritoService.agregarProducto(producto, variante, cantidad);
-                redirectAttributes.addFlashAttribute("successMessage", "¡Añadido a la bolsa!");
-            } else {
-                redirectAttributes.addFlashAttribute("errorMessage", "Stock insuficiente. Solo quedan " + variante.getStock() + " unidades.");
+            // Validar Límite Global (Máximo 10 o Stock)
+            int limiteReal = Math.min(10, variante.getStock());
+            if (cantidad > limiteReal) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Solo puedes llevar máximo " + limiteReal + " unidades de este producto.");
+                return "redirect:/catalogo/" + productoId;
             }
+
+            carritoService.agregarProducto(producto, variante, cantidad);
+            redirectAttributes.addFlashAttribute("successMessage", "¡Añadido a la bolsa!");
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Producto no encontrado.");
         }
 
-        // Volvemos al detalle para seguir comprando
         return "redirect:/catalogo/" + productoId;
     }
 
     @PostMapping("/eliminar/{id}")
     public String eliminarDelCarrito(@PathVariable("id") Long productoVarianteId) {
-        // El ID que recibimos es el de la variante (clave del mapa)
         carritoService.removerProducto(productoVarianteId);
         return "redirect:/carrito";
     }
@@ -80,7 +79,10 @@ public class CarritoController {
     @PostMapping("/actualizar")
     public String actualizarCantidad(@RequestParam("productoVarianteId") Long productoVarianteId,
                                      @RequestParam("cantidad") int cantidad) {
-        // Aquí podrías añadir validación de stock nuevamente si quisieras ser muy estricto
+        // Validación básica en el controller (la lógica de stock debería estar en el servicio idealmente)
+        if (cantidad < 1) cantidad = 1;
+        // El límite máximo ya lo controla la vista, pero el servicio debería validar stock final
+
         carritoService.actualizarCantidad(productoVarianteId, cantidad);
         return "redirect:/carrito";
     }

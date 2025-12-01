@@ -1,21 +1,23 @@
 package com.app.GoldenFeets.Controller;
 
-import com.app.GoldenFeets.Entity.Pedido;
+import com.app.GoldenFeets.Service.DashboardService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.List;
-
 @Controller
 @RequestMapping("/admin")
+@RequiredArgsConstructor
 public class DashboardController {
 
+    private final DashboardService dashboardService;
+
     @GetMapping("/dashboard")
-    public String showDashboard(Model model) {
-        // Añadimos un atributo para saber qué página está activa en el sidebar
+    public String verDashboard(Model model) {
+        model.addAttribute("stats", dashboardService.obtenerDatosDashboard());
         model.addAttribute("activePage", "dashboard");
-        return "admin/dashboard"; // Apunta a templates/admin/dashboard.html
+        return "admin/dashboard";
     }
 }

@@ -3,41 +3,247 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{base/base-admin}">
 <head>
-    <title>Dashboard</title>
+    <title>Panel de Control</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* --- GRID SYSTEM --- */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 Columnas iguales */
+            grid-template-rows: auto auto auto;
+            gap: 1.5rem;
+        }
+
+        /* --- TARJETAS KPI (Superior) --- */
+        .kpi-card {
+            background: white; padding: 1.5rem; border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .kpi-title { font-size: 0.85rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .kpi-value { font-size: 2rem; font-weight: 800; color: #0f172a; margin: 0.5rem 0; }
+        .kpi-icon { align-self: flex-end; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; opacity: 0.2; }
+
+        .kpi-green .kpi-value { color: #16a34a; } .kpi-green .kpi-icon { background: #16a34a; color: #16a34a; }
+        .kpi-blue .kpi-icon { background: #2563eb; color: #2563eb; }
+
+        /* --- SECCIONES (Cards) --- */
+        .section-card {
+            background: white; border-radius: 12px; padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+            display: flex; flex-direction: column;
+        }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5rem; }
+        .section-title { font-size: 1.1rem; font-weight: 700; color: #334155; }
+
+        /* --- BOTONES ACCESO RÁPIDO (Restaurados) --- */
+        .quick-actions-grid { display: flex; flex-direction: column; gap: 0.8rem; height: 100%; }
+        .btn-quick {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 1rem; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px;
+            text-align: center; text-decoration: none; color: #475569; font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .btn-quick:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; transform: translateY(-2px); }
+
+        /* --- TABLA --- */
+        .orders-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .orders-table th { text-align: left; color: #64748b; font-weight: 600; padding: 0.75rem; }
+        .orders-table td { padding: 0.75rem; border-top: 1px solid #f1f5f9; }
+        .badge-status { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+        .bg-pagado { background: #dcfce7; color: #166534; }
+        .bg-pendiente { background: #fef9c3; color: #854d0e; }
+        .bg-cancelado { background: #fee2e2; color: #991b1b; }
+
+        /* --- ALERTAS --- */
+        .alert-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: #fef2f2; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid #fecaca; }
+        .alert-action { margin-left: auto; font-size: 0.85rem; text-decoration: underline; color: #b91c1c; font-weight: 600; cursor: pointer; }
+        .alert-action:hover { color: #dc2626; }
+
+        /* --- GRID SPANS --- */
+        .span-1 { grid-column: span 1; }
+        .span-2 { grid-column: span 2; }
+        .span-3 { grid-column: span 3; }
+        .span-4 { grid-column: span 4; }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr 1fr; }
+            .span-3 { grid-column: span 2; } /* Tabla ocupa todo el ancho en tablet */
+        }
+        @media (max-width: 640px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .span-1, .span-2, .span-3, .span-4 { grid-column: span 1; }
+        }
+    </style>
 </head>
 <body>
 <section layout:fragment="content">
-    <div class="admin-header">
-        <h1 class="admin-title">Dashboard de Administración</h1>
+
+    <div class="mb-6">
+        <h1 style="font-size: 1.8rem; font-weight: 800; color: #1e293b;">Dashboard</h1>
+        <p style="color: #64748b;">Resumen del día <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span></p>
     </div>
 
-    <div class="dashboard-grid">
+    <div class="dashboard-container" th:object="${stats}">
 
-        <a th:href="@{/admin/inventario}" class="dashboard-card">
-            <div class="dashboard-card-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
-            </div>
-            <h2 class="dashboard-card-title">Gestionar Inventario</h2>
-            <p class="dashboard-card-description">Añadir, editar y eliminar productos del catálogo.</p>
-        </a>
+        <div class="kpi-card kpi-green">
+            <div class="kpi-title">Ventas Hoy</div>
+            <div class="kpi-value" th:text="|$${#numbers.formatDecimal(stats.ventasHoy, 1, 'POINT', 0, 'COMMA')}|">$0</div>
+            <div class="kpi-icon"><span>$</span></div>
+        </div>
+        <div class="kpi-card kpi-blue">
+            <div class="kpi-title">Pedidos Hoy</div>
+            <div class="kpi-value" th:text="${stats.pedidosHoy}">0</div>
+            <div class="kpi-icon"><span>#</span></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Ingresos Mes</div>
+            <div class="kpi-value" th:text="|$${#numbers.formatDecimal(stats.ingresosMes, 1, 'POINT', 0, 'COMMA')}|">$0</div>
+            <div class="kpi-icon"><span>M</span></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Usuarios</div>
+            <div class="kpi-value" th:text="${stats.usuariosRegistrados}">0</div>
+            <div class="kpi-icon"><span>U</span></div>
+        </div>
 
-        <a th:href="@{/admin/pedidos}"  class="dashboard-card">
-            <div class="dashboard-card-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75c0-.231-.035-.454-.1-.664M6.75 7.5h10.5a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25H6.75a2.25 2.25 0 01-2.25-2.25v-7.5a2.25 2.25 0 012.25-2.25z" /></svg>
+        <div class="section-card span-2">
+            <div class="section-header">
+                <h3 class="section-title">Top Productos</h3>
             </div>
-            <h2 class="dashboard-card-title">Ver Pedidos</h2>
-            <p class="dashboard-card-description">Consultar el historial de compras y el estado de los pedidos.</p>
-        </a>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="topProductsChart" th:if="${not #lists.isEmpty(stats.topLabels)}"></canvas>
 
-        <a th:href="@{/admin/usuarios}" class="dashboard-card">
-            <div class="dashboard-card-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-4.67c.12-.241.25-.487.386-.732z" /></svg>
+                <div th:if="${#lists.isEmpty(stats.topLabels)}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8;">
+                    <p>No hay ventas registradas aún</p>
+                </div>
             </div>
-            <h2 class="dashboard-card-title">Gestionar Usuarios</h2>
-            <p class="dashboard-card-description">Ver la lista de clientes y administradores registrados.</p>
-        </a>
+        </div>
+
+        <div class="section-card span-2">
+            <div class="section-header">
+                <h3 class="section-title" style="color: #dc2626;">⚠ Stock Bajo</h3>
+                <a th:href="@{/admin/inventario/entrada}" class="text-xs text-blue-600 underline">Ir a Reponer</a>
+            </div>
+            <div style="max-height: 250px; overflow-y: auto;">
+                <div th:each="v : ${stats.productosBajoStock}" class="alert-item">
+                    <div style="color: #dc2626; font-size: 1.2rem;">⚠</div>
+                    <div style="font-size: 0.9rem; color: #991b1b; flex: 1;">
+                        <strong th:text="${v.producto.nombre}">Prod</strong>
+                        <span th:text="|(${v.talla}/${v.color})|"></span>
+                        <br>
+                        <span>Quedan: <strong th:text="${v.stock}"></strong></span>
+                    </div>
+                    <a th:href="@{/admin/inventario/entrada}" class="alert-action">Pedir Stock</a>
+                </div>
+
+                <div th:if="${#lists.isEmpty(stats.productosBajoStock)}" style="text-align: center; color: #9ca3af; padding: 1rem;">
+                    Inventario saludable. Todo en orden.
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card span-3">
+            <div class="section-header">
+                <h3 class="section-title">Últimos Pedidos</h3>
+                <a th:href="@{/admin/pedidos}" class="text-sm text-blue-600">Ver todos</a>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="orders-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th>Acción</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${stats.ultimosPedidos}">
+                        <td th:text="'#' + ${p.id}"></td>
+                        <td th:text="${p.cliente.nombres}"></td>
+                        <td th:text="|$${#numbers.formatDecimal(p.total, 1, 0)}|"></td>
+                        <td>
+            <span class="badge-status"
+                  th:classappend="${p.estado.name() == 'PAGADO' ? 'bg-pagado' : 'bg-pendiente'}"
+                  th:text="${p.estado}"></span>
+                        </td>
+                        <td th:text="${#temporals.format(p.fechaCreacion, 'dd/MM HH:mm')}"></td>
+
+                        <td>
+                            <a th:href="@{/admin/pedidos/{id}(id=${p.id})}"
+                               class="text-blue-600 hover:underline font-semibold">
+                                Ver Detalle
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-card span-1">
+            <div class="section-header">
+                <h3 class="section-title">Accesos Rápidos</h3>
+            </div>
+            <div class="quick-actions-grid">
+                <a th:href="@{/admin/inventario/nuevo}" class="btn-quick">
+                    <span>+ Nuevo Producto</span>
+                </a>
+                <a th:href="@{/admin/inventario/entrada}" class="btn-quick">
+                    <span>📦 Reg. Entrada</span>
+                </a>
+                <a th:href="@{/admin/inventario/salida}" class="btn-quick">
+                    <span>📤 Reg. Salida</span>
+                </a>
+                <a th:href="@{/admin/usuarios}" class="btn-quick">
+                    <span>👥 Usuarios</span>
+                </a>
+            </div>
+        </div>
 
     </div>
+
+    <script th:if="${not #lists.isEmpty(stats.topLabels)}" th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('topProductsChart');
+            if (!ctx) return;
+
+            const labels = [[${stats.topLabels}]];
+            const data = [[${stats.topValues}]];
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Vendidos',
+                        data: data,
+                        backgroundColor: [
+                            'rgba(17, 24, 39, 0.8)',
+                            'rgba(37, 99, 235, 0.8)',
+                            'rgba(249, 115, 22, 0.8)',
+                            'rgba(16, 185, 129, 0.8)'
+                        ],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { display: false } }
+                    }
+                }
+            });
+        });
+    </script>
 </section>
 </body>
 </html>

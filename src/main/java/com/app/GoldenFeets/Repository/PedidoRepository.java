@@ -7,6 +7,8 @@ import com.app.GoldenFeets.Entity.Pedido;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query; // <-- ¡CLAVE!
 import org.springframework.data.repository.query.Param; // <-- ¡CLAVE!
+
+import java.time.LocalDateTime;
 import java.util.List; // <-- ¡CLAVE!
 import com.app.GoldenFeets.Entity.Cliente;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -21,5 +23,15 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
     // ¡Este es el método nuevo que pusimos!
     @Query("SELECT p FROM Pedido p WHERE p.estado = :estado")
     List<Pedido> findAllByEstado(@Param("estado") EstadoPedido estado);
+
+    @Query("SELECT SUM(p.total) FROM Pedido p WHERE p.fechaCreacion BETWEEN :inicio AND :fin AND p.estado = 'PAGADO'")
+    Double sumarVentasPorRango(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    // Contar pedidos de hoy
+    @Query("SELECT COUNT(p) FROM Pedido p WHERE p.fechaCreacion BETWEEN :inicio AND :fin")
+    Integer contarPedidosPorRango(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    // Obtener los últimos 5 pedidos
+    List<Pedido> findTop5ByOrderByFechaCreacionDesc();
 
 }

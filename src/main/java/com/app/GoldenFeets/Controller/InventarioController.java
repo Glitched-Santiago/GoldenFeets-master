@@ -8,26 +8,26 @@ import com.app.GoldenFeets.Entity.Producto;
 import com.app.GoldenFeets.Entity.ProductoVariante;
 import com.app.GoldenFeets.Repository.CategoriaRepository;
 import com.app.GoldenFeets.Repository.ProductoVarianteRepository;
+import com.app.GoldenFeets.Repository.UsuarioRepository;
 import com.app.GoldenFeets.Service.InventarioService;
 import com.app.GoldenFeets.Service.PdfService;
 import com.app.GoldenFeets.Service.ProductoService;
+import com.app.GoldenFeets.Service.UploadFileService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
-import com.app.GoldenFeets.Entity.ProductoVariante;
 
 @Controller
 @RequestMapping("/admin/inventario")
@@ -38,7 +38,11 @@ public class InventarioController {
     private final PdfService pdfService;
     private final CategoriaRepository categoriaRepository;
     private final InventarioService inventarioService;
-    private final ProductoVarianteRepository productoVarianteRepository; // Inyecta esto
+    private final ProductoVarianteRepository productoVarianteRepository;
+    private final UploadFileService uploadService;
+    private final ProductoVarianteRepository productoRepository;
+    private final ProductoVarianteRepository varianteRepository;
+
 
     // --- LISTAR INVENTARIO ---
     @GetMapping
@@ -87,19 +91,25 @@ public class InventarioController {
             @ModelAttribute("entradaDto") InventarioEntradaDTO entradaDto,
             RedirectAttributes redirectAttributes) {
         try {
-            // Validaciones básicas antes de llamar al servicio
+            // 1. Validaciones básicas
             if (entradaDto.getCantidad() == null || entradaDto.getCantidad() <= 0) {
                 throw new IllegalArgumentException("La cantidad debe ser mayor a 0.");
             }
-            // Llamamos al servicio (que ahora crea/actualiza Variantes)
+
+            // 2. Llamada al servicio
+            // (El servicio ya se encarga de normalizar mayúsculas/minúsculas y guardar en la tabla correcta)
             inventarioService.registrarEntrada(entradaDto);
 
             redirectAttributes.addFlashAttribute("successMessage", "Entrada registrada correctamente. Stock actualizado.");
+
+            // 3. ÉXITO: Redireccionar al historial (Lo que pediste)
+            return "redirect:/admin/inventario/historial";
+
         } catch (Exception e) {
+            // 4. ERROR: Volver al formulario para corregir
             redirectAttributes.addFlashAttribute("errorMessage", "Error al registrar entrada: " + e.getMessage());
             return "redirect:/admin/inventario/entrada";
         }
-        return "redirect:/admin/inventario";
     }
 
     // --- SALIDA MANUAL (AJUSTES) ---
@@ -119,18 +129,23 @@ public class InventarioController {
             @ModelAttribute("salidaDto") InventarioSalidaDTO salidaDto,
             RedirectAttributes redirectAttributes) {
         try {
+            // Validaciones básicas
             if (salidaDto.getCantidad() == null || salidaDto.getCantidad() <= 0) {
                 throw new IllegalArgumentException("La cantidad debe ser positiva.");
             }
-            // Nota: El usuario debe haber ingresado Talla/Color en el formulario para que esto funcione
+
+            // Llamada al servicio
             inventarioService.registrarSalidaManual(salidaDto);
 
             redirectAttributes.addFlashAttribute("successMessage", "Salida registrada correctamente.");
+
+            // --- CAMBIO AQUÍ: Redirección al Historial ---
+            return "redirect:/admin/inventario/historial";
+
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error al registrar salida: " + e.getMessage());
-            return "redirect:/admin/inventario/salida";
+            return "redirect:/admin/inventario/salida"; // Si falla, vuelve al formulario
         }
-        return "redirect:/admin/inventario";
     }
 
     // --- HISTORIAL ---
@@ -219,9 +234,44 @@ public class InventarioController {
     }
 
     @PostMapping("/guardar")
-    public String guardarProducto(@ModelAttribute("producto") Producto producto) {
-        productoService.guardar(producto);
-        return "redirect:/admin/inventario";
+    public String guardarProducto(@ModelAttribute Producto productoForm,
+                                  @RequestParam(value = "file", required = false) MultipartFile file,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            Producto productoAGuardar;
+
+            // Lógica de recuperación o creación (Mantenemos lo que arreglamos antes)
+            if (productoForm.getId() != null) {
+                productoAGuardar = productoService.obtenerPorId(productoForm.getId())
+                        .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                productoAGuardar.setNombre(productoForm.getNombre());
+                productoAGuardar.setPrecio(productoForm.getPrecio());
+                productoAGuardar.setDescripcion(productoForm.getDescripcion());
+                productoAGuardar.setCategoria(productoForm.getCategoria());
+            } else {
+                productoAGuardar = productoForm;
+            }
+
+            // Lógica de imagen
+            if (file != null && !file.isEmpty()) {
+                String nombreImagen = uploadService.saveImage(file);
+                productoAGuardar.setImagenUrl("/images/" + nombreImagen);
+            }
+
+            // --- CAMBIO CLAVE AQUÍ ---
+            // Guardamos y capturamos el objeto devuelto (que ya tiene el ID seguro)
+            Producto productoGuardado = productoService.guardar(productoAGuardar);
+
+            redirectAttributes.addFlashAttribute("successMessage", "Producto guardado correctamente.");
+
+            // Redireccionamos AL FORMULARIO DE EDICIÓN de este producto
+            return "redirect:/admin/inventario/nuevo?id=" + productoGuardado.getId();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "Error al guardar: " + e.getMessage());
+            return "redirect:/admin/inventario";
+        }
     }
 
     @PostMapping("/eliminar/{id}")
@@ -247,24 +297,26 @@ public class InventarioController {
             @RequestParam Long productoId,
             @RequestParam String talla,
             @RequestParam String color,
-            @RequestParam(required = false) String imagenUrl, // <--- IMPORTANTE: Debe llamarse igual que en el HTML
-            jakarta.servlet.http.HttpServletRequest request,
-            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            RedirectAttributes redirectAttributes) {
 
         try {
-            // Imprimir en consola para verificar que llega el dato
-            System.out.println("Recibiendo variante: Talla=" + talla + " Color=" + color + " Img=" + imagenUrl);
+            String rutaImagen = null;
+            if (file != null && !file.isEmpty()) {
+                String nombreArchivo = uploadService.saveImage(file);
+                rutaImagen = "/images/" + nombreArchivo;
+            }
 
-            productoService.crearVarianteManual(productoId, talla, color, imagenUrl);
+            productoService.crearVarianteManual(productoId, talla, color, rutaImagen);
 
-            redirectAttributes.addFlashAttribute("successMessage", "Variante procesada correctamente.");
+            redirectAttributes.addFlashAttribute("successMessage", "Variante añadida.");
+
         } catch (Exception e) {
-            e.printStackTrace();
             redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
         }
 
-        String referer = request.getHeader("Referer");
-        return "redirect:" + (referer != null ? referer : "/admin/inventario");
+        // --- CAMBIO: Siempre volvemos al formulario del producto padre ---
+        return "redirect:/admin/inventario/nuevo?id=" + productoId;
     }
     @GetMapping("/variante/toggle-color")
     public String toggleColorCompleto(

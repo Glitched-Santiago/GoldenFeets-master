@@ -5,13 +5,11 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 
 @Entity
 @Table(name = "pedidos")
 @Data
-public class        Pedido {
+public class Pedido {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,21 +18,29 @@ public class        Pedido {
     private LocalDateTime fechaCreacion;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "estado", length = 50)
     private EstadoPedido estado;
 
-    @ManyToOne // Un pedido pertenece a un cliente
+    @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
-    // Un pedido tiene muchos detalles (productos)
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PedidoDetalle> detalles = new ArrayList<>();
 
     private Double total;
 
+    // --- NUEVOS CAMPOS PARA DATOS DE ENVÍO ---
+    private String envioNombres;    // Nombres de quien recibe
+    private String envioApellidos;  // Apellidos de quien recibe
+    private String envioTelefono;   // Celular de contacto
+    private String envioCiudad;     // Ej: Bogotá, D.C.
+    private String envioLocalidad;  // Ej: Suba
+    private String envioDireccion;  // Ej: Calle 123...
+
     @PrePersist
     public void onPrePersist() {
         fechaCreacion = LocalDateTime.now();
-        estado = EstadoPedido.PAGADO; // Estado inicial
+        if (estado == null) estado = EstadoPedido.PAGADO;
     }
 }

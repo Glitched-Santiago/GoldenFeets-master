@@ -1,6 +1,7 @@
 package com.app.GoldenFeets.Service;
 
 // --- Imports Añadidos ---
+import com.app.GoldenFeets.Config.CustomUserDetails;
 import com.app.GoldenFeets.DTO.PerfilInfoDTO;
 import com.app.GoldenFeets.DTO.PerfilPasswordDTO;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,10 +45,12 @@ public class UsuarioService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("No se encontró usuario con el email: " + email));
 
         String role = (usuario instanceof Administrador) ? "ADMIN" : "CLIENTE";
-
         Collection<? extends GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
 
-        return new User(usuario.getEmail(), usuario.getPassword(), authorities);
+        // --- CAMBIO AQUÍ ---
+        // Antes tenías: return new User(...)
+        // Ahora usa tu clase personalizada:
+        return new CustomUserDetails(usuario, authorities);
     }
 
     /**

@@ -5,51 +5,45 @@
 <head>
     <title th:text="${producto.id == null ? 'Nuevo Producto' : 'Gestionar: ' + producto.nombre}"></title>
     <style>
-        /* --- DISEÑO --- */
+        /* --- ESTILOS ORIGINALES MANTENIDOS --- */
         :root { --primary: #2563eb; --bg-main: #f8fafc; --border: #e2e8f0; --radius: 12px; }
         .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
         .premium-card { background: white; border-radius: var(--radius); border: 1px solid var(--border); padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
         .card-title { font-size: 1.2rem; font-weight: 800; color: #1e293b; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
-
         .input-label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .input-control { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: #f8fafc; transition: 0.2s; }
         .input-control:focus { outline: none; border-color: var(--primary); background: white; }
 
-        .preview-box { width: 100%; aspect-ratio: 1/1; border-radius: var(--radius); border: 2px dashed #cbd5e1; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f1f5f9; }
+        /* Preview Box mejorado */
+        .preview-box { width: 100%; aspect-ratio: 1/1; border-radius: var(--radius); border: 2px dashed #cbd5e1; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f1f5f9; position: relative; }
         .preview-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- GRID COLORES --- */
+        /* Grid de Colores */
         .colors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
-
         .color-card { border-radius: var(--radius); border: 1px solid var(--border); background: white; overflow: hidden; transition: transform 0.2s; display: flex; flex-direction: column; }
         .color-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-
         .color-header { padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .color-title { font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
-
         .color-img-preview { width: 100%; height: 150px; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); position: relative; }
         .color-img-preview img { width: 100%; height: 100%; object-fit: cover; }
         .no-img-text { font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; }
 
+        /* Chips de Tallas */
         .sizes-body { padding: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; background: white; flex-grow: 1; }
         .size-chip-container { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-
         .size-chip { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 60px; padding: 0.5rem 0; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; text-decoration: none; transition: 0.2s; }
         .size-chip.active { background: #f0fdf4; border-color: #86efac; color: #166534; }
         .size-chip.inactive { background: #f1f5f9; border-color: #e2e8f0; color: #94a3b8; }
         .size-chip.inactive span { text-decoration: line-through; }
 
+        /* Botones */
         .btn-icon { padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.5); color: inherit; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; text-decoration: none; }
-
-        /* Botón de borrar rojo */
-        .btn-delete-mini {
-            font-size: 0.7rem; color: #ef4444; font-weight: 600; text-decoration: none;
-            display: flex; align-items: center; gap: 4px; padding: 4px 8px;
-            border-radius: 4px; border: 1px solid transparent; transition: 0.2s;
-        }
+        .btn-delete-mini { font-size: 0.7rem; color: #ef4444; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px; border: 1px solid transparent; transition: 0.2s; }
         .btn-delete-mini:hover { background-color: #fee2e2; border-color: #fecaca; }
-
         .btn-primary { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+        /* Input File personalizado */
+        input[type="file"] { padding: 6px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -64,32 +58,56 @@
         <a th:href="@{/admin/inventario}" class="btn-primary" style="background: white; color: #475569; border: 1px solid #cbd5e1;">Volver</a>
     </div>
 
-    <form th:action="@{/admin/inventario/guardar}" th:object="${producto}" method="post">
+    <form th:action="@{/admin/inventario/guardar}" th:object="${producto}" method="post" enctype="multipart/form-data">
         <div class="premium-card">
             <div class="card-title flex justify-between">
                 <span>Información Principal</span>
                 <button type="submit" class="btn-primary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">Guardar Cambios</button>
             </div>
+
             <input type="hidden" th:field="*{id}" />
 
             <div class="grid-layout">
                 <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div><label class="input-label">Nombre</label><input type="text" th:field="*{nombre}" class="input-control" required></div>
+                    <div>
+                        <label class="input-label">Nombre del Producto</label>
+                        <input type="text" th:field="*{nombre}" class="input-control" required placeholder="Ej: Nike Air Force 1">
+                    </div>
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div><label class="input-label">Categoría</label>
+                        <div>
+                            <label class="input-label">Categoría</label>
                             <select th:field="*{categoria}" class="input-control">
                                 <option value="">-- Seleccionar --</option>
                                 <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
                             </select>
                         </div>
-                        <div><label class="input-label">Precio ($)</label><input type="number" th:field="*{precio}" class="input-control" step="0.01" required></div>
+                        <div>
+                            <label class="input-label">Precio ($)</label>
+                            <input type="number" th:field="*{precio}" class="input-control" step="0.01" required placeholder="0.00">
+                        </div>
                     </div>
-                    <div><label class="input-label">Descripción</label><textarea th:field="*{descripcion}" class="input-control" rows="3"></textarea></div>
-                    <div><label class="input-label">URL Imagen Principal</label><input type="text" th:field="*{imagenUrl}" id="imgInput" class="input-control" oninput="updatePreview()"></div>
+
+                    <div>
+                        <label class="input-label">Descripción</label>
+                        <textarea th:field="*{descripcion}" class="input-control" rows="3" placeholder="Detalles del producto..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="input-label">Imagen Principal</label>
+                        <input type="file" name="file" id="imgInput" class="input-control" accept="image/*" onchange="updatePreview()">
+
+                        <input type="hidden" th:field="*{imagenUrl}">
+                    </div>
                 </div>
+
                 <div>
                     <label class="input-label">Vista Previa</label>
-                    <div class="preview-box"><img id="imgPreview" th:src="*{imagenUrl}" onerror="this.style.opacity='0.2'"></div>
+                    <div class="preview-box">
+                        <img id="imgPreview"
+                             th:src="${producto.imagenUrl != null ? producto.imagenUrl : 'https://placehold.co/300?text=Sin+Imagen'}"
+                             onerror="this.src='https://placehold.co/300?text=Error'">
+                    </div>
                 </div>
             </div>
         </div>
@@ -99,11 +117,15 @@
 
         <div style="background: white; padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
             <h3 style="font-weight: 800; color: #334155; margin: 0; white-space: nowrap;">+ Nueva Variante:</h3>
-            <form th:action="@{/admin/inventario/variante/agregar-manual}" method="post" style="display: flex; gap: 1rem; flex-grow: 1; align-items: center;">
+
+            <form th:action="@{/admin/inventario/variante/agregar-manual}" method="post" enctype="multipart/form-data" style="display: flex; gap: 1rem; flex-grow: 1; align-items: center; flex-wrap: wrap;">
                 <input type="hidden" name="productoId" th:value="${producto.id}" />
+
                 <input type="text" name="color" class="input-control" placeholder="Color (Ej: Rojo)" required style="max-width: 150px;">
                 <input type="text" name="talla" class="input-control" placeholder="Talla" required style="max-width: 100px;">
-                <input type="text" name="imagenUrl" class="input-control" placeholder="URL Imagen Específica (Opcional)">
+
+                <input type="file" name="file" class="input-control" accept="image/*" style="max-width: 250px;">
+
                 <button type="submit" class="btn-primary" style="white-space: nowrap;">Añadir</button>
             </form>
         </div>
@@ -113,7 +135,7 @@
 
                 <div class="color-header" th:data-color-name="${entry.key}">
                     <div class="color-title"><span th:text="${entry.key}">Rojo</span></div>
-                    <a th:href="@{/admin/inventario/variante/toggle-color(productoId=${producto.id}, color=${entry.key})}" class="btn-icon" title="Ocultar todo">
+                    <a th:href="@{/admin/inventario/variante/toggle-color(productoId=${producto.id}, color=${entry.key})}" class="btn-icon" title="Ocultar/Mostrar todo este color">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     </a>
                 </div>
@@ -125,7 +147,6 @@
 
                 <div class="sizes-body">
                     <div th:each="v : ${entry.value}" class="size-chip-container">
-
                         <a th:href="@{/admin/inventario/variante/{id}/toggle(id=${v.id})}"
                            class="size-chip"
                            th:classappend="${v.activo ? 'active' : 'inactive'}"
@@ -136,15 +157,12 @@
                                   th:style="${v.stock <= 0 ? 'color: #ef4444;' : ''}">
                             </span>
                         </a>
-
                         <a th:href="@{/admin/inventario/variante/eliminar/{id}(id=${v.id})}"
-                           onclick="return confirm('⚠ ATENCIÓN:\n\n¿Estás seguro de eliminar la talla ' + this.getAttribute('data-talla') + '?\n\nEsta acción borrará el historial asociado y NO se puede deshacer.');"
+                           onclick="return confirm('¿Borrar esta variante?');"
                            th:data-talla="${v.talla}"
                            class="btn-delete-mini">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                             Borrar
                         </a>
-
                     </div>
                 </div>
             </div>
@@ -153,12 +171,22 @@
 </section>
 
 <script layout:fragment="scripts">
+    // Función para previsualizar la imagen local antes de subirla
     function updatePreview() {
-        const url = document.getElementById('imgInput').value;
-        const img = document.getElementById('imgPreview');
-        if(url) { img.src = url; img.style.opacity = '1'; }
+        const fileInput = document.getElementById('imgInput');
+        const imgPreview = document.getElementById('imgPreview');
+
+        if (fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imgPreview.src = e.target.result;
+                imgPreview.style.opacity = '1';
+            }
+            reader.readAsDataURL(fileInput.files[0]);
+        }
     }
 
+    // Coloreado automático de cabeceras según el nombre del color
     document.addEventListener("DOMContentLoaded", function() {
         const colorMap = {
             'rojo': '#ef4444', 'red': '#ef4444', 'azul': '#3b82f6', 'blue': '#3b82f6', 'navy': '#1e3a8a',
@@ -174,13 +202,18 @@
             rawName = rawName.toLowerCase().trim();
 
             let finalColor = colorMap[rawName] || rawName;
-
-            // Protección para colores inválidos
+            // Si el color no es válido en CSS, usar gris por defecto
             if(!CSS.supports('color', finalColor)) finalColor = '#cbd5e1';
 
             header.style.borderTop = `4px solid ${finalColor}`;
-            if (finalColor.startsWith('#')) header.style.background = `${finalColor}15`;
-            else { header.style.background = '#f8fafc'; header.style.borderLeft = `4px solid ${finalColor}`; }
+
+            if (finalColor.startsWith('#')) {
+                // Color suave de fondo si es hex
+                header.style.background = `${finalColor}15`;
+            } else {
+                header.style.background = '#f8fafc';
+                header.style.borderLeft = `4px solid ${finalColor}`;
+            }
 
             const title = header.querySelector('.color-title span');
             if (['blanco', 'white'].includes(rawName)) {
