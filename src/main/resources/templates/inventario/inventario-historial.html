@@ -113,8 +113,8 @@
                     </td>
 
                     <td class="text-center" style="font-weight: bold;">
-                        <span th:if="${item.tipo == 'Entrada'}" class="tipo-entrada" th:text="'+' + ${item.cantidad}"></span>
-                        <span th:if="${item.tipo == 'Salida'}" class="tipo-salida" th:text="'-' + ${item.cantidad}"></span>
+                        <span th:if="${item.tipo == 'Entrada'}" class="tipo-entrada" th:text="${item.cantidad}"></span>
+                        <span th:if="${item.tipo == 'Salida'}" class="tipo-salida" th:text="${item.cantidad}"></span>
                     </td>
 
                     <td class="text-center stock-val">
@@ -123,10 +123,10 @@
                     </td>
 
                     <td style="text-align: right;">
-                         <span th:if="${item.tipo == 'Salida'}" class="tipo-entrada"
-                               th:text="'+$' + ${#numbers.formatDecimal(item.valorMonetario, 0, 'COMMA', 0, 'POINT')}"></span>
+         <span th:if="${item.tipo == 'Salida'}" class="tipo-entrada"
+               th:text="'$' + ${#numbers.formatDecimal(item.valorMonetario, 0, 'COMMA', 0, 'POINT')}"></span>
                         <span th:if="${item.tipo == 'Entrada'}" class="tipo-salida"
-                              th:text="'-$' + ${#numbers.formatDecimal(item.valorMonetario, 0, 'COMMA', 0, 'POINT')}"></span>
+                              th:text="'$' + ${#numbers.formatDecimal(item.valorMonetario, 0, 'COMMA', 0, 'POINT')}"></span>
                     </td>
 
                     <td th:text="${item.descripcion}" class="text-xs text-gray-500"></td>

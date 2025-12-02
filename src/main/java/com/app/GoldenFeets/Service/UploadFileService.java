@@ -12,32 +12,47 @@ import java.util.UUID;
 @Service
 public class UploadFileService {
 
-    // Nombre de la carpeta donde se guardarán las imágenes (en la raíz del proyecto)
-    private final String FOLDER = "images//";
+    private final String FOLDER = "images"; // Sin barras, dejemos que Path se encargue
 
     public String saveImage(MultipartFile file) throws IOException {
         if (!file.isEmpty()) {
-            // 1. Convertimos a bytes
+            // 1. Convertir bytes
             byte[] bytes = file.getBytes();
 
-            // 2. Generamos nombre único para evitar conflictos (ej: uuid_nombre.jpg)
-            String uniqueFilename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            // 2. Crear carpeta si no existe (Gestión de rutas segura)
+            Path rootPath = Paths.get(FOLDER);
+            if (!Files.exists(rootPath)) {
+                Files.createDirectories(rootPath);
+            }
 
-            // 3. Ruta completa
-            Path path = Paths.get(FOLDER + uniqueFilename);
+            // 3. Generar nombre único y LIMPIO
+            // Reemplazamos espacios por guiones para evitar problemas en URLs
+            String originalName = file.getOriginalFilename();
+            if (originalName != null) {
+                originalName = originalName.replaceAll("\\s+", "-"); // Quita espacios
+            }
 
-            // 4. Escribimos el archivo
-            Files.write(path, bytes);
+            String uniqueFilename = UUID.randomUUID().toString() + "_" + originalName;
+
+            // 4. Resolver ruta completa de forma segura (funciona en Windows y Linux)
+            Path completePath = rootPath.resolve(uniqueFilename);
+
+            // 5. Escribir
+            Files.write(completePath, bytes);
 
             return uniqueFilename;
         }
-        return "default.jpg"; // Imagen por defecto si falla
+        return "default.jpg";
     }
 
     public void deleteImage(String nombre) {
-        String ruta = "images//";
+        // Nunca borres la imagen por defecto
+        if ("default.jpg".equals(nombre)) return;
+
         try {
-            Path path = Paths.get(ruta + nombre);
+            Path rootPath = Paths.get(FOLDER);
+            Path path = rootPath.resolve(nombre);
+
             if(Files.exists(path)) {
                 Files.delete(path);
             }

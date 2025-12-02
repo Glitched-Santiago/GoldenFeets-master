@@ -4,15 +4,12 @@ import com.app.GoldenFeets.Entity.Producto;
 import com.app.GoldenFeets.Entity.ProductoVariante;
 import com.app.GoldenFeets.Repository.ProductoRepository;
 import com.app.GoldenFeets.Repository.ProductoVarianteRepository;
-import com.app.GoldenFeets.spec.ProductoSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,18 +17,16 @@ public class ProductoService {
 
     private final ProductoRepository productoRepository;
     private final ProductoVarianteRepository productoVarianteRepository;
+    private final InventarioService inventarioService;
 
     public List<Producto> findAll() {
         return productoRepository.findAll();
     }
 
-    // --- CORRECCIÓN DEL ERROR AQUÍ ---
     public List<Producto> obtenerProductosDisponibles() {
-        // CORRECCIÓN: Usamos la consulta personalizada que verifica el stock en las variantes
         return productoRepository.findAllConStock();
     }
 
-    // Asegúrate también que tu método 'search' esté usando el searchByFilters del paso anterior:
     public List<Producto> search(String keyword, Long categoriaId, Double precioMin, Double precioMax, String talla, String color) {
         return productoRepository.searchByFilters(keyword, categoriaId, precioMin, precioMax, talla, color);
     }
@@ -51,72 +46,89 @@ public class ProductoService {
     public List<Producto> encontrarProductosAleatorios(int limite) {
         return productoRepository.findRandomProductos(limite);
     }
+
     @Transactional
     public void crearVarianteManual(Long productoId, String talla, String color, String imagenUrl) {
+
+        // 1. NORMALIZAR TEXTO (Ej: " rojo " -> "Rojo")
+        String colorNorm = (color != null && !color.trim().isEmpty())
+                ? normalizarTexto(color)
+                : "Único";
+
+        String tallaNorm = (talla != null) ? talla.trim().toUpperCase() : "ÚNICA";
+
+        // 2. Buscar Producto
         Producto producto = productoRepository.findById(productoId)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        // 1. Limpieza de datos
-        String tallaClean = talla.trim();
-        String colorClean = color.trim();
-        String imgClean = (imagenUrl != null && !imagenUrl.isBlank()) ? imagenUrl.trim() : null;
+        // 3. Buscar si ya existe la variante específica (Producto + Talla + Color)
+        Optional<ProductoVariante> varianteOpt = productoVarianteRepository
+                .findByProductoAndTallaAndColor(producto, tallaNorm, colorNorm);
 
-        // 2. Buscar si ya existe esa combinación
-        Optional<ProductoVariante> varianteExistente = producto.getVariantes().stream()
-                .filter(v -> v.getTalla().equalsIgnoreCase(tallaClean) && v.getColor().equalsIgnoreCase(colorClean))
-                .findFirst();
+        ProductoVariante variante;
+        boolean esNueva = false;
 
-        if (varianteExistente.isPresent()) {
-            // --- CASO A: YA EXISTE -> ACTUALIZAMOS ---
-            ProductoVariante v = varianteExistente.get();
-            System.out.println("DEBUG: Actualizando variante existente ID: " + v.getId());
-
-            // Actualizamos la imagen si nos enviaron una nueva
-            if (imgClean != null) {
-                v.setImagenUrl(imgClean);
-            }
-
-            // Nos aseguramos que esté visible
-            v.setActivo(true);
-
-            // Guardamos (al estar dentro de una transacción, esto actualiza la BD)
-            productoRepository.save(producto); // Guarda el padre y sus hijos
-
+        if (varianteOpt.isPresent()) {
+            // --- EDITANDO EXISTENTE ---
+            variante = varianteOpt.get();
+            variante.setActivo(true);
         } else {
-            // --- CASO B: NO EXISTE -> CREAMOS ---
-            System.out.println("DEBUG: Creando nueva variante");
+            // --- CREANDO NUEVA ---
+            esNueva = true;
+            variante = new ProductoVariante();
+            variante.setProducto(producto);
+            variante.setTalla(tallaNorm);
+            variante.setColor(colorNorm);
+            variante.setStock(0); // Inicia en 0 hasta que hagas una entrada de inventario
+            variante.setActivo(true);
 
-            ProductoVariante nueva = new ProductoVariante();
-            nueva.setProducto(producto);
-            nueva.setTalla(tallaClean);
-            nueva.setColor(colorClean);
-            nueva.setImagenUrl(imgClean); // Guardamos la imagen
-            nueva.setStock(0);
-            nueva.setActivo(true);
-
-            producto.getVariantes().add(nueva);
-            productoRepository.save(producto);
+            // Si no suben foto nueva, hereda la del padre al nacer
+            if (imagenUrl == null || imagenUrl.isEmpty()) {
+                variante.setImagenUrl(producto.getImagenUrl());
+            }
         }
+
+        // 4. ACTUALIZACIÓN DE IMAGEN (Lógica corregida)
+        if (imagenUrl != null && !imagenUrl.isEmpty()) {
+            // A. Asignar a la variante actual
+            variante.setImagenUrl(imagenUrl);
+
+            // B. Actualizar en CASCADA a otras variantes del mismo color (para coherencia visual)
+            if (producto.getVariantes() != null) {
+                for (ProductoVariante v : producto.getVariantes()) {
+                    // Actualizamos todas las que tengan el mismo color
+                    if (v.getColor().equalsIgnoreCase(colorNorm)) {
+                        v.setImagenUrl(imagenUrl);
+                    }
+                }
+            }
+        }
+
+        // --- CORRECCIÓN CLAVE ---
+        // Si es nueva, DEBEMOS agregarla explícitamente a la lista del padre
+        // antes de guardar, para que CascadeType.ALL funcione correctamente.
+        if (esNueva) {
+            producto.getVariantes().add(variante);
+        }
+
+        // 5. Guardar el Producto Padre (esto guardará/actualizará la variante por cascada)
+        productoRepository.save(producto);
     }
+
     @Transactional
     public void toggleVariantesPorColor(Long productoId, String color) {
         Producto producto = productoRepository.findById(productoId)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        // 1. Filtrar todas las variantes de ese color específico
         List<ProductoVariante> variantesDelColor = producto.getVariantes().stream()
                 .filter(v -> v.getColor().equalsIgnoreCase(color))
                 .toList();
 
         if (variantesDelColor.isEmpty()) return;
 
-        // 2. Determinar qué hacer:
-        // Si al menos UNA está activa, la intención es APAGAR TODO.
-        // Si TODAS están apagadas, la intención es PRENDER TODO.
         boolean hayActivas = variantesDelColor.stream().anyMatch(ProductoVariante::getActivo);
-        boolean nuevoEstado = !hayActivas; // Invertir lógica
+        boolean nuevoEstado = !hayActivas;
 
-        // 3. Aplicar el cambio a todas
         for (ProductoVariante v : variantesDelColor) {
             v.setActivo(nuevoEstado);
         }
@@ -126,21 +138,24 @@ public class ProductoService {
 
     @Transactional
     public void eliminarVariante(Long varianteId) {
-        // Buscamos la variante
         ProductoVariante variante = productoVarianteRepository.findById(varianteId)
                 .orElseThrow(() -> new RuntimeException("Variante no encontrada"));
 
-        // Obtenemos el producto padre para actualizarlo luego si es necesario
         Producto producto = variante.getProducto();
 
-        // Eliminamos la variante
-        // Nota: Si hay pedidos o movimientos de inventario ligados a esta variante,
-        // la base de datos podría lanzar un error de integridad referencial (Foreign Key).
-        // En ese caso, lo ideal sería 'desactivarla' (activo = false) en lugar de borrarla.
+        // Eliminar variante de la BD
         productoVarianteRepository.delete(variante);
 
-        // Quitamos la variante de la lista del padre para mantener la coherencia en memoria
+        // Remover de la lista en memoria del padre para mantener consistencia
         producto.getVariantes().remove(variante);
         productoRepository.save(producto);
+    }
+
+    private String normalizarTexto(String texto) {
+        if (texto == null || texto.trim().isEmpty()) {
+            return texto;
+        }
+        String limpio = texto.trim().toLowerCase();
+        return limpio.substring(0, 1).toUpperCase() + limpio.substring(1);
     }
 }

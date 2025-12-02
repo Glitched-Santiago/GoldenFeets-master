@@ -27,6 +27,7 @@ public class InventarioService {
     private final InventarioSalidaRepository inventarioSalidaRepository;
     private final ProductoRepository productoRepository;
     private final PedidoRepository pedidoRepository;
+    private final ProductoVarianteRepository productoVarianteRepository;
 
     /**
      * Registra entrada de stock y guarda la foto del stock (antes/después).
@@ -300,4 +301,5 @@ public class InventarioService {
         // 2. Poner primera letra en mayúscula
         return limpio.substring(0, 1).toUpperCase() + limpio.substring(1);
     }
+
 }
