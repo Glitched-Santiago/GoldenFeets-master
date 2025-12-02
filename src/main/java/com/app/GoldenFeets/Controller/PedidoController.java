@@ -3,6 +3,7 @@ package com.app.GoldenFeets.Controller;
 import com.app.GoldenFeets.Entity.Cliente;
 import com.app.GoldenFeets.Entity.Pedido;
 import com.app.GoldenFeets.Service.CarritoService;
+import com.app.GoldenFeets.Service.EmailService;
 import com.app.GoldenFeets.Service.PedidoService;
 import com.app.GoldenFeets.Service.UsuarioService;
 import com.app.GoldenFeets.Model.CarritoItem;
@@ -14,8 +15,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
@@ -26,6 +27,7 @@ public class PedidoController {
     private final PedidoService pedidoService;
     private final UsuarioService usuarioService;
     private final CarritoService carritoService;
+    private final EmailService emailService;
 
     // --- 1. MOSTRAR CHECKOUT ---
     @GetMapping("/checkout")
@@ -45,11 +47,10 @@ public class PedidoController {
         model.addAttribute("items", carritoValido.values());
         model.addAttribute("total", carritoService.getTotal());
 
-        // RUTA SEGÚN TU IMAGEN: carpeta "Compra" (mayúscula) -> archivo "Checkout.html"
         return "Compra/Checkout";
     }
 
-    // --- 2. PROCESAR COMPRA (Recibe datos del Formulario) ---
+    // --- 2. PROCESAR COMPRA (ACTUALIZADO CON ENVÍO DE CORREO) ---
     @PostMapping("/checkout")
     public String finalizarCompra(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -71,11 +72,24 @@ public class PedidoController {
         try {
             Cliente cliente = usuarioService.findClienteByEmail(userDetails.getUsername());
 
-            // Llamamos al servicio con los datos de envío
+            // 1. Crear el pedido en BD
             Pedido nuevoPedido = pedidoService.crearPedido(
                     carrito, cliente, nombres, apellidos, telefono, ciudad, localidad, direccion
             );
 
+            // 2. ENVIAR CORREO DE CONFIRMACIÓN (Nuevo bloque)
+            // Lo hacemos en un hilo secundario para no bloquear la redirección
+            new Thread(() -> {
+                try {
+                    emailService.enviarCorreoCompra(cliente.getEmail(), nuevoPedido);
+                    System.out.println("Correo de compra enviado a: " + cliente.getEmail());
+                } catch (Exception e) {
+                    System.err.println("Error enviando correo al cliente: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }).start();
+
+            // 3. Limpiar carrito y redirigir
             carritoService.limpiar();
             return "redirect:/pedidos/confirmacion/" + nuevoPedido.getId();
 
@@ -88,8 +102,13 @@ public class PedidoController {
     // --- 3. CONFIRMACIÓN ---
     @GetMapping("/confirmacion/{pedidoId}")
     public String confirmacionCompra(@PathVariable Long pedidoId, Model model) {
-        model.addAttribute("pedidoId", pedidoId);
-        // RUTA SEGÚN TU IMAGEN: carpeta "Compra" -> archivo "confirmacion.html"
+        // Buscamos el pedido completo para mostrar los detalles en la factura
+        Pedido pedido = pedidoService.obtenerPedidoPorId(pedidoId); // Asumo que tienes este método en tu servicio
+
+        // Si no tienes ese método en el service, puedes usar el repositorio directamente:
+        // Pedido pedido = pedidoRepository.findById(pedidoId).orElseThrow();
+
+        model.addAttribute("pedido", pedido);
         return "Compra/confirmacion";
     }
 
@@ -100,7 +119,6 @@ public class PedidoController {
         Cliente cliente = usuarioService.findClienteByEmail(userDetails.getUsername());
         List<Pedido> pedidos = pedidoService.obtenerPedidosPorCliente(cliente);
         model.addAttribute("pedidos", pedidos);
-        // RUTA SEGÚN TU IMAGEN: carpeta "Compra" -> archivo "compras.html"
         return "Compra/compras";
     }
 }

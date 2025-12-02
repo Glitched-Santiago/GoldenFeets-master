@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333; line-height: 1.6; background-color: #f9fafb; margin: 0; padding: 20px; }
+        .container { width: 100%; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+        .header { background-color: #111827; color: white; padding: 25px; text-align: center; }
+        .content { padding: 30px; }
+        .info-box { background: #f3f4f6; padding: 15px; border-radius: 6px; margin-bottom: 20px; font-size: 0.9em; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+        th { background-color: #f9fafb; color: #374151; font-weight: 600; text-align: left; padding: 12px; border-bottom: 2px solid #e5e7eb; }
+        td { padding: 12px; border-bottom: 1px solid #f3f4f6; color: #4b5563; vertical-align: top; }
+
+        .product-name { font-weight: 600; color: #111827; display: block; }
+        .product-meta { font-size: 0.85em; color: #6b7280; }
+
+        /* Sección de Totales e IVA */
+        .totals-section { margin-top: 25px; border-top: 2px solid #e5e7eb; padding-top: 15px; }
+        .totals-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95em; color: #4b5563; }
+        .totals-row span:last-child { font-weight: 600; text-align: right; }
+
+        .total-final {
+            display: flex; justify-content: space-between;
+            font-size: 1.4em; font-weight: 800; color: #111827;
+            margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1 style="margin:0; font-size: 24px;">Confirmación de Compra</h1>
+    </div>
+
+    <div class="content">
+        <p>Hola <strong th:text="${cliente != null ? cliente.nombres : 'Cliente'}">Usuario</strong>,</p>
+        <p>Gracias por comprar en GoldenFeets. Aquí tienes tu factura electrónica.</p>
+
+        <div class="info-box">
+            <strong>Orden:</strong> #<span th:text="${pedido.id}">0000</span><br>
+            <strong>Fecha:</strong> <span th:text="${#temporals.format(pedido.fechaCreacion, 'dd/MM/yyyy')}">01/01/2025</span>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th style="width: 50%;">Producto</th>
+                <th style="text-align: center;">Cant.</th>
+                <th style="text-align: right;">Total Línea</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="det : ${pedido.detalles}">
+                <td>
+                    <span class="product-name" th:text="${det.producto.nombre}">Producto</span>
+                    <span class="product-meta">
+                                Talla: <span th:text="${det.productoVariante.talla}">42</span> |
+                                Color: <span th:text="${det.productoVariante.color}">Negro</span>
+                            </span>
+                </td>
+                <td style="text-align: center;" th:text="${det.cantidad}">1</td>
+
+                <td style="text-align: right;" th:text="'$' + ${#numbers.formatDecimal(det.subtotal, 0, 'COMMA', 0, 'POINT')}">$100.00</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="totals-section">
+            <div class="totals-row">
+                <span style="width: 100%; text-align: right; padding-right: 20px;">Subtotal (Sin IVA):</span>
+                <span th:text="'$' + ${#numbers.formatDecimal(pedido.total / 1.19, 0, 'COMMA', 2, 'POINT')}"></span>
+            </div>
+
+            <div class="totals-row">
+                <span style="width: 100%; text-align: right; padding-right: 20px;">IVA (19%):</span>
+                <span th:text="'$' + ${#numbers.formatDecimal(pedido.total - (pedido.total / 1.19), 0, 'COMMA', 2, 'POINT')}"></span>
+            </div>
+
+            <div class="totals-row">
+                <span style="width: 100%; text-align: right; padding-right: 20px;">Envío:</span>
+                <span style="color: #16a34a;">Gratis</span>
+            </div>
+
+            <div class="total-final">
+                <span style="width: 100%; text-align: right; padding-right: 20px;">TOTAL PAGADO:</span>
+                <span th:text="'$' + ${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT')}">$100.00</span>
+            </div>
+        </div>
+
+        <p style="margin-top: 40px; font-size: 0.8em; color: #9ca3af; text-align: center;">
+            GoldenFeets Inc. - Bogota, Colombia<br>
+            Este correo es un comprobante automático.
+        </p>
+    </div>
+</div>
+</body>
+</html>

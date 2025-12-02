@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Error</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; color: #333; }
+        h1 { color: #e11d48; font-size: 3rem; margin-bottom: 10px; }
+        .box { background: #f3f4f6; padding: 20px; border-radius: 10px; display: inline-block; text-align: left; }
+    </style>
+</head>
+<body>
+<h1>¡Ups! Algo salió mal</h1>
+<p>Ocurrió un error inesperado en la aplicación.</p>
+
+<div class="box" th:if="${message}">
+    <strong>Detalle del error:</strong>
+    <pre th:text="${message}"></pre>
+</div>
+
+<br><br>
+<a href="/" style="background: #111827; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Volver al Inicio</a>
+</body>
+</html>

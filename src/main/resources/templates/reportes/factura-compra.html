@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Factura de Compra</title>
+    <style>
+        /* Estilos compatibles con PDF (CSS 2.1) */
+        body { font-family: sans-serif; font-size: 12px; color: #333; }
+
+        .header-table { width: 100%; border-bottom: 2px solid #111827; padding-bottom: 20px; margin-bottom: 20px; }
+        .logo { font-size: 24px; font-weight: bold; color: #111827; }
+        .invoice-details { text-align: right; }
+        .invoice-title { font-size: 18px; font-weight: bold; color: #555; }
+
+        .info-table { width: 100%; margin-bottom: 30px; }
+        .info-col { width: 50%; vertical-align: top; }
+        .box-title { font-weight: bold; color: #111827; margin-bottom: 5px; text-transform: uppercase; font-size: 10px; }
+
+        /* Tablas con bordes colapsados */
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .items-table th { background-color: #f3f4f6; padding: 10px; text-align: left; font-weight: bold; border-bottom: 1px solid #ddd; }
+        .items-table td { padding: 10px; border-bottom: 1px solid #eee; }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        .totals-table { width: 100%; border-collapse: collapse; }
+        .totals-table td { padding: 5px; text-align: right; }
+        .total-label { font-weight: bold; width: 85%; }
+        .total-value { width: 15%; }
+
+        .grand-total { font-size: 14px; font-weight: bold; color: #111827; border-top: 2px solid #333; padding-top: 10px; }
+
+        .footer { position: absolute; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<table class="header-table">
+    <tr>
+        <td class="logo">GOLDENFEETS</td>
+        <td class="invoice-details">
+            <div class="invoice-title">FACTURA DE VENTA</div>
+            <div>Orden #: <span th:text="${pedido.id}">000</span></div>
+            <div>Fecha: <span th:text="${#temporals.format(pedido.fechaCreacion, 'dd/MM/yyyy')}">01/01/2025</span></div>
+        </td>
+    </tr>
+</table>
+
+<table class="info-table">
+    <tr>
+        <td class="info-col">
+            <div class="box-title">FACTURADO A:</div>
+            <div>
+                <strong th:text="${pedido.cliente.nombres} + ' ' + ${pedido.cliente.apellidos}">Nombre</strong><br />
+                CC: <span th:text="${pedido.cliente.numeroDocumento}">123</span><br />
+                Email: <span th:text="${pedido.cliente.email}">email@mail.com</span>
+            </div>
+        </td>
+        <td class="info-col">
+            <div class="box-title">ENVIADO A:</div>
+            <div>
+                <span th:text="${pedido.envioNombres} + ' ' + ${pedido.envioApellidos}">Nombre</span><br />
+                <span th:text="${pedido.envioDireccion}">Dirección</span><br />
+                <span th:text="${pedido.envioCiudad} + ', ' + ${pedido.envioLocalidad}">Ciudad</span><br />
+                Tel: <span th:text="${pedido.envioTelefono}">300123</span>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<table class="items-table">
+    <thead>
+    <tr>
+        <th width="50%">Producto</th>
+        <th width="10%" class="text-center">Cant.</th>
+        <th width="20%" class="text-right">Precio Unit.</th>
+        <th width="20%" class="text-right">Total</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="det : ${pedido.detalles}">
+        <td>
+            <span style="font-weight: bold;" th:text="${det.producto.nombre}">Producto</span><br />
+            <span style="font-size: 10px; color: #777;">
+                        Talla: <span th:text="${det.productoVariante.talla}">40</span> |
+                        Color: <span th:text="${det.productoVariante.color}">Negro</span>
+                    </span>
+        </td>
+        <td class="text-center" th:text="${det.cantidad}">1</td>
+        <td class="text-right" th:text="'$' + ${#numbers.formatDecimal(det.precioUnitario, 0, 'COMMA', 0, 'POINT')}">$100</td>
+
+        <td class="text-right" th:text="'$' + ${#numbers.formatDecimal(det.cantidad * det.precioUnitario, 0, 'COMMA', 0, 'POINT')}">$100</td>
+    </tr>
+    </tbody>
+</table>
+
+<table class="totals-table">
+    <tr>
+        <td class="total-label">Subtotal (Base):</td>
+        <td class="total-value" th:text="'$' + ${#numbers.formatDecimal(pedido.total / 1.19, 0, 'COMMA', 2, 'POINT')}">$84.03</td>
+    </tr>
+    <tr>
+        <td class="total-label">IVA (19%):</td>
+        <td class="total-value" th:text="'$' + ${#numbers.formatDecimal(pedido.total - (pedido.total / 1.19), 0, 'COMMA', 2, 'POINT')}">$15.97</td>
+    </tr>
+    <tr>
+        <td class="total-label">Envío:</td>
+        <td class="total-value" style="color: green;">GRATIS</td>
+    </tr>
+    <tr>
+        <td class="total-label grand-total">TOTAL A PAGAR:</td>
+        <td class="total-value grand-total" th:text="'$' + ${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT')}">$100.000</td>
+    </tr>
+</table>
+
+<div class="footer">
+    GoldenFeets S.A.S - NIT 900.123.456-7 <br />
+    Gracias por su compra. Esta factura se genera automáticamente por sistema.
+</div>
+
+</body>
+</html>

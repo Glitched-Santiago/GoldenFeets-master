@@ -107,4 +107,8 @@ public class PedidoService {
         Specification<Pedido> spec = pedidoSpecification.findByCriteria(clienteNombre, fechaDesde, fechaHasta);
         return pedidoRepository.findAll(spec);
     }
+    public Pedido obtenerPedidoPorId(Long id) {
+        return pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + id));
+    }
 }

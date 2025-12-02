@@ -34,5 +34,12 @@ public class PedidoDetalle {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_variante_id")
     @ToString.Exclude
+
     private ProductoVariante productoVariante;
+    public Double getSubtotal() {
+        if (this.precioUnitario == null || this.cantidad == null) {
+            return 0.0;
+        }
+        return this.precioUnitario * this.cantidad;
+    }
 }

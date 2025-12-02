@@ -49,12 +49,21 @@
                 <div class="thumb-btn active" th:onclick="changeMainImage([[${producto.imagenUrl}]])">
                     <img th:src="${producto.imagenUrl}" onerror="this.src='https://placehold.co/80';">
                 </div>
-                <th:block th:each="v : ${producto.variantes}">
-                    <div th:if="${v.imagenUrl != null and !#strings.isEmpty(v.imagenUrl)}"
-                         class="thumb-btn"
-                         th:onclick="changeMainImage([[${v.imagenUrl}]])">
-                        <img th:src="${v.imagenUrl}" onerror="this.style.display='none'">
-                    </div>
+
+                <th:block th:with="coloresUnicos=${new java.util.HashSet(producto.variantes.![color])}">
+
+                    <th:block th:each="color : ${coloresUnicos}">
+
+                        <th:block th:with="varianteColor=${producto.variantes.^[color == '__${color}__' and imagenUrl != null and imagenUrl != '']}">
+
+                            <div th:if="${varianteColor != null and varianteColor.imagenUrl != producto.imagenUrl}"
+                                 class="thumb-btn"
+                                 th:onclick="changeMainImage([[${varianteColor.imagenUrl}]])">
+                                <img th:src="${varianteColor.imagenUrl}" onerror="this.style.display='none'">
+                            </div>
+                        </th:block>
+
+                    </th:block>
                 </th:block>
             </div>
 
