@@ -24,7 +24,7 @@ public class CarritoController {
     public String verCarrito(Model model) {
         model.addAttribute("items", carritoService.getItems().values());
         model.addAttribute("total", carritoService.getTotal());
-        return "carrito/carrito";
+        return "carrito/Carrito";
     }
 
     @PostMapping("/agregar/{productoId}")
