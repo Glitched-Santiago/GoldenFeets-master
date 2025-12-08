@@ -1,88 +1,88 @@
 package com.app.GoldenFeets.Service;
 
 import com.app.GoldenFeets.Entity.Pedido;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.Attachment;
+import com.resend.services.emails.model.CreateEmailOptions;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.nio.charset.StandardCharsets;
+import jakarta.annotation.PostConstruct;
+import java.util.Base64;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
 public class EmailService {
 
-    // Logger para ver errores en la consola de Railway de forma ordenada
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    private final JavaMailSender javaMailSender;
     private final TemplateEngine templateEngine;
     private final PdfService pdfService;
 
-    // Inyectamos el remitente desde application.properties.
-    // Si no está configurado, usa el de prueba de Resend por defecto.
+    // Inyectamos solo la API KEY desde application.properties
+    @Value("${spring.mail.password}")
+    private String resendApiKey;
+
     @Value("${spring.mail.properties.mail.from:onboarding@resend.dev}")
     private String remitente;
 
-    /**
-     * Envía un correo con la factura PDF adjunta.
-     * Es asíncrono para no bloquear el hilo principal.
-     */
-    @Async
-    public void enviarCorreoCompra(String destinatario, Pedido pedido) {
-        try {
-            logger.info("Iniciando envío de correo a: {}", destinatario);
+    private Resend resendClient;
 
-            // 1. Configurar el Mensaje
-            MimeMessage message = javaMailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
-
-            // IMPORTANTE: En Resend, el 'From' debe coincidir con tu dominio verificado
-            // o ser 'onboarding@resend.dev' si estás en modo prueba.
-            helper.setFrom(remitente);
-            helper.setTo(destinatario);
-            helper.setSubject("Tu Factura de Compra - Orden #" + pedido.getId());
-
-            // 2. Preparar Datos (Contexto para Thymeleaf)
-            Context context = new Context();
-            context.setVariable("pedido", pedido);
-            context.setVariable("cliente", pedido.getCliente());
-
-            // 3. Generar PDF (Bytes)
-            // Asegúrate de que la ruta 'reportes/factura-compra' exista en tus templates
-            byte[] pdfBytes = pdfService.generarPdf("reportes/factura-compra", context);
-
-            // 4. Generar Cuerpo HTML del Correo
-            String htmlContent = templateEngine.process("emails/recibo-compra", context);
-            helper.setText(htmlContent, true);
-
-            // 5. Adjuntar el PDF
-            helper.addAttachment("Factura_GoldenFeets_" + pedido.getId() + ".pdf", new ByteArrayResource(pdfBytes));
-
-            // 6. Enviar
-            javaMailSender.send(message);
-
-            logger.info("Correo enviado exitosamente a {} con PDF adjunto.", destinatario);
-
-        } catch (MessagingException e) {
-            logger.error("Error construyendo el mensaje de correo para: {}", destinatario, e);
-        } catch (Exception e) {
-            logger.error("Error general (posiblemente al generar PDF) enviando correo a: {}", destinatario, e);
-        }
+    @PostConstruct
+    public void init() {
+        // Inicializamos el cliente de Resend con la API Key
+        this.resendClient = new Resend(resendApiKey);
     }
 
     @Async
-    public void enviarCorreoMasivo(String asunto, String plantilla) {
-        // Aquí puedes implementar lógica futura para newsletters
-        logger.info("Método de correo masivo llamado (aún no implementado).");
+    public void enviarCorreoCompra(String destinatario, Pedido pedido) {
+        try {
+            logger.info("Iniciando envío de correo API a: {}", destinatario);
+
+            // 1. Generar PDF (Bytes)
+            Context context = new Context();
+            context.setVariable("pedido", pedido);
+            context.setVariable("cliente", pedido.getCliente());
+            byte[] pdfBytes = pdfService.generarPdf("reportes/factura-compra", context);
+
+            // 2. Convertir PDF a Base64 (Requisito de la API HTTP)
+            String pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes);
+
+            // 3. Crear Adjunto
+            Attachment adjunto = Attachment.builder()
+                    .fileName("Factura_GoldenFeets_" + pedido.getId() + ".pdf")
+                    .content(pdfBase64) // El contenido debe ser string base64
+                    .build();
+
+            // 4. Generar HTML
+            String htmlContent = templateEngine.process("emails/recibo-compra", context);
+
+            // 5. Preparar el envío
+            CreateEmailOptions params = CreateEmailOptions.builder()
+                    .from(remitente)
+                    .to(destinatario)
+                    .subject("Tu Factura de Compra - Orden #" + pedido.getId())
+                    .html(htmlContent)
+                    .attachments(Collections.singletonList(adjunto))
+                    .build();
+
+            // 6. Enviar
+            resendClient.emails().send(params);
+
+            logger.info("Correo enviado exitosamente vía API a {}", destinatario);
+
+        } catch (ResendException e) {
+            logger.error("Error de Resend API: {}", e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("Error general enviando correo a: {}", destinatario, e);
+        }
     }
 }
