@@ -27,7 +27,6 @@ public class EmailService {
     private final TemplateEngine templateEngine;
     private final PdfService pdfService;
 
-    // Inyectamos solo la API KEY desde application.properties
     @Value("${spring.mail.password}")
     private String resendApiKey;
 
@@ -38,7 +37,6 @@ public class EmailService {
 
     @PostConstruct
     public void init() {
-        // Inicializamos el cliente de Resend con la API Key
         this.resendClient = new Resend(resendApiKey);
     }
 
@@ -47,25 +45,20 @@ public class EmailService {
         try {
             logger.info("Iniciando envío de correo API a: {}", destinatario);
 
-            // 1. Generar PDF (Bytes)
             Context context = new Context();
             context.setVariable("pedido", pedido);
             context.setVariable("cliente", pedido.getCliente());
             byte[] pdfBytes = pdfService.generarPdf("reportes/factura-compra", context);
 
-            // 2. Convertir PDF a Base64 (Requisito de la API HTTP)
             String pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes);
 
-            // 3. Crear Adjunto
             Attachment adjunto = Attachment.builder()
                     .fileName("Factura_GoldenFeets_" + pedido.getId() + ".pdf")
-                    .content(pdfBase64) // El contenido debe ser string base64
+                    .content(pdfBase64)
                     .build();
 
-            // 4. Generar HTML
             String htmlContent = templateEngine.process("emails/recibo-compra", context);
 
-            // 5. Preparar el envío
             CreateEmailOptions params = CreateEmailOptions.builder()
                     .from(remitente)
                     .to(destinatario)
@@ -74,7 +67,6 @@ public class EmailService {
                     .attachments(Collections.singletonList(adjunto))
                     .build();
 
-            // 6. Enviar
             resendClient.emails().send(params);
 
             logger.info("Correo enviado exitosamente vía API a {}", destinatario);
@@ -83,6 +75,30 @@ public class EmailService {
             logger.error("Error de Resend API: {}", e.getMessage(), e);
         } catch (Exception e) {
             logger.error("Error general enviando correo a: {}", destinatario, e);
+        }
+    }
+
+    // --- MÉTODO AGREGADO PARA CORREGIR EL ERROR DE COMPILACIÓN ---
+    @Async
+    public void enviarCorreoMasivo(String asunto, String cuerpo) {
+        try {
+            logger.info("Procesando envío masivo: {}", asunto);
+
+            // LÓGICA DE EJEMPLO (Enviaremos solo a ti mismo para probar, ya que Resend
+            // no permite envíos masivos reales en el plan gratuito sin dominio verificado)
+
+            // CreateEmailOptions params = CreateEmailOptions.builder()
+            //         .from(remitente)
+            //         .to("tu_correo_de_pruebas@gmail.com")
+            //         .subject(asunto)
+            //         .html("<p>" + cuerpo + "</p>")
+            //         .build();
+            // resendClient.emails().send(params);
+
+            logger.warn("El método enviarCorreoMasivo fue llamado pero está en modo simulación.");
+
+        } catch (Exception e) {
+            logger.error("Error en envío masivo", e);
         }
     }
 }
