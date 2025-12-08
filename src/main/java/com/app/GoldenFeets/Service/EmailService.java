@@ -21,38 +21,44 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class EmailService {
 
+    // Logger para ver errores en la consola de Railway de forma ordenada
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     private final JavaMailSender javaMailSender;
     private final TemplateEngine templateEngine;
     private final PdfService pdfService;
 
-    // Inyectamos el correo desde la configuración para evitar bloqueos por seguridad
-    // Si usas Gmail, este debe ser tu correo de Gmail. Si usas Resend, el que ellos te den.
-    @Value("${spring.mail.username}")
+    // Inyectamos el remitente desde application.properties.
+    // Si no está configurado, usa el de prueba de Resend por defecto.
+    @Value("${spring.mail.properties.mail.from:onboarding@resend.dev}")
     private String remitente;
 
-    @Async // <--- IMPORTANTE: Ejecuta el envío en segundo plano para no congelar la app
+    /**
+     * Envía un correo con la factura PDF adjunta.
+     * Es asíncrono para no bloquear el hilo principal.
+     */
+    @Async
     public void enviarCorreoCompra(String destinatario, Pedido pedido) {
         try {
-            logger.info("Iniciando proceso de envío de correo a: {}", destinatario);
+            logger.info("Iniciando envío de correo a: {}", destinatario);
 
-            // 1. Configurar Mensaje
+            // 1. Configurar el Mensaje
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
 
+            // IMPORTANTE: En Resend, el 'From' debe coincidir con tu dominio verificado
+            // o ser 'onboarding@resend.dev' si estás en modo prueba.
+            helper.setFrom(remitente);
             helper.setTo(destinatario);
             helper.setSubject("Tu Factura de Compra - Orden #" + pedido.getId());
 
-            // Usamos la variable inyectada. Si es nula, usamos un fallback (pero idealmente no debería serlo)
-            helper.setFrom(remitente != null ? remitente : "no-reply@goldenfeets.com");
-
-            // 2. Preparar Datos (Contexto)
+            // 2. Preparar Datos (Contexto para Thymeleaf)
             Context context = new Context();
             context.setVariable("pedido", pedido);
             context.setVariable("cliente", pedido.getCliente());
 
             // 3. Generar PDF (Bytes)
+            // Asegúrate de que la ruta 'reportes/factura-compra' exista en tus templates
             byte[] pdfBytes = pdfService.generarPdf("reportes/factura-compra", context);
 
             // 4. Generar Cuerpo HTML del Correo
@@ -65,17 +71,18 @@ public class EmailService {
             // 6. Enviar
             javaMailSender.send(message);
 
-            logger.info("Correo enviado exitosamente con PDF adjunto.");
+            logger.info("Correo enviado exitosamente a {} con PDF adjunto.", destinatario);
 
         } catch (MessagingException e) {
-            logger.error("Error al crear el mensaje de correo", e);
+            logger.error("Error construyendo el mensaje de correo para: {}", destinatario, e);
         } catch (Exception e) {
-            logger.error("Error general enviando correo o generando PDF", e);
+            logger.error("Error general (posiblemente al generar PDF) enviando correo a: {}", destinatario, e);
         }
     }
 
     @Async
     public void enviarCorreoMasivo(String asunto, String plantilla) {
-        // Lógica futura...
+        // Aquí puedes implementar lógica futura para newsletters
+        logger.info("Método de correo masivo llamado (aún no implementado).");
     }
 }
