@@ -12,9 +12,9 @@
         <div class="header-actions" style="display: flex; gap: 1rem;">
             <form th:action="@{/admin/usuarios/enviar-promocion}" method="post" style="margin: 0;">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button type="submit" class="btn btn-special">
-                    📧 Enviar Correo a Clientes
-                </button>
+                <a th:href="@{/admin/correos/redactar}" class="btn btn-special" style="text-decoration: none; display: inline-flex; align-items: center;">
+                    📧 Redactar Correo Masivo
+                </a>
             </form>
 
             <a th:href="@{/admin/usuarios/exportar-pdf(id=${idParam}, nombres=${nombresParam}, apellidos=${apellidosParam}, numeroDocumento=${numeroDocumentoParam}, email=${emailParam}, rol=${rolParam})}"
